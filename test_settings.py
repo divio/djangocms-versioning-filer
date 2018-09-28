@@ -1,4 +1,5 @@
 import os
+from tempfile import mkdtemp
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -6,6 +7,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HELPER_SETTINGS = {
     'TIME_ZONE': 'Europe/Zurich',
     'INSTALLED_APPS': [
+        'easy_thumbnails',
+        'mptt',
+        'filer',
         'djangocms_versioning',
         'djangocms_versioning_filer',
     ],
@@ -15,12 +19,12 @@ HELPER_SETTINGS = {
         'auth': None,
         'cms': None,
         'menus': None,
+        'filer': None,
         'djangocms_versioning': None,
         'djangocms_versioning_filer': None,
     },
     'CMS_PERMISSION': True,
-    # At present, testing requires bootstrap to be disabled.
-    # 'ALDRYN_BOILERPLATE_NAME': 'bootstrap3',
+    'LANGUAGE_CODE': 'en',
     'LANGUAGES': (
         ('en', 'English'),
         ('de', 'German'),
@@ -51,43 +55,14 @@ HELPER_SETTINGS = {
             },
         ],
     },
-    'TEMPLATE_DIRS': [
-        os.path.join('tests', 'templates'),
-    ],
-    'PARLER_LANGUAGES': {
-        1: [
-            {
-                'code': 'en',
-                'fallbacks': ['de', 'fr'],
-                'hide_untranslated': False,
-            },
-            {
-                'code': 'de',
-                'fallbacks': ['en'],
-                'hide_untranslated': False,
-            },
-            {
-                'code': 'fr',
-                'fallbacks': ['en'],
-                'hide_untranslated': False,
-            },
-            {
-                'code': 'it',
-                'fallbacks': ['fr'],  # FOR TESTING, LEAVE AS ONLY 'fr'
-                'hide_untranslated': False,
-            },
-        ],
-        'default': {
-            'code': 'en',
-            'fallbacks': ['en'],
-            'hide_untranslated': False,
-        }
-    },
-    'PARLER_ENABLE_CACHING': False,
-    'LANGUAGE_CODE': 'en',
-    'DJANGOCMS_ALIAS_TEMPLATES': [
-        ('custom_alias_template', 'Custom Template Name'),
-    ]
+    'THUMBNAIL_PROCESSORS': (
+        'easy_thumbnails.processors.colorspace',
+        'easy_thumbnails.processors.autocrop',
+        'filer.thumbnail_processors.scale_and_crop_with_subject_location',
+        'easy_thumbnails.processors.filters',
+    ),
+    'FILE_UPLOAD_TEMP_DIR': mkdtemp(),
+    'FILER_CANONICAL_URL': 'test-path/',
 }
 
 
