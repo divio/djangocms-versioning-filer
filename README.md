@@ -1,1 +1,0 @@
-# djangocms-versioning-filer

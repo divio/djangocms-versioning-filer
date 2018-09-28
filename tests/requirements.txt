@@ -1,0 +1,6 @@
+coverage
+djangocms_helper
+flake8
+isort
+https://github.com/divio/djangocms-versioning/archive/master.zip
+https://github.com/FidelityInternational/django-filer/archive/develop.zip
