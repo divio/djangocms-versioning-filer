@@ -6,7 +6,7 @@ from filer.models import File
 from .models import copy_file
 
 
-class FilerCMSConfig(CMSAppConfig):
+class FilerVersioningCMSConfig(CMSAppConfig):
     djangocms_versioning_enabled = True
     versioning = [
         VersionableItem(
