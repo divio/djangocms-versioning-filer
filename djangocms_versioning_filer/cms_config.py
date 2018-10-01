@@ -17,7 +17,7 @@ def versioning_filer_models_config(models):
             content_model=model,
             grouper_field_name='grouper',
             copy_function=copy_file,
-            grouper_selector_option_label=lambda obj: obj.name,
+            grouper_selector_option_label=lambda obj, language: obj.name,
         )
 
 
