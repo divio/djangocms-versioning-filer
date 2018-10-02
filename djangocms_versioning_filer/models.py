@@ -29,6 +29,10 @@ class FileGrouper(models.Model):
             )
         )
 
+    def get_absolute_url(self):
+        from djangocms_versioning.helpers import version_list_url_for_grouper
+        return version_list_url_for_grouper(self)
+
 
 grouper_fk_field = models.ForeignKey(
     to=FileGrouper,
@@ -47,6 +51,7 @@ def get_files_distinct_grouper_queryset():
 
 class NullIfEmptyStr(Func):
     template = "NULLIF(%(expressions)s, '')"
+    arity = 1
 
 
 def copy_file(file_object):
