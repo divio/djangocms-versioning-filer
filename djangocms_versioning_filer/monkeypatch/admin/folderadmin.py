@@ -18,7 +18,7 @@ from filer.admin.tools import (
     userperms_for_request,
 )
 from filer.models import (
-    File,
+    Folder,
     FolderPermission,
     FolderRoot,
     ImagesWithMissingData,
@@ -26,6 +26,8 @@ from filer.models import (
     tools,
 )
 from filer.utils.loader import load_model
+
+from ...models import get_files_distinct_grouper_queryset
 
 
 Image = load_model(filer.settings.FILER_IMAGE_MODEL)
@@ -84,18 +86,21 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
             folder_qs = folder.get_descendants(include_self=False)
             # Limit search results to files in the current folder or any
             # nested folder.
-            file_qs = File._original_manager.filter(
+            file_qs = get_files_distinct_grouper_queryset().filter(
                 folder__in=folder.get_descendants(include_self=True))
         else:
             folder_qs = self.get_queryset(request)
-            file_qs = File._original_manager.all()
+            file_qs = get_files_distinct_grouper_queryset().all()
         folder_qs = self.filter_folder(folder_qs, search_terms)
         file_qs = self.filter_file(file_qs, search_terms)
 
         show_result_count = True
     else:
         folder_qs = folder.children.all()
-        file_qs = folder.files.all()
+        if isinstance(folder, Folder):
+            file_qs = get_files_distinct_grouper_queryset().filter(folder=folder)
+        else:
+            file_qs = folder.files.all()
         show_result_count = False
 
     folder_qs = folder_qs.order_by('name')
@@ -201,7 +206,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
     context = self.admin_site.each_context(request)
     context.update({
         'folder': folder,
-        'clipboard_files': File._original_manager.filter(
+        'clipboard_files': get_files_distinct_grouper_queryset().filter(
             in_clipboards__clipboarditem__clipboard__user=request.user
         ).distinct(),
         'paginator': paginator,

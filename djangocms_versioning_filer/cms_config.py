@@ -1,11 +1,13 @@
+from functools import lru_cache
+
 from django.apps import apps
 
 from cms.app_base import CMSAppConfig
 
-from djangocms_versioning.datastructures import VersionableItem
 import filer.settings
+from djangocms_versioning.datastructures import VersionableItem
 
-from .models import copy_file
+from .models import File, copy_file
 
 
 def versioning_filer_models_config(models):
@@ -19,6 +21,12 @@ def versioning_filer_models_config(models):
             copy_function=copy_file,
             grouper_selector_option_label=lambda obj, language: obj.name,
         )
+
+
+@lru_cache(maxsize=1)
+def file_versionable():
+    versioning_extension = apps.get_app_config('djangocms_versioning').cms_extension
+    return versioning_extension.versionables_by_content[File]
 
 
 class FilerVersioningCMSConfig(CMSAppConfig):
