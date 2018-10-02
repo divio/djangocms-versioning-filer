@@ -5,21 +5,36 @@ from django.apps import apps
 from cms.app_base import CMSAppConfig
 
 import filer.settings
-from djangocms_versioning.datastructures import VersionableItem
+from djangocms_versioning.datastructures import (
+    PolymorphicVersionableItem,
+    VersionableItem,
+)
 
 from .models import File, copy_file
 
 
-def versioning_filer_models_config(models):
-    for model in models:
-        # clear field cache, so that models inheriting from File
-        # notice the new File.grouper field
-        model._meta._get_fields_cache = {}
-        yield VersionableItem(
-            content_model=model,
-            grouper_field_name='grouper',
-            copy_function=copy_file,
-            grouper_selector_option_label=lambda obj, language: obj.name,
+def versioning_filer_model_config(model, item_class=VersionableItem, **params):
+    # clear field cache, so that models inheriting from File
+    # notice the new File.grouper field
+    model._meta._get_fields_cache = {}
+    return item_class(
+        content_model=model,
+        grouper_field_name='grouper',
+        copy_function=copy_file,
+        grouper_selector_option_label=lambda obj, language: obj.name,
+        **params
+    )
+
+
+def versioning_filer_models_config():
+    yield versioning_filer_model_config(File, PolymorphicVersionableItem)
+    for model_name in filer.settings.FILER_FILE_MODELS:
+        model = apps.get_model(model_name)
+        if model == File:
+            continue
+        yield versioning_filer_model_config(
+            model,
+            register_version_admin=False,
         )
 
 
@@ -31,6 +46,4 @@ def file_versionable():
 
 class FilerVersioningCMSConfig(CMSAppConfig):
     djangocms_versioning_enabled = True
-    versioning = list(versioning_filer_models_config(
-        apps.get_model(model) for model in filer.settings.FILER_FILE_MODELS
-    ))
+    versioning = list(versioning_filer_models_config())
