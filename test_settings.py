@@ -5,6 +5,7 @@ from tempfile import mkdtemp
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HELPER_SETTINGS = {
+    'ROOT_URLCONF': 'djangocms_versioning_filer.test_utils.urls',
     'TIME_ZONE': 'Europe/Zurich',
     'INSTALLED_APPS': [
         'easy_thumbnails',
