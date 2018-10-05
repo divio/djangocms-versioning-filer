@@ -7,35 +7,26 @@ from cms.app_base import CMSAppConfig
 import filer.settings
 from djangocms_versioning.datastructures import (
     PolymorphicVersionableItem,
-    VersionableItem,
+    VersionableItemAlias,
 )
 
 from .models import File, copy_file
 
 
-def versioning_filer_model_config(model, item_class=VersionableItem, **params):
-    # clear field cache, so that models inheriting from File
-    # notice the new File.grouper field
-    model._meta._get_fields_cache = {}
-    return item_class(
-        content_model=model,
+def versioning_filer_models_config():
+    file_config = PolymorphicVersionableItem(
+        content_model=File,
         grouper_field_name='grouper',
         copy_function=copy_file,
         grouper_selector_option_label=lambda obj, language: obj.name,
-        **params
     )
-
-
-def versioning_filer_models_config():
-    yield versioning_filer_model_config(File, PolymorphicVersionableItem)
+    yield file_config
     for model_name in filer.settings.FILER_FILE_MODELS:
         model = apps.get_model(model_name)
         if model == File:
             continue
-        yield versioning_filer_model_config(
-            model,
-            register_version_admin=False,
-        )
+        model._meta._get_fields_cache = {}
+        yield VersionableItemAlias(content_model=model, to=file_config)
 
 
 @lru_cache(maxsize=1)
