@@ -1,9 +1,10 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 
-from djangocms_versioning.helpers import override_default_manager
 from filer import views as filer_views
 from filer.models import File
+
+from djangocms_versioning.helpers import override_default_manager
 
 
 def canonical(request, uploaded_at, file_id):

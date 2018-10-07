@@ -5,6 +5,7 @@ from django.apps import apps
 from cms.app_base import CMSAppConfig
 
 import filer.settings
+
 from djangocms_versioning.datastructures import (
     PolymorphicVersionableItem,
     VersionableItemAlias,
