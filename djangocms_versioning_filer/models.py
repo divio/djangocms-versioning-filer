@@ -54,5 +54,18 @@ class NullIfEmptyStr(Func):
     arity = 1
 
 
-def copy_file(file_object):
-    pass
+def copy_file(original_file):
+    model = original_file.__class__
+    file_fields = {
+        field.name: getattr(original_file, field.name)
+        for field in model._meta.fields
+        if field.name not in ('id', 'file_ptr', 'file')
+    }
+    file_fields['file'] = original_file._copy_file(
+        model._meta.get_field('file').generate_filename(
+            original_file,
+            original_file.original_filename,
+        ),
+    )
+    new_file = model.objects.create(**file_fields)
+    return new_file
