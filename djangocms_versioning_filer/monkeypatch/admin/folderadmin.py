@@ -245,6 +245,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
 
 def has_delete_permission(self, request, obj=None):
     return False
+filer.admin.folderadmin.FolderAdmin.has_change_permission = has_delete_permission  # noqa: E305
 filer.admin.folderadmin.FolderAdmin.has_delete_permission = has_delete_permission  # noqa: E305
 
 
