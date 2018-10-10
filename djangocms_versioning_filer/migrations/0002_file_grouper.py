@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
         super(Migration, self).__init__(name, 'filer')
 
     dependencies = [
+        ('djangocms_versioning', '0010_version_proxies'),
         ('djangocms_versioning_filer', '0001_initial'),
         ('filer', '0010_auto_20180414_2058'),
     ]
