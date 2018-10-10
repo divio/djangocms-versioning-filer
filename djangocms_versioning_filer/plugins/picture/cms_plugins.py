@@ -2,17 +2,15 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from cms.plugin_pool import plugin_pool
-
 from djangocms_picture.cms_plugins import PicturePlugin as BasePicturePlugin
 
-from .models import OverridenPicture
+from .models import VersionedPicture
 
 
-class OverridenPictureForm(forms.ModelForm):
-    file_grouper = 
+class VersionedPictureForm(forms.ModelForm):
 
     class Meta:
-        model = OverridenPicture
+        model = VersionedPicture
         fields = '__all__'
         widgets = {
             'caption_text': forms.Textarea(attrs={'rows': 2}),
@@ -20,8 +18,8 @@ class OverridenPictureForm(forms.ModelForm):
 
 
 class PicturePlugin(BasePicturePlugin):
-    model = OverridenPicture
-    form = OverridenPictureForm
+    model = VersionedPicture
+    form = VersionedPictureForm
 
     fieldsets = [
         (None, {
