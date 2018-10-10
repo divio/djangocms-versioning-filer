@@ -1,4 +1,5 @@
 import filer
+import djangocms_file
 
 from ..models import get_files_distinct_grouper_queryset
 

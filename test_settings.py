@@ -10,9 +10,11 @@ HELPER_SETTINGS = {
     'INSTALLED_APPS': [
         'easy_thumbnails',
         'mptt',
+        'filer',
         'djangocms_versioning',
         'djangocms_versioning_filer',
-        'filer',
+        'djangocms_picture',
+        'djangocms_versioning_filer.plugins.picture',
     ],
     'MIGRATION_MODULES': {
         'sites': None,
@@ -26,6 +28,8 @@ HELPER_SETTINGS = {
         'filer': None,
         'djangocms_versioning_filer': None,
         'djangocms_versioning': None,
+        'djangocms_picture': None,
+        'djangocms_versioning_filer.plugins.picture': None,
     },
     'CMS_PERMISSION': True,
     'LANGUAGE_CODE': 'en',

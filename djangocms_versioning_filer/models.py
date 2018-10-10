@@ -15,7 +15,7 @@ class FileGrouper(models.Model):
         return self.name
 
     @cached_property
-    def published_file(self):
+    def file(self):
         return self.files.first()
 
     @cached_property
@@ -23,7 +23,7 @@ class FileGrouper(models.Model):
         return 'File grouper {} ({})'.format(
             self.pk,
             getattr(
-                self.published_file,
+                self.file,
                 'label',
                 'not published',
             )
