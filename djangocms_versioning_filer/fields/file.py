@@ -25,13 +25,15 @@ class AdminFileGrouperWidget(ForeignKeyRawIdWidget):
 
     def render(self, name, value, attrs=None):
         obj = self.obj_for_value(value)
+        if obj:
+            with nonversioned_manager(File):
+                file_obj = obj.file
+        else:
+            file_obj = None
         css_id = attrs.get('id', 'id_image_x')
         related_url = None
         if value:
             try:
-                grouper = FileGrouper.objects.get(pk=value)
-                with nonversioned_manager(File):
-                    file_obj = grouper.file
                 related_url = file_obj.logical_folder.get_admin_directory_listing_url_path()
             except Exception as e:
                 # catch exception and manage it. We can re-raise it for debugging
@@ -59,7 +61,7 @@ class AdminFileGrouperWidget(ForeignKeyRawIdWidget):
         context = {
             'hidden_input': hidden_input,
             'lookup_url': '%s%s' % (related_url, lookup_url),
-            'object': obj,
+            'object': file_obj,
             'lookup_name': name,
             'id': css_id,
             'admin_icon_delete': 'admin/img/icon-deletelink.svg',
