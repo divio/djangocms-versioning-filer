@@ -240,4 +240,11 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         ) or permissions.get("has_add_children_permission"),
     })
     return render(request, self.directory_listing_template, context)
+
+
+def has_delete_permission(self, request, obj=None):
+    return False
+filer.admin.folderadmin.FolderAdmin.has_change_permission = has_delete_permission  # noqa: E305
+filer.admin.folderadmin.FolderAdmin.has_delete_permission = has_delete_permission  # noqa: E305
+filer.admin.folderadmin.FolderAdmin.actions = ['resize_images']  # noqa: E305
 filer.admin.folderadmin.FolderAdmin.directory_listing = directory_listing  # noqa: E305

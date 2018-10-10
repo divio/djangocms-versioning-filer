@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 import filer
+from djangocms_versioning.models import Version
 from filer import settings as filer_settings
 from filer.models import Folder, Image
 from filer.utils.files import (
@@ -13,8 +14,6 @@ from filer.utils.files import (
     handle_upload,
 )
 from filer.utils.loader import load_model
-
-from djangocms_versioning.models import Version
 
 from ...models import (
     FileGrouper,
