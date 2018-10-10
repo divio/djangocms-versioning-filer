@@ -7,7 +7,6 @@ from django.core.files.base import ContentFile
 from cms.app_base import CMSAppConfig
 
 import filer.settings
-
 from djangocms_versioning.datastructures import (
     PolymorphicVersionableItem,
     VersionableItemAlias,
@@ -33,7 +32,7 @@ def on_file_publish(version):
         ).values_list('name', flat=True)
     else:
         path = []
-    path = path + [file_content.original_filename]
+    path = list(path) + [file_content.original_filename]
     file_content._file_data_changed_hint = False
     file_content.file = _move_file(file_content, os.path.join(*path))
     file_content.save()

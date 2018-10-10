@@ -78,7 +78,6 @@
                             <td class="column-action">
                                 {% if subfolder.file_type == "Folder" %}
                                     <a href="{% url 'admin:filer_folder_change' subfolder.id %}{% filer_admin_context_url_params %}" title="{% trans 'Change folder details' %}" class="action-button"><span class="fa fa-pencil"></span></a>
-                                    <a href="{{ subfolder.get_admin_delete_url }}{% filer_admin_context_url_params %}" class="action-button" title="{% trans 'Remove folder' %}"><span class="fa fa-trash"></span></a>
                                 {% endif %}
                             </td>
                         </tr>
@@ -141,7 +140,6 @@
                                     title="{% blocktrans with file.label as item_label %}Download '{{ item_label }}'{% endblocktrans %}" class="action-button"><span class="fa fa-download"></span></a>
                                 <a href="{{ file.grouper.get_absolute_url }}"
                                     title="{% blocktrans with file.label as item_label %}Manage '{{ item_label }}' versions{% endblocktrans %}" class="action-button"><span class="fa fa-pencil"></span></a>
-                                <a href="{{ file.get_admin_delete_url }}{% filer_admin_context_url_params %}" title="{% trans 'Remove file' %}" class="action-button"><span class="fa fa-trash"></span></a>
                             </td>
                         </tr>
                     {% endwith %}
