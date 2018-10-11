@@ -1,4 +1,3 @@
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Value
 from django.db.models.functions import Coalesce
 from django.forms.models import modelform_factory
@@ -80,11 +79,10 @@ def ajax_upload(request, folder_id=None):
             # Make sure Version.content_type uses File
             file_obj.__class__ = File
             Version.objects.create(
-                content_type=ContentType.objects.get_for_model(file_obj),
-                object_id=file_obj.pk,
+                content=file_obj,
                 created_by=request.user,
             )
-            file_obj.__class__ = con.get_real_instance_class()
+            file_obj.__class__ = file_obj.get_real_instance_class()
 
             # Try to generate thumbnails.
             if not file_obj.icons:
