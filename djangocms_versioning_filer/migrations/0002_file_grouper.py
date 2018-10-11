@@ -17,6 +17,10 @@ class Migration(migrations.Migration):
         ('filer', '0010_auto_20180414_2058'),
     ]
 
+    run_before = [
+        ('djangocms_versioning', '0012_create_version_numbers'),
+    ]
+
     operations = [
         migrations.AddField(
             model_name='file',
