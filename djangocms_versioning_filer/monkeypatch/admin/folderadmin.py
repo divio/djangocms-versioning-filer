@@ -245,5 +245,11 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
 def has_delete_permission(self, request, obj=None):
     return False
 filer.admin.folderadmin.FolderAdmin.has_delete_permission = has_delete_permission  # noqa: E305
+
+
+def _check_move_perms(self, request, files_queryset, folders_queryset):
+    return False
+filer.admin.folderadmin.FolderAdmin._check_move_perms = _check_move_perms  # noqa: E305
+
 filer.admin.folderadmin.FolderAdmin.actions = ['resize_images']  # noqa: E305
 filer.admin.folderadmin.FolderAdmin.directory_listing = directory_listing  # noqa: E305
