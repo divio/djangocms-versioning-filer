@@ -29,7 +29,7 @@ HELPER_SETTINGS = {
         'djangocms_versioning_filer': None,
         'djangocms_versioning': None,
         'djangocms_picture': None,
-        'djangocms_versioning_filer.plugins.picture': None,
+        'picture': None,
     },
     'CMS_PERMISSION': True,
     'LANGUAGE_CODE': 'en',
