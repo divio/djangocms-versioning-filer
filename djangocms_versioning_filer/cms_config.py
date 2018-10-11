@@ -79,5 +79,5 @@ class FilerVersioningCMSConfig(CMSAppConfig):
     djangocms_versioning_enabled = True
     versioning = list(versioning_filer_models_config())
     djangocms_moderation_enabled = True
-    moderated_models = [File]
+    moderated_models = [apps.get_model(model_name) for model_name in filer.settings.FILER_FILE_MODELS]
 
