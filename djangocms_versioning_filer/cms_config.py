@@ -78,3 +78,6 @@ def file_versionable():
 class FilerVersioningCMSConfig(CMSAppConfig):
     djangocms_versioning_enabled = True
     versioning = list(versioning_filer_models_config())
+    djangocms_moderation_enabled = True
+    moderated_models = [File]
+
