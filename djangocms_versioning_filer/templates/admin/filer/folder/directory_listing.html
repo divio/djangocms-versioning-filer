@@ -173,7 +173,11 @@
                     <div class="navigator-tools">
                         {% if not is_popup %}
                             <div class="actions-wrapper">
-                                <ul class="actions-separated-list"></ul>
+                                <ul class="actions-separated-list">
+                                    <li>
+                                        <a href="#" class="js-action-move" title="{% trans 'Move' %}"><span class="fa fa-cut"></span></a>
+                                    </li>
+                                </ul>
                                 <div class="filer-dropdown-container js-actions-menu">
                                     <a href="#" data-toggle="filer-dropdown" aria-expanded="false" class="nav-button nav-button-dots">
                                         <span class="fa fa-ellipsis-h"></span>

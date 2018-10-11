@@ -10,9 +10,9 @@ HELPER_SETTINGS = {
     'INSTALLED_APPS': [
         'easy_thumbnails',
         'mptt',
+        'djangocms_versioning_filer',
         'filer',
         'djangocms_versioning',
-        'djangocms_versioning_filer',
         'djangocms_picture',
         'djangocms_versioning_filer.plugins.picture',
     ],
