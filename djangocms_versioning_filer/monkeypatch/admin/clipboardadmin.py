@@ -15,6 +15,7 @@ from filer.utils.files import (
 )
 from filer.utils.loader import load_model
 
+from ...helpers import create_file_version
 from ...models import (
     FileGrouper,
     NullIfEmptyStr,
@@ -76,13 +77,7 @@ def ajax_upload(request, folder_id=None):
 
             file_obj.grouper = file_grouper
             file_obj.save()
-            # Make sure Version.content_type uses File
-            file_obj.__class__ = File
-            Version.objects.create(
-                content=file_obj,
-                created_by=request.user,
-            )
-            file_obj.__class__ = file_obj.get_real_instance_class()
+            create_file_version(file_obj, request.user)
 
             # Try to generate thumbnails.
             if not file_obj.icons:

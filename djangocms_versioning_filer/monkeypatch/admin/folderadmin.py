@@ -27,7 +27,8 @@ from filer.models import (
 )
 from filer.utils.loader import load_model
 
-from ...models import get_files_distinct_grouper_queryset
+from ...helpers import create_file_version
+from ...models import FileGrouper, get_files_distinct_grouper_queryset
 
 
 Image = load_model(filer.settings.FILER_IMAGE_MODEL)
@@ -251,5 +252,28 @@ def _check_move_perms(self, request, files_queryset, folders_queryset):
     return False
 filer.admin.folderadmin.FolderAdmin._check_move_perms = _check_move_perms  # noqa: E305
 
-filer.admin.folderadmin.FolderAdmin.actions = ['resize_images']  # noqa: E305
+
+def _copy_file(self, file_obj, destination, suffix, overwrite):
+    if overwrite:
+        # Not yet implemented as we have to find a portable (for different storage backends) way to overwrite files
+        raise NotImplementedError
+
+    # We are assuming here that we are operating on an already saved database objects with current database state available
+    filename = self._generate_new_filename(file_obj.file.name, suffix)
+
+    # Due to how inheritance works, we have to set both pk and id to None
+    file_obj.pk = None
+    file_obj.id = None
+    file_obj.save()
+    file_obj.folder = destination
+    file_obj._file_data_changed_hint = False  # no need to update size, sha1, etc.
+    file_obj.file = file_obj._copy_file(filename)
+    file_obj.original_filename = self._generate_new_filename(file_obj.original_filename, suffix)
+    file_obj.grouper = FileGrouper.objects.create()
+    file_obj.save()
+    # TODO save the user that used this copy action
+    create_file_version(file_obj, file_obj.owner)
+filer.admin.folderadmin.FolderAdmin._copy_file = _copy_file  # noqa: E305
+
+filer.admin.folderadmin.FolderAdmin.actions = ['copy_files_and_folders', 'resize_images']  # noqa: E305
 filer.admin.folderadmin.FolderAdmin.directory_listing = directory_listing  # noqa: E305
