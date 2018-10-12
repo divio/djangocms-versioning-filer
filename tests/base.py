@@ -24,7 +24,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
         )
 
     @staticmethod
-    def create_file(original_filename, content=''):
+    def create_file(original_filename, content='content'):
         file = django.core.files.base.ContentFile(content)
         file.name = original_filename
         return file

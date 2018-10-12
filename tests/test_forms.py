@@ -1,3 +1,6 @@
+import os
+
+from django.conf import settings
 from filer.admin.fileadmin import FileAdminChangeFrom
 from tests.base import BaseFilerVersioningTestCase
 
@@ -9,7 +12,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         new_file = self.create_file('image.jpg')
         form = FileAdminChangeFrom(
             instance=file_obj,
-            data={'file': new_file}
+            files={'file': new_file},
         )
 
         self.assertTrue(form.is_valid())
@@ -23,7 +26,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         new_file = self.create_file('new.jpg')
         form = FileAdminChangeFrom(
             instance=file_obj,
-            data={'file': new_file}
+            files={'file': new_file},
         )
 
         self.assertFalse(form.is_valid())
@@ -37,7 +40,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         new_file = self.create_file('file.txt')
         form = FileAdminChangeFrom(
             instance=file_obj,
-            data={'file': new_file}
+            files={'file': new_file},
         )
 
         self.assertTrue(form.is_valid())
@@ -51,7 +54,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         new_file = self.create_file('new.txt')
         form = FileAdminChangeFrom(
             instance=file_obj,
-            data={'file': new_file}
+            files={'file': new_file},
         )
 
         self.assertFalse(form.is_valid())
