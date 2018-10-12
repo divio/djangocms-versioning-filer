@@ -9,6 +9,7 @@ from django.db import models
 from django.template.loader import render_to_string
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
+
 from djangocms_versioning.helpers import nonversioned_manager
 from filer import settings as filer_settings
 from filer.models import File
@@ -16,6 +17,7 @@ from filer.utils.compatibility import truncate_words
 from filer.utils.model_label import get_model_label
 
 from ..models import FileGrouper
+
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +79,7 @@ class AdminFileGrouperWidget(ForeignKeyRawIdWidget):
         try:
             key = self.rel.get_related_field().name
             obj = self.rel.to._default_manager.get(**{key: value})
-        except:
+        except:  # noqa
             obj = None
         return obj
 
