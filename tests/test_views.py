@@ -96,11 +96,7 @@ class FilerFileAdminViewTests(BaseFilerVersioningTestCase):
             response,
             '<a href="#" class="js-action-copy" title="Copy"><span class="fa fa-copy"></span></a>',
         )
-        self.assertNotContains(
-            response,
-            '<a href="#" class="js-action-move" title="Move"><span class="fa fa-cut"></span></a>',
-        )
-        self.assertNotContains(
+        self.assertContains(
             response,
             '<a href="#" class="js-action-move" title="Move"><span class="fa fa-cut"></span></a>',
         )
