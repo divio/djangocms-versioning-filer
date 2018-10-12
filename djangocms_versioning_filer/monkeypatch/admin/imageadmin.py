@@ -9,6 +9,7 @@ def init(self, *args, **kwargs):
     if 'grouper' in self.fields:
         self.fields.pop('grouper')
 filer.admin.imageadmin.ImageAdminForm.__init__ = init  # noqa: E305
+
 filer.admin.imageadmin.ImageAdminForm.clean = clean(
     filer.admin.imageadmin.ImageAdminForm.clean
 )
