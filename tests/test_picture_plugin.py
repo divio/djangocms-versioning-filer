@@ -1,8 +1,8 @@
-from .base import BaseFilerVersioningTestCase
-
 from djangocms_versioning_filer.plugins.picture.cms_plugins import (
     VersionedPictureForm,
 )
+
+from .base import BaseFilerVersioningTestCase
 
 
 class FilerPicturePluginTestCase(BaseFilerVersioningTestCase):
