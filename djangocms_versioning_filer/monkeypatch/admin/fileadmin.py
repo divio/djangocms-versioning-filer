@@ -24,11 +24,20 @@ filer.admin.fileadmin.FileAdminChangeFrom.clean = clean(
     filer.admin.fileadmin.FileAdminChangeFrom.clean
 )
 
-def init(self, *args, **kwargs):
-    super(FileAdminChangeFrom, self).__init__(*args, **kwargs)
-    if 'grouper' in self.fields:
-        self.fields.pop('grouper')
-filer.admin.fileadmin.FileAdminChangeFrom.__init__ = init  # noqa: E305
+
+def init(func):
+    """
+    Override the FileAdminChangeFrom __init__ method
+    to pop grouper field form required fields
+    """
+    def inner(self, *args, **kwargs):
+        func(self, *args, **kwargs)
+        if 'grouper' in self.fields:
+            self.fields.pop('grouper')
+    return inner
+filer.admin.fileadmin.FileAdminChangeFrom.__init__ = init(
+    filer.admin.fileadmin.FileAdminChangeFrom.__init__
+)
 
 
 def has_delete_permission(self, request, obj=None):
