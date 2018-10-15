@@ -1,0 +1,1 @@
+default_app_config = 'djangocms_versioning_filer.plugins.picture.apps.FilerVersioningPicturePluginAppConfig'
