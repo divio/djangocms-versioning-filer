@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext as _
 
 import filer
+from filer.admin.fileadmin import FileAdminChangeFrom
 
 
 def clean(func):
@@ -19,6 +20,26 @@ def clean(func):
             self.add_error('file', _('Uploaded file must have the same name as current file'))
         return cleaned_data
     return inner
-filer.admin.fileadmin.ChangeFilenameFormMixin.clean = clean(
-    filer.admin.fileadmin.ChangeFilenameFormMixin.clean
+filer.admin.fileadmin.FileAdminChangeFrom.clean = clean(
+    filer.admin.fileadmin.FileAdminChangeFrom.clean
 )
+
+
+def init(func):
+    """
+    Override the FileAdminChangeFrom __init__ method
+    to pop grouper field form required fields
+    """
+    def inner(self, *args, **kwargs):
+        func(self, *args, **kwargs)
+        if 'grouper' in self.fields:
+            self.fields.pop('grouper')
+    return inner
+filer.admin.fileadmin.FileAdminChangeFrom.__init__ = init(
+    filer.admin.fileadmin.FileAdminChangeFrom.__init__
+)
+
+
+def has_delete_permission(self, request, obj=None):
+    return False
+filer.admin.fileadmin.FileAdmin.has_delete_permission = has_delete_permission  # noqa: E305
