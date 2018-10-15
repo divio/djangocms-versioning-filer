@@ -34,8 +34,9 @@ class BaseFilerVersioningTestCase(CMSTestCase):
 
         self.info = (File._meta.app_label, File._meta.model_name)
         self.folder = Folder.objects.create(name='folder')
+        self.folder2 = Folder.objects.create(name='folder2')
         self.folder_inside = Folder.objects.create(
-            name='folder',
+            name='folder_inside',
             parent=self.folder,
         )
         self.file_grouper = FileGrouper.objects.create()
