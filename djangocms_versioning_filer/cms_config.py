@@ -2,6 +2,7 @@ import os
 from functools import lru_cache
 
 from django.apps import apps
+from django.conf import settings
 from django.core.files.base import ContentFile
 
 from cms.app_base import CMSAppConfig
@@ -78,3 +79,6 @@ def file_versionable():
 class FilerVersioningCMSConfig(CMSAppConfig):
     djangocms_versioning_enabled = True
     versioning = list(versioning_filer_models_config())
+    djangocms_moderation_enabled = getattr(settings, 'MODERATION_FILER_ENABLED', True)
+    moderated_models = [apps.get_model(model_name) for model_name in filer.settings.FILER_FILE_MODELS]
+
