@@ -5,9 +5,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 import filer
-from djangocms_versioning.models import Version
 from filer import settings as filer_settings
-from filer.models import File, Folder, Image
+from filer.models import Folder, Image
 from filer.utils.files import (
     UploadException,
     handle_request_files_upload,

@@ -1,8 +1,6 @@
-import os
-
-from django.conf import settings
 from filer.admin.fileadmin import FileAdminChangeFrom
-from tests.base import BaseFilerVersioningTestCase
+
+from .base import BaseFilerVersioningTestCase
 
 
 class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
