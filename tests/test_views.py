@@ -3,6 +3,10 @@ from django.urls import reverse
 from djangocms_versioning.models import Version
 from filer.models import Folder
 
+from filer.models import Folder
+
+from djangocms_versioning_filer.models import FileGrouper
+
 from .base import BaseFilerVersioningTestCase
 
 
@@ -226,3 +230,29 @@ class FilerFolderAdminViewTests(BaseFilerVersioningTestCase):
         self.assertIn(file_obj, folder.files)
         file = open(folder.files.first().file.path)
         self.assertEqual(file.readline(), 'data')
+
+    def test_canonical_view(self):
+        with self.login_user_context(self.superuser):
+            # testing published file
+            response = self.client.get(self.file.canonical_url)
+        self.assertRedirects(response, self.file.url)
+
+        draft_file_in_the_same_grouper = self.create_file_obj(
+            original_filename='test-1.pdf',
+            folder=self.folder,
+            grouper=self.file_grouper,
+            publish=False,
+        )
+        with self.login_user_context(self.superuser):
+            response = self.client.get(draft_file_in_the_same_grouper.canonical_url)
+        self.assertRedirects(response, draft_file_in_the_same_grouper.url)
+
+        draft_file = self.create_file_obj(
+            original_filename='test-1.pdf',
+            folder=Folder.objects.create(name='folder test 55'),
+            grouper=FileGrouper.objects.create(),
+            publish=False,
+        )
+        with self.login_user_context(self.superuser):
+            response = self.client.get(draft_file.canonical_url)
+        self.assertRedirects(response, draft_file.url)

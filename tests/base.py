@@ -60,7 +60,16 @@ class BaseFilerVersioningTestCase(CMSTestCase):
         file.name = original_filename
         return file
 
-    def create_file_obj(self, original_filename, file=None, folder=None, publish=True, content='data', **kwargs):
+    def create_file_obj(
+        self,
+        original_filename,
+        file=None,
+        folder=None,
+        publish=True,
+        content="data",
+        is_public=True,
+        **kwargs
+    ):
         if file is None:
             file = self.create_file(original_filename, content)
 
@@ -73,7 +82,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
                 break
 
         file_obj = FileSubClass.objects.create(
-            is_public=False,
+            is_public=is_public,
             original_filename=original_filename,
             file=file,
             folder=folder,
