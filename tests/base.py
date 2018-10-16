@@ -1,5 +1,9 @@
+import os
+
 import django
 import django.core.files
+from django.conf import settings
+from django.core.files import File as DjangoFile
 
 from cms.api import create_page
 from cms.models import Placeholder
@@ -7,8 +11,10 @@ from cms.test_utils.testcases import CMSTestCase
 
 import filer
 from djangocms_versioning.constants import DRAFT
+from djangocms_versioning.helpers import nonversioned_manager
 from djangocms_versioning.models import Version
 from filer.models import File, Folder
+from filer.tests.helpers import create_image
 from filer.utils.loader import load_model
 
 from djangocms_versioning_filer.helpers import create_file_version
@@ -29,8 +35,8 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             site=None,
             created_by=self.superuser,
         )
-        page_draft_version = Version.objects.filter_by_grouper(self.page).filter(state=DRAFT).first()
-        self.placeholder = Placeholder.objects.get_for_obj(page_draft_version.content).get(slot='content')
+        self.page_draft_version = Version.objects.filter_by_grouper(self.page).filter(state=DRAFT).first()
+        self.placeholder = Placeholder.objects.get_for_obj(self.page_draft_version.content).get(slot='content')
 
         self.info = (File._meta.app_label, File._meta.model_name)
         self.folder = Folder.objects.create(name='folder')
@@ -46,8 +52,9 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             grouper=self.file_grouper,
             publish=True,
         )
+
         self.image_grouper = FileGrouper.objects.create()
-        self.image = self.create_file_obj(
+        self.image = self.create_image_obj(
             original_filename='test-image.jpg',
             folder=self.folder,
             grouper=self.image_grouper,
@@ -70,11 +77,11 @@ class BaseFilerVersioningTestCase(CMSTestCase):
         is_public=True,
         **kwargs
     ):
-        if file is None:
-            file = self.create_file(original_filename, content)
-
         if not kwargs.get('created_by'):
             kwargs['owner'] = self.superuser
+
+        if file is None:
+            file = self.create_file(original_filename, content)
 
         for filer_class in filer.settings.FILER_FILE_MODELS:
             FileSubClass = load_model(filer_class)
@@ -88,9 +95,21 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             folder=folder,
             **kwargs
         )
-
         version = create_file_version(file_obj, kwargs['owner'])
         if publish:
             version.publish(kwargs['owner'])
+            with nonversioned_manager(File):
+                file_obj.refresh_from_db()
 
         return file_obj
+
+    def create_image_obj(self, original_filename, **kwargs):
+        img = create_image()
+        filename = os.path.join(settings.FILE_UPLOAD_TEMP_DIR, original_filename)
+        img.save(filename, 'JPEG')
+
+        return self.create_file_obj(
+            original_filename=original_filename,
+            file=DjangoFile(open(filename, 'rb'), name=original_filename),
+            **kwargs,
+        )
