@@ -258,7 +258,8 @@ def _copy_file(self, file_obj, destination, suffix, overwrite):
         # Not yet implemented as we have to find a portable (for different storage backends) way to overwrite files
         raise NotImplementedError
 
-    # We are assuming here that we are operating on an already saved database objects with current database state available
+    # We are assuming here that we are operating on an already saved database
+    # objects with current database state available
     filename = self._generate_new_filename(file_obj.file.name, suffix)
 
     # Due to how inheritance works, we have to set both pk and id to None

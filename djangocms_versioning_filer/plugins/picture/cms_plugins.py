@@ -2,6 +2,7 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from cms.plugin_pool import plugin_pool
+
 from djangocms_picture.cms_plugins import PicturePlugin as BasePicturePlugin
 
 from .models import VersionedPicture

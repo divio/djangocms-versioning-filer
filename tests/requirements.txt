@@ -2,5 +2,9 @@ coverage
 djangocms_helper
 flake8
 isort
+djangocms_file
+djangocms_picture
+djangocms_audio
+djangocms_video
 https://github.com/divio/djangocms-versioning/archive/master.zip
 https://github.com/FidelityInternational/django-filer/archive/develop.zip

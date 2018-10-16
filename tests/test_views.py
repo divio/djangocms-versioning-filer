@@ -1,6 +1,6 @@
 from django.urls import reverse
 
-from tests.base import BaseFilerVersioningTestCase
+from .base import BaseFilerVersioningTestCase
 
 
 class FilerFileAdminViewTests(BaseFilerVersioningTestCase):
@@ -30,9 +30,9 @@ class FilerFileAdminViewTests(BaseFilerVersioningTestCase):
         )
         self.assertNotContains(
             response,
-            '<a href="#" class="js-action-copy" title="Copy"><span class="fa fa-copy"></span></a>',
+            '<a href="#" class="js-action-move" title="Move"><span class="fa fa-cut"></span></a>',
         )
         self.assertContains(
             response,
-            '<a href="#" class="js-action-move" title="Move"><span class="fa fa-cut"></span></a>',
+            '<a href="#" class="js-action-copy" title="Copy"><span class="fa fa-copy"></span></a>',
         )
