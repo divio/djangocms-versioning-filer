@@ -1,6 +1,4 @@
 {
     "package-name": "djangocms-versioning-filer",
-    "installed-apps": [
-        "djangocms_versioning_filer"
-    ]
+    "installed-apps": []
 }
