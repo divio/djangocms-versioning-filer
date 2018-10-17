@@ -102,6 +102,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             original_filename=original_filename,
             file=file,
             folder=folder,
+            grouper=grouper,
             **kwargs
         )
         version = create_file_version(file_obj, kwargs['owner'])
