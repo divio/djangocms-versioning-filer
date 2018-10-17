@@ -1,16 +1,17 @@
 from django.contrib.admin import helpers
 from django.urls import reverse
-from djangocms_versioning.models import Version
-from filer.models import Folder
 
-from filer.models import Folder
+from djangocms_versioning.constants import DRAFT, PUBLISHED
+from djangocms_versioning.helpers import nonversioned_manager
+from djangocms_versioning.models import Version
+from filer.models import File, Folder
 
 from djangocms_versioning_filer.models import FileGrouper
 
 from .base import BaseFilerVersioningTestCase
 
 
-class FilerFolderAdminViewTests(BaseFilerVersioningTestCase):
+class FilerViewTests(BaseFilerVersioningTestCase):
 
     def test_not_allow_user_delete_file(self):
         with self.login_user_context(self.superuser):
@@ -256,3 +257,86 @@ class FilerFolderAdminViewTests(BaseFilerVersioningTestCase):
         with self.login_user_context(self.superuser):
             response = self.client.get(draft_file.canonical_url)
         self.assertRedirects(response, draft_file.url)
+
+    def test_ajax_upload_clipboardadmin(self):
+        file = self.create_file('test2.pdf')
+        same_file_in_other_folder_grouper = FileGrouper.objects.create()
+        same_file_in_other_folder = self.create_file_obj(
+            original_filename='test2.pdf',
+            folder=Folder.objects.create(),
+            grouper=same_file_in_other_folder_grouper,
+            publish=True,
+        )
+        self.assertEquals(FileGrouper.objects.count(), 3)
+
+        with self.login_user_context(self.superuser):
+            self.client.post(
+                reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
+                data={'file': file},
+            )
+
+        self.assertEquals(FileGrouper.objects.count(), 4)
+        with nonversioned_manager(File):
+            files = self.folder.files.all()
+        new_file = files.latest('pk')
+        new_file_grouper = FileGrouper.objects.latest('pk')
+        self.assertEquals(new_file.label, 'test2.pdf')
+        self.assertEquals(new_file.grouper, new_file_grouper)
+        versions = Version.objects.filter_by_grouper(new_file_grouper)
+        self.assertEquals(versions.count(), 1)
+        self.assertEquals(versions[0].state, DRAFT)
+
+        # Checking existing in self.folder file
+        self.assertEquals(self.file.label, 'test.pdf')
+        self.assertEquals(self.file.grouper, self.file_grouper)
+        versions = Version.objects.filter_by_grouper(self.file_grouper)
+        self.assertEquals(versions.count(), 1)
+        self.assertEquals(versions[0].state, PUBLISHED)
+
+        # Checking file in diffrent folder with the same name as newly created file
+        self.assertEquals(same_file_in_other_folder.label, 'test2.pdf')
+        self.assertEquals(same_file_in_other_folder.grouper, same_file_in_other_folder_grouper)
+        versions = Version.objects.filter_by_grouper(same_file_in_other_folder_grouper)
+        self.assertEquals(versions.count(), 1)
+        self.assertEquals(versions[0].state, PUBLISHED)
+
+    def test_ajax_upload_clipboardadmin_same_name_as_existing_file(self):
+        file = self.create_file('test.pdf')
+        self.assertEquals(FileGrouper.objects.count(), 2)
+        with self.login_user_context(self.superuser):
+            self.client.post(
+                reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
+                data={'file': file},
+            )
+
+        self.assertEquals(FileGrouper.objects.count(), 2)
+
+        with nonversioned_manager(File):
+            files = self.folder.files.all()
+        self.assertEquals(files.count(), 3)
+        self.assertEquals(self.file.label, 'test.pdf')
+        self.assertEquals(self.file.grouper, self.file_grouper)
+
+        versions = Version.objects.filter_by_grouper(self.file_grouper)
+        self.assertEquals(versions.count(), 2)
+        self.assertEquals(versions[0].state, PUBLISHED)
+        self.assertEquals(versions[0].content, self.file)
+        self.assertEquals(versions[1].state, DRAFT)
+        self.assertEquals(versions[1].content, files.latest('pk'))
+
+    def test_ajax_upload_clipboardadmin_for_image_file(self):
+        file = self.create_image('circles.jpg')
+        self.assertEquals(FileGrouper.objects.count(), 2)
+        with self.login_user_context(self.superuser):
+            self.client.post(
+                reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
+                data={'file': file},
+            )
+
+        self.assertEquals(FileGrouper.objects.count(), 3)
+
+        with nonversioned_manager(File):
+            files = self.folder.files.all()
+        new_file = files.latest('pk')
+        self.assertEquals(new_file.label, 'circles.jpg')
+        self.assertEquals(new_file.grouper, FileGrouper.objects.latest('pk'))
