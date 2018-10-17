@@ -6,8 +6,8 @@ from .base import BaseFilerVersioningTestCase
 class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
 
     def test_upload_image_with_same_name(self):
-        file_obj = self.create_file_obj('image.jpg', publish=False)
-        new_file = self.create_file('image.jpg')
+        file_obj = self.create_image_obj('image.jpg', publish=False)
+        new_file = self.create_image('image.jpg')
         form = FileAdminChangeFrom(
             instance=file_obj,
             files={'file': new_file},

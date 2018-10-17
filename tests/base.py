@@ -22,6 +22,7 @@ from djangocms_versioning_filer.models import FileGrouper
 
 
 class BaseFilerVersioningTestCase(CMSTestCase):
+
     def setUp(self):
         self.language = 'en'
         self.superuser = self.get_superuser()
@@ -61,11 +62,17 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             publish=True,
         )
 
-    @staticmethod
-    def create_file(original_filename, content='content'):
-        file = django.core.files.base.ContentFile(content)
-        file.name = original_filename
-        return file
+    def create_file(self, original_filename, content='content'):
+        filename = os.path.join(settings.FILE_UPLOAD_TEMP_DIR, original_filename)
+        with open(filename, 'w') as f:
+            f.write(content)
+        return DjangoFile(open(filename, 'rb'), name=original_filename)
+
+    def create_image(self, original_filename):
+        filename = os.path.join(settings.FILE_UPLOAD_TEMP_DIR, original_filename)
+        img = create_image()
+        img.save(filename, 'JPEG')
+        return DjangoFile(open(filename, 'rb'), name=original_filename)
 
     def create_file_obj(
         self,
@@ -104,12 +111,8 @@ class BaseFilerVersioningTestCase(CMSTestCase):
         return file_obj
 
     def create_image_obj(self, original_filename, **kwargs):
-        img = create_image()
-        filename = os.path.join(settings.FILE_UPLOAD_TEMP_DIR, original_filename)
-        img.save(filename, 'JPEG')
-
         return self.create_file_obj(
-            original_filename=original_filename,
-            file=DjangoFile(open(filename, 'rb'), name=original_filename),
+            original_filename,
+            file=self.create_image(original_filename),
             **kwargs,
         )
