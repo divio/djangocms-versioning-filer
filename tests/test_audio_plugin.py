@@ -85,3 +85,48 @@ class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
             response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
         self.assertContains(response, draft_file.url)
         self.assertContains(response, audio_track_file_obj.url)
+
+    def test_audio_folder_plugin(self):
+        audio_player_plugin = add_plugin(
+            self.placeholder,
+            'AudioPlayerPlugin',
+            language=self.language,
+            template='default',
+        )
+        add_plugin(
+            self.placeholder,
+            'AudioFolderPlugin',
+            language=self.language,
+            target=audio_player_plugin,
+            audio_folder=self.folder,
+        )
+        file_grouper_1 = FileGrouper.objects.create()
+        published_nonaudio_file = self.create_file_obj(
+            original_filename='published.txt',
+            folder=self.folder,
+            grouper=file_grouper_1,
+            publish=True,
+        )
+
+        draft_file = self.create_file_obj(
+            original_filename='draft.mp3',
+            folder=self.folder,
+            grouper=self.audio_file_grouper,
+            publish=False,
+        )
+
+        file_grouper_2 = FileGrouper.objects.create()
+        draft_file_2 = self.create_file_obj(
+            original_filename='draft2.mp3',
+            folder=self.folder,
+            grouper=file_grouper_2,
+            publish=False,
+        )
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
+
+        self.assertContains(response, draft_file.url)
+        self.assertContains(response, draft_file_2.url)
+        self.assertNotContains(response, published_nonaudio_file.url)
+        self.assertNotContains(response, self.audio_file.url)
