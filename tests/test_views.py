@@ -212,26 +212,6 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Folder with this name already exists.')
 
-    def test_not_allow_upload_duplicate_file(self):
-        folder = Folder.objects.create(name='folder')
-        file_obj = self.create_file_obj(
-            original_filename='file.txt',
-            folder=folder,
-        )
-        new_file = self.create_file('file.txt', 'new custom content.')
-
-        with self.login_user_context(self.superuser):
-            response = self.client.post(
-                reverse('admin:filer-directory_listing', kwargs={'folder_id': folder.id}),
-                files={'file': new_file},
-            )
-
-        self.assertEquals(response.status_code, 200)
-        folder.refresh_from_db()
-        self.assertIn(file_obj, folder.files)
-        file = open(folder.files.first().file.path)
-        self.assertEqual(file.readline(), 'data')
-
     def test_canonical_view(self):
         with self.login_user_context(self.superuser):
             # testing published file
