@@ -1,4 +1,5 @@
 from filer.admin.fileadmin import FileAdminChangeFrom
+from filer.admin.imageadmin import ImageAdminForm
 
 from .base import BaseFilerVersioningTestCase
 
@@ -9,7 +10,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         file_obj = self.create_image_obj('image.jpg', publish=False)
         new_file = self.create_image('image.jpg')
 
-        form = FileAdminChangeFrom(
+        form = ImageAdminForm(
             data={'is_public': file_obj.is_public},
             files={'file': new_file},
             instance=file_obj,
@@ -24,7 +25,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
     def test_upload_image_with_different_name(self):
         file_obj = self.create_image_obj('image.jpg', publish=False)
         new_file = self.create_file('new.jpg')
-        form = FileAdminChangeFrom(
+        form = ImageAdminForm(
             instance=file_obj,
             files={'file': new_file},
         )
