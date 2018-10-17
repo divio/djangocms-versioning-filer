@@ -60,6 +60,10 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             publish=True,
         )
 
+    def tearDown(self):
+        for f in File._base_manager.all():
+            f.delete()
+
     def create_file(self, original_filename, content='content'):
         filename = os.path.join(settings.FILE_UPLOAD_TEMP_DIR, original_filename)
         with open(filename, 'w') as f:
