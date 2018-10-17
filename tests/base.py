@@ -1,7 +1,5 @@
 import os
 
-import django
-import django.core.files
 from django.conf import settings
 from django.core.files import File as DjangoFile
 
@@ -82,6 +80,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
         publish=True,
         content="data",
         is_public=True,
+        grouper=None,
         **kwargs
     ):
         if not kwargs.get('created_by'):
@@ -89,6 +88,9 @@ class BaseFilerVersioningTestCase(CMSTestCase):
 
         if file is None:
             file = self.create_file(original_filename, content)
+
+        if grouper is None:
+            grouper = FileGrouper.objects.create()
 
         for filer_class in filer.settings.FILER_FILE_MODELS:
             FileSubClass = load_model(filer_class)
