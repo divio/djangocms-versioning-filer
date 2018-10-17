@@ -8,9 +8,11 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
     def test_upload_image_with_same_name(self):
         file_obj = self.create_image_obj('image.jpg', publish=False)
         new_file = self.create_image('image.jpg')
+
         form = FileAdminChangeFrom(
-            instance=file_obj,
+            data={'is_public': file_obj.is_public},
             files={'file': new_file},
+            instance=file_obj,
         )
 
         self.assertTrue(form.is_valid())
@@ -38,6 +40,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         new_file = self.create_file('file.txt')
         form = FileAdminChangeFrom(
             instance=file_obj,
+            data={'is_public': file_obj.is_public},
             files={'file': new_file},
         )
 
