@@ -320,3 +320,70 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         new_file = files.latest('pk')
         self.assertEquals(new_file.label, 'circles.jpg')
         self.assertEquals(new_file.grouper, FileGrouper.objects.latest('pk'))
+
+    def test_folderadmin_file_list(self):
+        folder = Folder.objects.create(name='test folder 9')
+        file_grouper_1 = FileGrouper.objects.create()
+        published_file = self.create_file_obj(
+            original_filename='published.txt',
+            folder=folder,
+            grouper=file_grouper_1,
+            publish=True,
+        )
+
+        draft_file = self.create_file_obj(
+            original_filename='draft.txt',
+            folder=folder,
+            grouper=file_grouper_1,
+            publish=False,
+        )
+
+        file_grouper_2 = FileGrouper.objects.create()
+        draft_file_2 = self.create_file_obj(
+            original_filename='draft2.txt',
+            folder=folder,
+            grouper=file_grouper_2,
+            publish=False,
+        )
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                reverse('admin:filer-directory_listing', kwargs={'folder_id': folder.pk})
+            )
+
+        self.assertContains(response, draft_file.label)
+        self.assertContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
+
+    def test_folderadmin_file_list_for_unsorted_files_folder(self):
+        file_grouper_1 = FileGrouper.objects.create()
+        published_file = self.create_file_obj(
+            original_filename='published.txt',
+            folder=None,
+            grouper=file_grouper_1,
+            publish=True,
+        )
+
+        draft_file = self.create_file_obj(
+            original_filename='draft.txt',
+            folder=None,
+            grouper=file_grouper_1,
+            publish=False,
+        )
+
+        file_grouper_2 = FileGrouper.objects.create()
+        draft_file_2 = self.create_file_obj(
+            original_filename='draft2.txt',
+            folder=None,
+            grouper=file_grouper_2,
+            publish=False,
+        )
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                reverse('admin:filer-directory_listing-unfiled_images')
+            )
+
+        self.assertContains(response, draft_file.label)
+        self.assertContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
