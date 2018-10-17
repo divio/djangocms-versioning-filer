@@ -1,6 +1,8 @@
 from django.contrib.admin import helpers
 from django.urls import reverse
 
+from cms.utils.urlutils import add_url_parameters
+
 from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.helpers import nonversioned_manager
 from djangocms_versioning.models import Version
@@ -321,7 +323,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertEquals(new_file.label, 'circles.jpg')
         self.assertEquals(new_file.grouper, FileGrouper.objects.latest('pk'))
 
-    def test_folderadmin_file_list(self):
+    def test_folderadmin_directory_listing(self):
         folder = Folder.objects.create(name='test folder 9')
         file_grouper_1 = FileGrouper.objects.create()
         published_file = self.create_file_obj(
@@ -355,7 +357,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertContains(response, draft_file_2.label)
         self.assertNotContains(response, published_file.label)
 
-    def test_folderadmin_file_list_for_unsorted_files_folder(self):
+    def test_folderadmin_directory_listing_unfiled_images(self):
         file_grouper_1 = FileGrouper.objects.create()
         published_file = self.create_file_obj(
             original_filename='published.txt',
@@ -387,3 +389,120 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertContains(response, draft_file.label)
         self.assertContains(response, draft_file_2.label)
         self.assertNotContains(response, published_file.label)
+
+    def test_folderadmin_directory_listing_files_with_missing_data(self):
+        file_grouper_1 = FileGrouper.objects.create()
+        published_file = self.create_file_obj(
+            original_filename='published.txt',
+            folder=None,
+            grouper=file_grouper_1,
+            publish=True,
+            has_all_mandatory_data=False,
+        )
+
+        draft_file = self.create_file_obj(
+            original_filename='draft.txt',
+            folder=None,
+            grouper=file_grouper_1,
+            publish=False,
+            has_all_mandatory_data=False,
+        )
+
+        file_grouper_2 = FileGrouper.objects.create()
+        draft_file_2 = self.create_file_obj(
+            original_filename='draft2.txt',
+            folder=None,
+            grouper=file_grouper_2,
+            publish=False,
+            has_all_mandatory_data=False,
+        )
+
+        file_grouper_3 = FileGrouper.objects.create()
+        file_with_all_mandatory_data = self.create_file_obj(
+            original_filename='mandatory_data.docx',
+            folder=None,
+            grouper=file_grouper_3,
+            has_all_mandatory_data=True,
+        )
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                reverse('admin:filer-directory_listing-images_with_missing_data')
+            )
+
+        self.assertContains(response, draft_file.label)
+        self.assertContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
+        self.assertNotContains(response, file_with_all_mandatory_data.label)
+
+    def test_folderadmin_directory_listing_file_search(self):
+        folder = Folder.objects.create(name='test folder 9')
+        file_grouper_1 = FileGrouper.objects.create()
+        published_file = self.create_file_obj(
+            original_filename='draft1.txt',
+            folder=folder,
+            grouper=file_grouper_1,
+            publish=True,
+        )
+
+        draft_file = self.create_file_obj(
+            original_filename='draft2.txt',
+            folder=folder,
+            grouper=file_grouper_1,
+            publish=False,
+        )
+
+        draft_file_2 = self.create_file_obj(
+            original_filename='draft3.txt',
+            folder=folder,
+            publish=False,
+        )
+
+        draft_file_3 = self.create_file_obj(
+            original_filename='shape.txt',
+            folder=folder,
+            publish=False,
+        )
+
+        draft_file_3 = self.create_file_obj(
+            original_filename='shape.txt',
+            folder=folder,
+            publish=False,
+        )
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                add_url_parameters(
+                    reverse('admin:filer-directory_listing', kwargs={'folder_id': self.folder.pk}),
+                    q='draft',
+                )
+            )
+        self.assertContains(response, draft_file.label)
+        self.assertContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
+        self.assertNotContains(response, draft_file_3.label)
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                add_url_parameters(
+                    reverse('admin:filer-directory_listing', kwargs={'folder_id': folder.pk}),
+                    q='draft',
+                )
+            )
+        self.assertContains(response, draft_file.label)
+        self.assertContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
+        self.assertNotContains(response, draft_file_3.label)
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                add_url_parameters(
+                    reverse('admin:filer-directory_listing', kwargs={'folder_id': self.folder.pk}),
+                    q='draft',
+                    limit_search_to_folder='on',
+                )
+            )
+        self.assertNotContains(response, draft_file.label)
+        self.assertNotContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
+        self.assertNotContains(response, draft_file_3.label)
