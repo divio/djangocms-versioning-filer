@@ -1,4 +1,5 @@
 from filer.admin.fileadmin import FileAdminChangeFrom
+from filer.admin.imageadmin import ImageAdminForm
 
 from .base import BaseFilerVersioningTestCase
 
@@ -6,11 +7,13 @@ from .base import BaseFilerVersioningTestCase
 class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
 
     def test_upload_image_with_same_name(self):
-        file_obj = self.create_file_obj('image.jpg', publish=False)
-        new_file = self.create_file('image.jpg')
-        form = FileAdminChangeFrom(
-            instance=file_obj,
+        file_obj = self.create_image_obj('image.jpg', publish=False)
+        new_file = self.create_image('image.jpg')
+
+        form = ImageAdminForm(
+            data={'is_public': file_obj.is_public},
             files={'file': new_file},
+            instance=file_obj,
         )
 
         self.assertTrue(form.is_valid())
@@ -20,9 +23,9 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         self.assertTrue(storage.exists(file_obj.file.name))
 
     def test_upload_image_with_different_name(self):
-        file_obj = self.create_file_obj('image.jpg', publish=False)
+        file_obj = self.create_image_obj('image.jpg', publish=False)
         new_file = self.create_file('new.jpg')
-        form = FileAdminChangeFrom(
+        form = ImageAdminForm(
             instance=file_obj,
             files={'file': new_file},
         )
@@ -38,6 +41,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         new_file = self.create_file('file.txt')
         form = FileAdminChangeFrom(
             instance=file_obj,
+            data={'is_public': file_obj.is_public},
             files={'file': new_file},
         )
 

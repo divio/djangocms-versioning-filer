@@ -1,12 +1,19 @@
 from django.contrib.admin import helpers
 from django.urls import reverse
+
+from cms.utils.urlutils import add_url_parameters
+
+from djangocms_versioning.constants import DRAFT, PUBLISHED
+from djangocms_versioning.helpers import nonversioned_manager
 from djangocms_versioning.models import Version
-from filer.models import Folder
+from filer.models import File, Folder
+
+from djangocms_versioning_filer.models import FileGrouper
 
 from .base import BaseFilerVersioningTestCase
 
 
-class FilerFolderAdminViewTests(BaseFilerVersioningTestCase):
+class FilerViewTests(BaseFilerVersioningTestCase):
 
     def test_not_allow_user_delete_file(self):
         with self.login_user_context(self.superuser):
@@ -207,22 +214,295 @@ class FilerFolderAdminViewTests(BaseFilerVersioningTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Folder with this name already exists.')
 
-    def test_not_allow_upload_duplicate_file(self):
-        folder = Folder.objects.create(name='folder')
-        file_obj = self.create_file_obj(
-            original_filename='file.txt',
-            folder=folder,
+    def test_canonical_view(self):
+        with self.login_user_context(self.superuser):
+            # testing published file
+            response = self.client.get(self.file.canonical_url)
+        self.assertRedirects(response, self.file.url)
+
+        draft_file_in_the_same_grouper = self.create_file_obj(
+            original_filename='test-1.pdf',
+            folder=self.folder,
+            grouper=self.file_grouper,
+            publish=False,
         )
-        new_file = self.create_file('file.txt', 'new custom content.')
+        with self.login_user_context(self.superuser):
+            response = self.client.get(draft_file_in_the_same_grouper.canonical_url)
+        self.assertRedirects(response, draft_file_in_the_same_grouper.url)
+
+        draft_file = self.create_file_obj(
+            original_filename='test-1.pdf',
+            folder=Folder.objects.create(name='folder test 55'),
+            grouper=FileGrouper.objects.create(),
+            publish=False,
+        )
+        with self.login_user_context(self.superuser):
+            response = self.client.get(draft_file.canonical_url)
+        self.assertRedirects(response, draft_file.url)
+
+    def test_ajax_upload_clipboardadmin(self):
+        file = self.create_file('test2.pdf')
+        same_file_in_other_folder_grouper = FileGrouper.objects.create()
+        same_file_in_other_folder = self.create_file_obj(
+            original_filename='test2.pdf',
+            folder=Folder.objects.create(),
+            grouper=same_file_in_other_folder_grouper,
+            publish=True,
+        )
+        self.assertEquals(FileGrouper.objects.count(), 3)
 
         with self.login_user_context(self.superuser):
-            response = self.client.post(
-                reverse('admin:filer-directory_listing', kwargs={'folder_id': folder.id}),
-                files={'file': new_file},
+            self.client.post(
+                reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
+                data={'file': file},
             )
 
-        self.assertEquals(response.status_code, 200)
-        folder.refresh_from_db()
-        self.assertIn(file_obj, folder.files)
-        file = open(folder.files.first().file.path)
-        self.assertEqual(file.readline(), 'data')
+        self.assertEquals(FileGrouper.objects.count(), 4)
+        with nonversioned_manager(File):
+            files = self.folder.files.all()
+        new_file = files.latest('pk')
+        new_file_grouper = FileGrouper.objects.latest('pk')
+        self.assertEquals(new_file.label, 'test2.pdf')
+        self.assertEquals(new_file.grouper, new_file_grouper)
+        versions = Version.objects.filter_by_grouper(new_file_grouper)
+        self.assertEquals(versions.count(), 1)
+        self.assertEquals(versions[0].state, DRAFT)
+
+        # Checking existing in self.folder file
+        self.assertEquals(self.file.label, 'test.pdf')
+        self.assertEquals(self.file.grouper, self.file_grouper)
+        versions = Version.objects.filter_by_grouper(self.file_grouper)
+        self.assertEquals(versions.count(), 1)
+        self.assertEquals(versions[0].state, PUBLISHED)
+
+        # Checking file in diffrent folder with the same name as newly created file
+        self.assertEquals(same_file_in_other_folder.label, 'test2.pdf')
+        self.assertEquals(same_file_in_other_folder.grouper, same_file_in_other_folder_grouper)
+        versions = Version.objects.filter_by_grouper(same_file_in_other_folder_grouper)
+        self.assertEquals(versions.count(), 1)
+        self.assertEquals(versions[0].state, PUBLISHED)
+
+    def test_ajax_upload_clipboardadmin_same_name_as_existing_file(self):
+        file = self.create_file('test.pdf')
+        self.assertEquals(FileGrouper.objects.count(), 2)
+        with self.login_user_context(self.superuser):
+            self.client.post(
+                reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
+                data={'file': file},
+            )
+
+        self.assertEquals(FileGrouper.objects.count(), 2)
+
+        with nonversioned_manager(File):
+            files = self.folder.files.all()
+        self.assertEquals(files.count(), 3)
+        self.assertEquals(self.file.label, 'test.pdf')
+        self.assertEquals(self.file.grouper, self.file_grouper)
+
+        versions = Version.objects.filter_by_grouper(self.file_grouper)
+        self.assertEquals(versions.count(), 2)
+        self.assertEquals(versions[0].state, PUBLISHED)
+        self.assertEquals(versions[0].content, self.file)
+        self.assertEquals(versions[1].state, DRAFT)
+        self.assertEquals(versions[1].content, files.latest('pk'))
+
+    def test_ajax_upload_clipboardadmin_for_image_file(self):
+        file = self.create_image('circles.jpg')
+        self.assertEquals(FileGrouper.objects.count(), 2)
+        with self.login_user_context(self.superuser):
+            self.client.post(
+                reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
+                data={'file': file},
+            )
+
+        self.assertEquals(FileGrouper.objects.count(), 3)
+
+        with nonversioned_manager(File):
+            files = self.folder.files.all()
+        new_file = files.latest('pk')
+        self.assertEquals(new_file.label, 'circles.jpg')
+        self.assertEquals(new_file.grouper, FileGrouper.objects.latest('pk'))
+
+    def test_folderadmin_directory_listing(self):
+        folder = Folder.objects.create(name='test folder 9')
+        file_grouper_1 = FileGrouper.objects.create()
+        published_file = self.create_file_obj(
+            original_filename='published.txt',
+            folder=folder,
+            grouper=file_grouper_1,
+            publish=True,
+        )
+
+        draft_file = self.create_file_obj(
+            original_filename='draft.txt',
+            folder=folder,
+            grouper=file_grouper_1,
+            publish=False,
+        )
+
+        file_grouper_2 = FileGrouper.objects.create()
+        draft_file_2 = self.create_file_obj(
+            original_filename='draft2.txt',
+            folder=folder,
+            grouper=file_grouper_2,
+            publish=False,
+        )
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                reverse('admin:filer-directory_listing', kwargs={'folder_id': folder.pk})
+            )
+
+        self.assertContains(response, draft_file.label)
+        self.assertContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
+
+    def test_folderadmin_directory_listing_unfiled_images(self):
+        file_grouper_1 = FileGrouper.objects.create()
+        published_file = self.create_file_obj(
+            original_filename='published.txt',
+            folder=None,
+            grouper=file_grouper_1,
+            publish=True,
+        )
+
+        draft_file = self.create_file_obj(
+            original_filename='draft.txt',
+            folder=None,
+            grouper=file_grouper_1,
+            publish=False,
+        )
+
+        file_grouper_2 = FileGrouper.objects.create()
+        draft_file_2 = self.create_file_obj(
+            original_filename='draft2.txt',
+            folder=None,
+            grouper=file_grouper_2,
+            publish=False,
+        )
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                reverse('admin:filer-directory_listing-unfiled_images')
+            )
+
+        self.assertContains(response, draft_file.label)
+        self.assertContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
+
+    def test_folderadmin_directory_listing_files_with_missing_data(self):
+        file_grouper_1 = FileGrouper.objects.create()
+        published_file = self.create_file_obj(
+            original_filename='published.txt',
+            folder=None,
+            grouper=file_grouper_1,
+            publish=True,
+            has_all_mandatory_data=False,
+        )
+
+        draft_file = self.create_file_obj(
+            original_filename='draft.txt',
+            folder=None,
+            grouper=file_grouper_1,
+            publish=False,
+            has_all_mandatory_data=False,
+        )
+
+        file_grouper_2 = FileGrouper.objects.create()
+        draft_file_2 = self.create_file_obj(
+            original_filename='draft2.txt',
+            folder=None,
+            grouper=file_grouper_2,
+            publish=False,
+            has_all_mandatory_data=False,
+        )
+
+        file_grouper_3 = FileGrouper.objects.create()
+        file_with_all_mandatory_data = self.create_file_obj(
+            original_filename='mandatory_data.docx',
+            folder=None,
+            grouper=file_grouper_3,
+            has_all_mandatory_data=True,
+        )
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                reverse('admin:filer-directory_listing-images_with_missing_data')
+            )
+
+        self.assertContains(response, draft_file.label)
+        self.assertContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
+        self.assertNotContains(response, file_with_all_mandatory_data.label)
+
+    def test_folderadmin_directory_listing_file_search(self):
+        folder = Folder.objects.create(name='test folder 9')
+        file_grouper_1 = FileGrouper.objects.create()
+        published_file = self.create_file_obj(
+            original_filename='draft1.txt',
+            folder=folder,
+            grouper=file_grouper_1,
+            publish=True,
+        )
+
+        draft_file = self.create_file_obj(
+            original_filename='draft2.txt',
+            folder=folder,
+            grouper=file_grouper_1,
+            publish=False,
+        )
+
+        draft_file_2 = self.create_file_obj(
+            original_filename='draft3.txt',
+            folder=folder,
+            publish=False,
+        )
+
+        draft_file_3 = self.create_file_obj(
+            original_filename='shape.txt',
+            folder=folder,
+            publish=False,
+        )
+
+        draft_file_3 = self.create_file_obj(
+            original_filename='shape.txt',
+            folder=folder,
+            publish=False,
+        )
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                add_url_parameters(
+                    reverse('admin:filer-directory_listing', kwargs={'folder_id': self.folder.pk}),
+                    q='draft',
+                )
+            )
+        self.assertContains(response, draft_file.label)
+        self.assertContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
+        self.assertNotContains(response, draft_file_3.label)
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                add_url_parameters(
+                    reverse('admin:filer-directory_listing', kwargs={'folder_id': folder.pk}),
+                    q='draft',
+                )
+            )
+        self.assertContains(response, draft_file.label)
+        self.assertContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
+        self.assertNotContains(response, draft_file_3.label)
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                add_url_parameters(
+                    reverse('admin:filer-directory_listing', kwargs={'folder_id': self.folder.pk}),
+                    q='draft',
+                    limit_search_to_folder='on',
+                )
+            )
+        self.assertNotContains(response, draft_file.label)
+        self.assertNotContains(response, draft_file_2.label)
+        self.assertNotContains(response, published_file.label)
+        self.assertNotContains(response, draft_file_3.label)

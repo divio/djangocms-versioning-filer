@@ -42,11 +42,9 @@ def on_file_publish(version):
 def on_file_unpublish(version):
     file_content = version.content
     file_content._file_data_changed_hint = False
-    path = file_content._copy_file(
-        file_content._meta.get_field('file').generate_filename(
-            file_content,
-            file_content.original_filename,
-        ),
+    path = file_content._meta.get_field('file').generate_filename(
+        file_content,
+        file_content.original_filename,
     )
     file_content.file = _move_file(file_content, path)
     file_content.save()

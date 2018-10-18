@@ -12,10 +12,7 @@ def clean(func):
         current_filename = self.instance.file.name.split('/')[-1]
         cleaned_data = func(self)
         file = cleaned_data.get('file')
-        if (
-            file and
-            file.name.split('/')[-1] != current_filename
-        ):
+        if file and file.name.split('/')[-1].lower() != current_filename.lower():
             self.add_error('file', _('Uploaded file must have the same name as current file'))
         return cleaned_data
     return inner

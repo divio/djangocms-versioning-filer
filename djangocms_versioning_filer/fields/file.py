@@ -114,6 +114,8 @@ class AdminFileGrouperFormField(forms.ModelChoiceField):
 
     def to_python(self, value):
         obj = super().to_python(value)
+        if not obj:
+            return obj
         with nonversioned_manager(File):
             obj._prefetched_objects_cache = {'files': [obj.file]}
         return obj
