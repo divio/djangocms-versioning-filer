@@ -15,6 +15,13 @@ from .helpers import get_published_file_path, move_file
 from .models import File, copy_file
 
 
+try:
+    apps.get_app_config('djangocms_internalsearch')
+    from .internal_search import FilerContentConfig
+except (ImportError, LookupError):
+    FilerContentConfig = None
+
+
 def on_file_publish(version):
     file_content = version.content
     file_content._file_data_changed_hint = False
@@ -62,3 +69,10 @@ class FilerVersioningCMSConfig(CMSAppConfig):
     versioning = list(versioning_filer_models_config())
     djangocms_moderation_enabled = getattr(settings, 'MODERATION_FILER_ENABLED', True)
     moderated_models = [apps.get_model(model_name) for model_name in filer.settings.FILER_FILE_MODELS]
+
+    # Internalsearch configuration
+    if FilerContentConfig:
+        djangocms_internalsearch_enabled = True
+        internalsearch_config_list = [
+            FilerContentConfig,
+        ]
