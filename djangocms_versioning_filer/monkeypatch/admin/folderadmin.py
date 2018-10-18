@@ -18,6 +18,7 @@ from filer.admin.tools import (
     userperms_for_request,
 )
 from filer.models import (
+    File,
     Folder,
     FolderPermission,
     FolderRoot,
@@ -27,7 +28,7 @@ from filer.models import (
 )
 from filer.utils.loader import load_model
 
-from ...helpers import create_file_version
+from ...helpers import create_file_version, get_published_file_path, move_file
 from ...models import FileGrouper, get_files_distinct_grouper_queryset
 
 
@@ -278,3 +279,20 @@ filer.admin.folderadmin.FolderAdmin._copy_file = _copy_file  # noqa: E305
 
 filer.admin.folderadmin.FolderAdmin.actions = ['copy_files_and_folders', 'resize_images']  # noqa: E305
 filer.admin.folderadmin.FolderAdmin.directory_listing = directory_listing  # noqa: E305
+
+
+def save_model(func):
+    def inner(self, request, obj, form, change):
+        func(self, request, obj, form, change)
+        if change and 'name' in form.changed_data:
+            published_files = File.objects.filter(
+                folder__in=obj.get_descendants(include_self=True)
+            )
+            for f in published_files:
+                f._file_data_changed_hint = False
+                f.file = move_file(f, get_published_file_path(f))
+                f.save()
+    return inner
+filer.admin.folderadmin.FolderAdmin.save_model = save_model(  # noqa: E305
+    filer.admin.folderadmin.FolderAdmin.save_model
+)
