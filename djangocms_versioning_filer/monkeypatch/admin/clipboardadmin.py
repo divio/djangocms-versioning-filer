@@ -65,6 +65,9 @@ def ajax_upload(request, folder_id=None):
             same_name_file_qs = get_files_distinct_grouper_queryset().annotate(
                 _name=NullIfEmptyStr('name'),
                 _original_filename=NullIfEmptyStr('original_filename'),
+            ).annotate(
+                # seperate annotate is needed to get it work on python<36
+                # see PEP 468 for more details
                 _label=Coalesce('_name', '_original_filename', Value('unnamed file')),
             ).filter(folder=folder, _label=file_obj.label)
             file_grouper = FileGrouper.objects.filter(files__in=same_name_file_qs).distinct().first()
