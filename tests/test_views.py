@@ -264,21 +264,21 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         new_file_grouper = FileGrouper.objects.latest('pk')
         self.assertEquals(new_file.label, 'test2.pdf')
         self.assertEquals(new_file.grouper, new_file_grouper)
-        versions = Version.objects.filter_by_grouper(new_file_grouper)
+        versions = Version.objects.filter_by_grouper(new_file_grouper).order_by('pk')
         self.assertEquals(versions.count(), 1)
         self.assertEquals(versions[0].state, DRAFT)
 
         # Checking existing in self.folder file
         self.assertEquals(self.file.label, 'test.pdf')
         self.assertEquals(self.file.grouper, self.file_grouper)
-        versions = Version.objects.filter_by_grouper(self.file_grouper)
+        versions = Version.objects.filter_by_grouper(self.file_grouper).order_by('pk')
         self.assertEquals(versions.count(), 1)
         self.assertEquals(versions[0].state, PUBLISHED)
 
         # Checking file in diffrent folder with the same name as newly created file
         self.assertEquals(same_file_in_other_folder.label, 'test2.pdf')
         self.assertEquals(same_file_in_other_folder.grouper, same_file_in_other_folder_grouper)
-        versions = Version.objects.filter_by_grouper(same_file_in_other_folder_grouper)
+        versions = Version.objects.filter_by_grouper(same_file_in_other_folder_grouper).order_by('pk')
         self.assertEquals(versions.count(), 1)
         self.assertEquals(versions[0].state, PUBLISHED)
 
@@ -299,7 +299,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertEquals(self.file.label, 'test.pdf')
         self.assertEquals(self.file.grouper, self.file_grouper)
 
-        versions = Version.objects.filter_by_grouper(self.file_grouper)
+        versions = Version.objects.filter_by_grouper(self.file_grouper).order_by('pk')
         self.assertEquals(versions.count(), 2)
         self.assertEquals(versions[0].state, PUBLISHED)
         self.assertEquals(versions[0].content, self.file)
