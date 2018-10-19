@@ -33,7 +33,7 @@ class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
         )
 
         with self.login_user_context(self.superuser):
-            data = {'file_grouper': self.audio_file_grouper.pk}
+            data = {'file_grouper': self.audio_file.pk}
             response = self.client.post(uri, data)
         self.assertEquals(response.status_code, 200)
 

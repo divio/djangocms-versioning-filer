@@ -34,7 +34,7 @@ class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
         )
 
         with self.login_user_context(self.superuser):
-            data = {'file_grouper': self.video_file_grouper.pk}
+            data = {'file_grouper': self.video_file.pk}
             response = self.client.post(uri, data)
         self.assertEquals(response.status_code, 200)
 
@@ -64,12 +64,12 @@ class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
         )
 
         with self.login_user_context(self.superuser):
-            data = {'template': 'default', 'poster_grouper': self.file_grouper.pk}
+            data = {'template': 'default', 'poster_grouper': self.file.pk}
             self.client.post(uri, data)
         self.assertEquals(CMSPlugin.objects.count(), 0)
 
         with self.login_user_context(self.superuser):
-            data = {'template': 'default', 'poster_grouper': self.image_grouper.pk}
+            data = {'template': 'default', 'poster_grouper': self.image.pk}
             self.client.post(uri, data)
         plugin = CMSPlugin.objects.latest('pk')
         self.assertEquals(plugin.plugin_type, 'VideoPlayerPlugin')

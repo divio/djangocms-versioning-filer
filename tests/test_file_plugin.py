@@ -19,7 +19,7 @@ class FilerFilePluginTestCase(BaseFilerVersioningTestCase):
         )
 
         with self.login_user_context(self.superuser):
-            data = {'file_grouper': self.file_grouper.pk, 'template': 'default'}
+            data = {'file_grouper': self.file.pk, 'template': 'default'}
             response = self.client.post(uri, data)
         self.assertEquals(response.status_code, 200)
 
