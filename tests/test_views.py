@@ -506,3 +506,96 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertNotContains(response, draft_file_2.label)
         self.assertNotContains(response, published_file.label)
         self.assertNotContains(response, draft_file_3.label)
+
+    def test_folder_name_change_rebuild_urls_for_published_files(self):
+        folder0 = Folder.objects.create(name='f0')
+        folder1 = Folder.objects.create(name='f1')
+        folder2 = Folder.objects.create(name='f2', parent=folder1)
+        folder3 = Folder.objects.create(name='f3', parent=folder1)
+        folder4 = Folder.objects.create(name='f4', parent=folder3)
+
+        file0 = self.create_file_obj(original_filename='test.xls', folder=folder0)
+
+        file1 = self.create_file_obj(original_filename='test.xls', folder=folder1)
+        file2 = self.create_file_obj(original_filename='test.xls', folder=folder2)
+        file3 = self.create_file_obj(original_filename='test.xls', folder=folder3)
+        file4 = self.create_file_obj(original_filename='test.xls', folder=folder4)
+        draft_file = self.create_file_obj(original_filename='test2.xls', folder=folder4, publish=False)
+        unpublished_file = self.create_file_obj(original_filename='test3.xls', folder=folder4, publish=True)
+        unpublished_file.versions.latest('pk').unpublish(self.superuser)
+        archived_file = self.create_file_obj(original_filename='test4.xls', folder=folder4, publish=False)
+        archived_file.versions.latest('pk').archive(self.superuser)
+
+        files = [file0, file1, file2, file3, file4, draft_file, unpublished_file, archived_file]
+
+        with self.login_user_context(self.superuser):
+            self.client.post(
+                reverse('admin:filer_folder_change', args=[folder0.id]),
+                data={'name': 'f00'},
+            )
+        for f in files:
+            with nonversioned_manager(File):
+                f.refresh_from_db()
+
+        self.assertEquals(file0.url, '/media/f00/test.xls')
+        self.assertFalse(file0.file.storage.exists('f0/test.xls'))
+        self.assertTrue(file0.file.storage.exists('f00/test.xls'))
+
+        self.assertEquals(file1.url, '/media/f1/test.xls')
+        self.assertEquals(file2.url, '/media/f1/f2/test.xls')
+        self.assertEquals(file3.url, '/media/f1/f3/test.xls')
+        self.assertEquals(file4.url, '/media/f1/f3/f4/test.xls')
+        self.assertIn('filer_public', draft_file.url)
+        self.assertIn('test2.xls', draft_file.url)
+        self.assertIn('filer_public', unpublished_file.url)
+        self.assertIn('test3.xls', unpublished_file.url)
+        self.assertIn('filer_public', archived_file.url)
+        self.assertIn('test4.xls', archived_file.url)
+
+        with self.login_user_context(self.superuser):
+            self.client.post(
+                reverse('admin:filer_folder_change', args=[folder1.id]),
+                data={'name': 'f10'},
+            )
+        for f in files:
+            with nonversioned_manager(File):
+                f.refresh_from_db()
+
+        self.assertEquals(file0.url, '/media/f00/test.xls')
+        self.assertEquals(file1.url, '/media/f10/test.xls')
+        self.assertEquals(file2.url, '/media/f10/f2/test.xls')
+        self.assertEquals(file3.url, '/media/f10/f3/test.xls')
+        self.assertEquals(file4.url, '/media/f10/f3/f4/test.xls')
+        self.assertIn('filer_public', draft_file.url)
+        self.assertIn('test2.xls', draft_file.url)
+        self.assertNotIn('f10', draft_file.url)
+        self.assertIn('filer_public', unpublished_file.url)
+        self.assertIn('test3.xls', unpublished_file.url)
+        self.assertNotIn('f10', unpublished_file.url)
+        self.assertIn('filer_public', archived_file.url)
+        self.assertIn('test4.xls', archived_file.url)
+        self.assertNotIn('f10', archived_file.url)
+
+        with self.login_user_context(self.superuser):
+            self.client.post(
+                reverse('admin:filer_folder_change', args=[folder3.id]),
+                data={'name': 'f30 test'},
+            )
+        for f in files:
+            with nonversioned_manager(File):
+                f.refresh_from_db()
+
+        self.assertEquals(file0.url, '/media/f00/test.xls')
+        self.assertEquals(file1.url, '/media/f10/test.xls')
+        self.assertEquals(file2.url, '/media/f10/f2/test.xls')
+        self.assertEquals(file3.url, '/media/f10/f30%20test/test.xls')
+        self.assertEquals(file4.url, '/media/f10/f30%20test/f4/test.xls')
+        self.assertIn('filer_public', draft_file.url)
+        self.assertIn('test2.xls', draft_file.url)
+        self.assertNotIn('f10', draft_file.url)
+        self.assertIn('filer_public', unpublished_file.url)
+        self.assertIn('test3.xls', unpublished_file.url)
+        self.assertNotIn('f10', unpublished_file.url)
+        self.assertIn('filer_public', archived_file.url)
+        self.assertIn('test4.xls', archived_file.url)
+        self.assertNotIn('f10', archived_file.url)
