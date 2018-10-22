@@ -11,6 +11,7 @@ from djangocms_versioning.datastructures import (
     VersionableItemAlias,
 )
 
+from .admin import VersioningFilerAdminMixin
 from .helpers import get_published_file_path, move_file
 from .models import File, copy_file
 
@@ -48,6 +49,7 @@ def versioning_filer_models_config():
         on_publish=on_file_publish,
         on_unpublish=on_file_unpublish,
         grouper_selector_option_label=lambda obj, language: obj.name,
+        content_admin_mixin=VersioningFilerAdminMixin,
     )
     yield file_config
     for model_name in filer.settings.FILER_FILE_MODELS:
@@ -55,7 +57,11 @@ def versioning_filer_models_config():
         if model == File:
             continue
         model._meta._get_fields_cache = {}
-        yield VersionableItemAlias(content_model=model, to=file_config)
+        yield VersionableItemAlias(
+            content_model=model,
+            to=file_config,
+            content_admin_mixin=VersioningFilerAdminMixin,
+        )
 
 
 @lru_cache(maxsize=1)
