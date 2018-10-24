@@ -2,6 +2,11 @@ import os
 from tempfile import mkdtemp
 
 
+ENABLE_MODERATION = bool(os.environ.get('ENABLE_MODERATION', True))
+EXTRA_INSTALLED_APPS = []
+if ENABLE_MODERATION:
+    EXTRA_INSTALLED_APPS += ['adminsortable2', 'djangocms_moderation']
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HELPER_SETTINGS = {
@@ -21,7 +26,7 @@ HELPER_SETTINGS = {
         'djangocms_versioning_filer.plugins.file',
         'djangocms_video',
         'djangocms_versioning_filer.plugins.video',
-    ],
+    ] + EXTRA_INSTALLED_APPS,
     'MIGRATION_MODULES': {
         'sites': None,
         'contenttypes': None,
@@ -34,6 +39,7 @@ HELPER_SETTINGS = {
         'filer': None,
         'djangocms_versioning_filer': None,
         'djangocms_versioning': None,
+        'djangocms_moderation': None,
         'djangocms_picture': None,
         'picture': None,
         'djangocms_audio': None,

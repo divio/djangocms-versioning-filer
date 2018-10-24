@@ -1,3 +1,6 @@
+from unittest import skipUnless
+
+from django.conf import settings
 from django.contrib.admin import helpers
 from django.urls import reverse
 
@@ -599,3 +602,24 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertIn('filer_public', archived_file.url)
         self.assertIn('test4.xls', archived_file.url)
         self.assertNotIn('f10', archived_file.url)
+
+    @skipUnless(
+        'djangocms_moderation' in settings.INSTALLED_APPS,
+        'Test only relevant when djangocms_moderation enabled',
+    )
+    def test_folderadmin_add_to_moderation(self):
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                reverse('admin:filer-directory_listing', kwargs={'folder_id': self.folder.id}),
+                data={
+                    'action': 'add_items_to_collection',
+                    helpers.ACTION_CHECKBOX_NAME: 'file-%d' % (self.file.id,),
+                }
+            )
+
+        self.assertEquals(response.status_code, 302)
+        self.assertIn(
+            '/en/admin/djangocms_moderation/moderationcollection/item/add-items/',
+            response.url,
+        )
+        versions_ids = []

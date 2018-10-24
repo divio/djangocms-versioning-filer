@@ -11,6 +11,7 @@ from django.utils.http import urlquote, urlunquote
 from django.utils.translation import ugettext as _, ungettext
 
 import filer
+from djangocms_versioning.constants import DRAFT
 from filer.admin.tools import (
     AdminContext,
     admin_url_params_encoded,
@@ -28,7 +29,12 @@ from filer.models import (
 )
 from filer.utils.loader import load_model
 
-from ...helpers import create_file_version, get_published_file_path, move_file
+from ...helpers import (
+    create_file_version,
+    get_published_file_path,
+    is_moderation_enabled,
+    move_file,
+)
 from ...models import FileGrouper, get_files_distinct_grouper_queryset
 
 
@@ -295,4 +301,32 @@ def save_model(func):
     return inner
 filer.admin.folderadmin.FolderAdmin.save_model = save_model(  # noqa: E305
     filer.admin.folderadmin.FolderAdmin.save_model
+)
+
+
+def filer_add_items_to_collection(self, request, files_qs, folders_qs):
+    from djangocms_moderation.admin_actions import add_items_to_collection
+    for folder in folders_qs:
+        files_qs |= get_files_distinct_grouper_queryset().filter(
+            folder__in=folder.get_descendants(include_self=True),
+        )
+        files_qs = files_qs.filter(versions__state=DRAFT)
+    return add_items_to_collection(self, request, files_qs)
+
+
+def get_actions(func):
+    def inner(self, request):
+        actions = func(self, request)
+
+        if is_moderation_enabled():
+            from djangocms_moderation.admin_actions import add_items_to_collection
+            actions['add_items_to_collection'] = (
+                filer_add_items_to_collection,
+                'add_items_to_collection',
+                add_items_to_collection.short_description,
+            )
+        return actions
+    return inner
+filer.admin.folderadmin.FolderAdmin.get_actions = get_actions(  # noqa: E305
+    filer.admin.folderadmin.FolderAdmin.get_actions
 )
