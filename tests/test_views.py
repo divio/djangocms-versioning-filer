@@ -1,4 +1,5 @@
 from unittest import skipUnless
+from urllib.parse import parse_qs, urlparse
 
 from django.conf import settings
 from django.contrib.admin import helpers
@@ -15,12 +16,6 @@ from filer.models import File, Folder
 from djangocms_versioning_filer.models import FileGrouper
 
 from .base import BaseFilerVersioningTestCase
-
-
-try:
-    from urllib.parse import urlparse, parse_qs
-except ImportError:
-    from urlparse import urlparse, parse_qs
 
 
 class FilerViewTests(BaseFilerVersioningTestCase):
