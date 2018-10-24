@@ -2,7 +2,7 @@ import os
 from tempfile import mkdtemp
 
 
-ENABLE_MODERATION = bool(os.environ.get('ENABLE_MODERATION', True))
+ENABLE_MODERATION = bool(os.environ.get('ENABLE_MODERATION', False))
 EXTRA_INSTALLED_APPS = []
 if ENABLE_MODERATION:
     EXTRA_INSTALLED_APPS += ['adminsortable2', 'djangocms_moderation']
