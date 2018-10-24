@@ -310,7 +310,7 @@ def filer_add_items_to_collection(self, request, files_qs, folders_qs):
         files_qs |= get_files_distinct_grouper_queryset().filter(
             folder__in=folder.get_descendants(include_self=True),
         )
-        files_qs = files_qs.filter(versions__state=DRAFT)
+    files_qs = files_qs.filter(versions__state=DRAFT)
     return add_items_to_collection(self, request, files_qs)
 
 
