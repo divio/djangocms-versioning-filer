@@ -8,3 +8,4 @@ djangocms_audio
 djangocms_video
 https://github.com/divio/djangocms-versioning/archive/master.zip
 https://github.com/FidelityInternational/django-filer/archive/develop.zip
+https://github.com/divio/djangocms-moderation/archive/release/1.0.x.zip

@@ -1,4 +1,9 @@
+from unittest import skipUnless
+from urllib.parse import parse_qs, urlparse
+
+from django.conf import settings
 from django.contrib.admin import helpers
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 
 from cms.utils.urlutils import add_url_parameters
@@ -599,3 +604,66 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertIn('filer_public', archived_file.url)
         self.assertIn('test4.xls', archived_file.url)
         self.assertNotIn('f10', archived_file.url)
+
+    @skipUnless(
+        'djangocms_moderation' in settings.INSTALLED_APPS,
+        'Test only relevant when djangocms_moderation enabled',
+    )
+    def test_folderadmin_add_to_moderation(self):
+        root_folder = Folder.objects.create(name='f0')
+        folder1 = Folder.objects.create(name='f1', parent=root_folder)
+        folder2 = Folder.objects.create(name='f2', parent=folder1)
+        folder3 = Folder.objects.create(name='f3', parent=folder2)
+
+        file0 = self.create_image_obj(original_filename='file0.jpg', folder=root_folder, publish=False)
+        file1 = self.create_file_obj(original_filename='test.xls', folder=folder1, publish=False)
+        file2 = self.create_file_obj(original_filename='test.xls', folder=folder2, publish=False)
+        file3 = self.create_file_obj(original_filename='test.xls', folder=folder3, publish=False)
+
+        draft_grouper = FileGrouper.objects.create()
+        # published_file
+        self.create_file_obj(
+            original_filename='test4.txt', folder=folder3, publish=True, grouper=draft_grouper
+        )
+        draft_file4 = self.create_file_obj(
+            original_filename='test4.txt', folder=folder3, publish=False, grouper=draft_grouper
+        )
+
+        # published_file
+        self.create_file_obj(
+            original_filename='published.xls', folder=folder3, publish=True
+        )
+
+        unpublished_file = self.create_file_obj(
+            original_filename='unpublished.xls', folder=folder3, publish=True
+        )
+        unpublished_file.versions.latest('pk').unpublish(self.superuser)
+
+        archived_file = self.create_file_obj(original_filename='archived.xls', folder=folder3, publish=False)
+        archived_file.versions.latest('pk').archive(self.superuser)
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                reverse('admin:filer-directory_listing', kwargs={'folder_id': root_folder.id}),
+                data={
+                    'action': 'add_items_to_collection',
+                    helpers.ACTION_CHECKBOX_NAME: [
+                        'folder-{}'.format(folder1.id),
+                        'file-{}'.format(file0.id),
+                    ],
+                },
+            )
+
+        self.assertEquals(response.status_code, 302)
+        self.assertIn(
+            '/en/admin/djangocms_moderation/moderationcollection/item/add-items/',
+            response.url,
+        )
+
+        version_ids = parse_qs(urlparse(response.url).query)['version_ids'][0].split(',')
+        version_ids = [int(i) for i in version_ids]
+        proper_ids = Version.objects.filter(
+            content_type_id=ContentType.objects.get_for_model(File),
+            object_id__in=[file0.pk, file1.pk, file2.pk, file3.pk, draft_file4.pk],
+        ).values_list('id', flat=True)
+        self.assertEquals(set(proper_ids), set(version_ids))

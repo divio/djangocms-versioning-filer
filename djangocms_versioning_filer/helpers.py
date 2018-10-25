@@ -1,7 +1,9 @@
 import os
 
+from django.apps import apps
 from django.core.files.base import ContentFile
 
+import filer
 from djangocms_versioning.models import Version
 from filer.models import File
 
@@ -32,3 +34,18 @@ def get_published_file_path(file_obj):
         path = []
     path = list(path) + [file_obj.original_filename]
     return os.path.join(*path)
+
+
+def is_moderation_enabled():
+    try:
+        moderation_config = apps.get_app_config('djangocms_moderation')
+        moderated_models = [
+            model._meta.label
+            for model in moderation_config.cms_extension.moderated_models
+        ]
+        return all(
+            filer_model in moderated_models
+            for filer_model in filer.settings.FILER_FILE_MODELS
+        )
+    except LookupError:
+        return False
