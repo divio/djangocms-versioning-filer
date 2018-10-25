@@ -14,7 +14,7 @@ from filer.utils.files import (
 )
 from filer.utils.loader import load_model
 
-from ...helpers import create_file_version
+from ...helpers import create_file_version, is_moderation_enabled
 from ...models import (
     FileGrouper,
     NullIfEmptyStr,
@@ -70,8 +70,18 @@ def ajax_upload(request, folder_id=None):
                 # see PEP 468 for more details
                 _label=Coalesce('_name', '_original_filename', Value('unnamed file')),
             ).filter(folder=folder, _label=file_obj.label)
-            file_grouper = FileGrouper.objects.filter(files__in=same_name_file_qs).distinct().first()
+            existing_file_obj = same_name_file_qs.first()
+            file_grouper = existing_file_obj.grouper
             new_file_grouper = False
+
+            if is_moderation_enabled() and not existing_file_obj.version.can_archive(request.user):
+                return JsonResponse(
+                    {'error': (
+                        'Cannot create new draft when other version of '
+                        'the file {} is in moderation'.format(existing_file_obj)
+                    )},
+                    status=400,
+                )
 
             if not file_grouper:
                 new_file_grouper = True
