@@ -1,4 +1,3 @@
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Value
 from django.db.models.functions import Coalesce
 from django.forms.models import modelform_factory
@@ -6,9 +5,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 import filer
+from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.models import Version
 from filer import settings as filer_settings
-from filer.models import File, Folder, Image
+from filer.models import Folder, Image
 from filer.utils.files import (
     UploadException,
     handle_request_files_upload,
@@ -78,14 +78,10 @@ def ajax_upload(request, folder_id=None):
                 file_grouper = existing_file_obj.grouper
                 new_file_grouper = False
 
-                existing_file_version = Version.objects.filter(
-                    object_id=existing_file_obj.pk,
-                    content_type_id=ContentType.objects.get_for_model(File),
-                ).first()
-
-                if not (
+                existing_file_version = Version.objects.get_for_content(existing_file_obj)
+                if existing_file_version.state == DRAFT and not (
                     existing_file_version.can_be_archived()
-                    and existing_file_obj.check_archive(request.user)
+                    and existing_file_obj.check_archive.as_bool(request.user)
                 ):
                     return JsonResponse({'error': (
                         'Cannot archive existing {} file version'.format(existing_file_obj)
