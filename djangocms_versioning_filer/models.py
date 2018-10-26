@@ -68,4 +68,5 @@ def copy_file(original_file):
         ),
     )
     new_file = model.objects.create(**file_fields)
+    new_file.__class__ = File
     return new_file
