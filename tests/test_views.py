@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_versioning.constants import DRAFT, PUBLISHED
+from djangocms_versioning.constants import ARCHIVED, DRAFT, PUBLISHED
 from djangocms_versioning.helpers import nonversioned_manager
 from djangocms_versioning.models import Version
 from filer.models import File, Folder
@@ -311,6 +311,37 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertEquals(versions[1].state, DRAFT)
         self.assertEquals(versions[1].content, files.latest('pk'))
 
+    def test_ajax_upload_clipboardadmin_same_name_as_existing_draft_file(self):
+        file_grouper = FileGrouper.objects.create()
+        file_obj = self.create_file_obj(
+            original_filename='test1.pdf',
+            folder=self.folder,
+            grouper=file_grouper,
+            publish=False,
+        )
+        file = self.create_file('test1.pdf')
+        self.assertEquals(FileGrouper.objects.count(), 3)
+        with self.login_user_context(self.superuser):
+            self.client.post(
+                reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
+                data={'file': file},
+            )
+
+        self.assertEquals(FileGrouper.objects.count(), 3)
+
+        with nonversioned_manager(File):
+            files = self.folder.files.all()
+        self.assertEquals(files.count(), 4)
+        self.assertEquals(file_obj.label, 'test1.pdf')
+        self.assertEquals(file_obj.grouper, file_grouper)
+
+        versions = Version.objects.filter_by_grouper(file_grouper).order_by('pk')
+        self.assertEquals(versions.count(), 2)
+        self.assertEquals(versions[0].state, ARCHIVED)
+        self.assertEquals(versions[0].content, file_obj)
+        self.assertEquals(versions[1].state, DRAFT)
+        self.assertEquals(versions[1].content, files.latest('pk'))
+
     def test_ajax_upload_clipboardadmin_for_image_file(self):
         file = self.create_image('circles.jpg')
         self.assertEquals(FileGrouper.objects.count(), 2)
@@ -333,28 +364,33 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         'Test only relevant when djangocms_moderation enabled',
     )
     def test_ajax_upload_clipboardadmin_same_name_as_existing_file_in_moderation(self):
-        image = self.create_image('test-image.jpg')
-        self.assertEquals(FileGrouper.objects.count(), 2)
+        image = self.create_image_obj(
+            original_filename='test1.jpg',
+            folder=self.folder,
+            publish=False,
+        )
+        file = self.create_image('test1.jpg')
+        self.assertEquals(FileGrouper.objects.count(), 3)
         with nonversioned_manager(File):
-            self.assertEquals(File.objects.count(), 2)
+            self.assertEquals(File.objects.count(), 3)
 
         from djangocms_moderation.models import Workflow, ModerationCollection
         wf = Workflow.objects.create(name='Workflow 1', is_default=True)
         collection = ModerationCollection.objects.create(
             author=self.superuser, name='Collection 1', workflow=wf,
         )
-        collection.add_version(Version.objects.get_for_content(self.image))
+        collection.add_version(Version.objects.get_for_content(image))
 
         with self.login_user_context(self.superuser):
             response = self.client.post(
                 reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
-                data={'file': image},
+                data={'file': file},
             )
 
-        self.assertEquals(FileGrouper.objects.count(), 2)
+        self.assertEquals(FileGrouper.objects.count(), 3)
         with nonversioned_manager(File):
-            self.assertEquals(File.objects.count(), 2)
-        error_msg = 'Cannot archive existing test-image.jpg file version'
+            self.assertEquals(File.objects.count(), 3)
+        error_msg = 'Cannot archive existing test1.jpg file version'
         self.assertEquals(response.json()['error'], error_msg)
 
     def test_folderadmin_directory_listing(self):

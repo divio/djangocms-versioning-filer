@@ -79,10 +79,10 @@ def ajax_upload(request, folder_id=None):
                 new_file_grouper = False
 
                 existing_file_version = Version.objects.get_for_content(existing_file_obj)
-                if existing_file_version.state == DRAFT and not (
-                    existing_file_version.can_be_archived()
-                    and existing_file_obj.check_archive.as_bool(request.user)
-                ):
+                if existing_file_version.state == DRAFT and not all([
+                    existing_file_version.can_be_archived(),
+                    existing_file_version.check_archive.as_bool(request.user),
+                ]):
                     return JsonResponse({'error': (
                         'Cannot archive existing {} file version'.format(existing_file_obj)
                     )})
