@@ -1,3 +1,9 @@
+from django.contrib.contenttypes.models import ContentType
+
+from djangocms_versioning.constants import DRAFT, PUBLISHED
+from djangocms_versioning.models import Version
+from filer.models import File
+
 from djangocms_versioning_filer.models import copy_file
 
 from .base import BaseFilerVersioningTestCase
@@ -27,3 +33,10 @@ class FilerCopyFileMethodTests(BaseFilerVersioningTestCase):
         self.assertEqual(copy.original_filename, 'test.txt')
         self.assertEqual(copy.file.name.split('/')[-1], 'test.txt')
         self.assertEqual(copy.file.readlines(), [b'some text'])
+
+    def test_copy_file_via_version_copy(self):
+        version = Version.objects.get_for_content(self.image)
+        new_version = version.copy(self.superuser)
+        self.assertEquals(version.state, PUBLISHED)
+        self.assertEquals(new_version.state, DRAFT)
+        self.assertEquals(new_version.content_type_id, ContentType.objects.get_for_model(File).pk)
