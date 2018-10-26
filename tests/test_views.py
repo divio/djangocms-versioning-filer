@@ -328,6 +328,35 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertEquals(new_file.label, 'circles.jpg')
         self.assertEquals(new_file.grouper, FileGrouper.objects.latest('pk'))
 
+    @skipUnless(
+        'djangocms_moderation' in settings.INSTALLED_APPS,
+        'Test only relevant when djangocms_moderation enabled',
+    )
+    def test_ajax_upload_clipboardadmin_same_name_as_existing_file_in_moderation(self):
+        image = self.create_image('test-image.jpg')
+        self.assertEquals(FileGrouper.objects.count(), 2)
+        with nonversioned_manager(File):
+            self.assertEquals(File.objects.count(), 2)
+
+        from djangocms_moderation.models import Workflow, ModerationCollection
+        wf = Workflow.objects.create(name='Workflow 1', is_default=True)
+        collection = ModerationCollection.objects.create(
+            author=self.superuser, name='Collection 1', workflow=wf,
+        )
+        collection.add_version(Version.objects.get_for_content(self.image))
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
+                data={'file': image},
+            )
+
+        self.assertEquals(FileGrouper.objects.count(), 2)
+        with nonversioned_manager(File):
+            self.assertEquals(File.objects.count(), 2)
+        error_msg = 'Cannot archive existing test-image.jpg file version'
+        self.assertEquals(response.json()['error'], error_msg)
+
     def test_folderadmin_directory_listing(self):
         folder = Folder.objects.create(name='test folder 9')
         file_grouper_1 = FileGrouper.objects.create()

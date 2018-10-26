@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Value
 from django.db.models.functions import Coalesce
 from django.forms.models import modelform_factory
@@ -5,8 +6,9 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 import filer
+from djangocms_versioning.models import Version
 from filer import settings as filer_settings
-from filer.models import Folder, Image
+from filer.models import File, Folder, Image
 from filer.utils.files import (
     UploadException,
     handle_request_files_upload,
@@ -14,7 +16,7 @@ from filer.utils.files import (
 )
 from filer.utils.loader import load_model
 
-from ...helpers import create_file_version, is_moderation_enabled
+from ...helpers import create_file_version
 from ...models import (
     FileGrouper,
     NullIfEmptyStr,
@@ -71,19 +73,24 @@ def ajax_upload(request, folder_id=None):
                 _label=Coalesce('_name', '_original_filename', Value('unnamed file')),
             ).filter(folder=folder, _label=file_obj.label)
             existing_file_obj = same_name_file_qs.first()
-            file_grouper = existing_file_obj.grouper
-            new_file_grouper = False
 
-            if is_moderation_enabled() and not existing_file_obj.version.can_archive(request.user):
-                return JsonResponse(
-                    {'error': (
-                        'Cannot create new draft when other version of '
-                        'the file {} is in moderation'.format(existing_file_obj)
-                    )},
-                    status=400,
-                )
+            if existing_file_obj:
+                file_grouper = existing_file_obj.grouper
+                new_file_grouper = False
 
-            if not file_grouper:
+                existing_file_version = Version.objects.filter(
+                    object_id=existing_file_obj.pk,
+                    content_type_id=ContentType.objects.get_for_model(File),
+                ).first()
+
+                if not (
+                    existing_file_version.can_be_archived()
+                    and existing_file_obj.check_archive(request.user)
+                ):
+                    return JsonResponse({'error': (
+                        'Cannot archive existing {} file version'.format(existing_file_obj)
+                    )})
+            else:
                 new_file_grouper = True
                 file_grouper = FileGrouper.objects.create()
 
