@@ -30,8 +30,9 @@ class AdminFileGrouperWidget(ForeignKeyRawIdWidget):
         if obj:
             with nonversioned_manager(File):
                 file_obj = obj.file
+            file_value = file_obj.pk
         else:
-            file_obj = None
+            file_obj = file_value = None
         css_id = attrs.get('id', 'id_image_x')
         related_url = None
         if value:
@@ -59,7 +60,7 @@ class AdminFileGrouperWidget(ForeignKeyRawIdWidget):
         # rendering the super for ForeignKeyRawIdWidget on purpose here because
         # we only need the input and none of the other stuff that
         # ForeignKeyRawIdWidget adds
-        hidden_input = super().render(name, value, attrs)
+        hidden_input = super().render(name, file_value, attrs)
         context = {
             'hidden_input': hidden_input,
             'lookup_url': '%s%s' % (related_url, lookup_url),
