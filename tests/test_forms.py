@@ -64,3 +64,17 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
             form.errors,
             {'file': ['Uploaded file must have the same name as current file']},
         )
+
+    def test_prevent_(self):
+        file_obj = self.create_image_obj('image.jpg', publish=False)
+        new_file = self.create_file('new.jpg')
+        form = ImageAdminForm(
+            instance=file_obj,
+            files={'file': new_file},
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertDictEqual(
+            form.errors,
+            {'name': ['']},
+        )
