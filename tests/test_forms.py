@@ -1,5 +1,9 @@
+from copy import deepcopy
+
 from filer.admin.fileadmin import FileAdminChangeFrom
 from filer.admin.imageadmin import ImageAdminForm
+
+from djangocms_versioning_filer.models import FileGrouper
 
 from .base import BaseFilerVersioningTestCase
 
@@ -65,16 +69,45 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
             {'file': ['Uploaded file must have the same name as current file']},
         )
 
-    def test_prevent_(self):
-        file_obj = self.create_image_obj('image.jpg', publish=False)
-        new_file = self.create_file('new.jpg')
-        form = ImageAdminForm(
-            instance=file_obj,
-            files={'file': new_file},
-        )
+    def test_prevent_same_name_files_in_folder(self):
+        grouper = FileGrouper.objects.create()
 
+        self.create_image_obj('image.jpg', grouper=grouper, publish=False)
+        file_obj = self.create_image_obj('image.jpg', grouper=grouper, publish=False)
+        self.create_image_obj('image.jpg', publish=False)
+
+        form = ImageAdminForm(
+            instance=deepcopy(file_obj),
+            data={'name': ''},
+        )
         self.assertFalse(form.is_valid())
         self.assertDictEqual(
             form.errors,
-            {'name': ['']},
+            {'name': ['File with name image.jpg exisitng in folder Unsorted Uploads']},
+        )
+
+        form = ImageAdminForm(
+            instance=deepcopy(file_obj),
+            data={'name': 'test.jpg'},
+        )
+        self.assertTrue(form.is_valid())
+
+        form = ImageAdminForm(
+            instance=deepcopy(file_obj),
+            data={'name': 'image.jpg'},
+        )
+        self.assertFalse(form.is_valid())
+        self.assertDictEqual(
+            form.errors,
+            {'name': ['File with name image.jpg exisitng in folder Unsorted Uploads']},
+        )
+
+        form = ImageAdminForm(
+            instance=deepcopy(file_obj),
+            data={'changed_filename': 'image.jpg'},
+        )
+        self.assertFalse(form.is_valid())
+        self.assertDictEqual(
+            form.errors,
+            {'name': ['File with name image.jpg exisitng in folder Unsorted Uploads']},
         )
