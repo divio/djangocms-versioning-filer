@@ -24,7 +24,7 @@ def is_file_content_valid_for_revert(version, user):
     content = version.content
     if isinstance(content, filer.models.File) and check_file_exists_in_folder(content):
         raise ConditionFailed(
-            _('Action Denied. File with name {} exisitng in folder {}').format(
+            _('File with name "{}" already exists in "{}" folder').format(
                 content.label, content.folder,
             )
         )
