@@ -34,7 +34,7 @@ def clean(func):
         if file and file.name.split('/')[-1].lower() != current_filename.lower():
             self.add_error('file', _('Uploaded file must have the same name as current file'))
 
-        folder_name = getattr(self.instance.folder, 'name', None) or 'Unsorted Uploads'
+        folder_name = getattr(self.instance.folder, 'name', None) or _('Unsorted Uploads')
         file_name = cleaned_data.get('name') or cleaned_data.get('changed_filename') or self.instance.original_filename
         if file_name and check_file_label_exists_in_folder(
             file_name, self.instance.folder, exclude_file_pks=[self.instance.pk]
