@@ -39,7 +39,7 @@ def is_file_content_valid_for_discard(version, user):
             return
         if check_file_exists_in_folder(latest_version.content):
             raise ConditionFailed(
-                _('Action Denied. File with name {} exisitng in folder {}').format(
+                _('File with name "{}" already exists in "{}" folder').format(
                     latest_version.content.label, latest_version.content.folder,
                 )
             )
