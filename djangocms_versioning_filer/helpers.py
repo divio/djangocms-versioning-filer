@@ -67,7 +67,7 @@ def check_file_label_exists_in_folder(label, folder, exclude_file_pks=None):
 def check_file_exists_in_folder(file_obj):
     try:
         latest_version = Version.objects.filter_by_grouper(file_obj.grouper).latest('created')
-        exclude_file_pks = [latest_version.content.pk]
+        exclude_file_pks = [latest_version.object_id]
     except Version.DoesNotExist:
         exclude_file_pks = []
 
