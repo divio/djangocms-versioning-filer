@@ -2,6 +2,8 @@ from django.utils.translation import ugettext as _
 
 import filer
 
+from ...helpers import check_file_label_exists_in_folder
+
 
 def save_model(func):
     """Override the FileAdmin save_model method"""
@@ -31,6 +33,13 @@ def clean(func):
         file = cleaned_data.get('file')
         if file and file.name.split('/')[-1].lower() != current_filename.lower():
             self.add_error('file', _('Uploaded file must have the same name as current file'))
+
+        folder_name = getattr(self.instance.folder, 'name', None) or _('Unsorted Uploads')
+        file_name = cleaned_data.get('name') or cleaned_data.get('changed_filename') or self.instance.original_filename
+        if file_name and check_file_label_exists_in_folder(
+            file_name, self.instance.folder, exclude_file_pks=[self.instance.pk]
+        ):
+            self.add_error('name', _('File with name "{}" already exists in "{}" folder').format(file_name, folder_name))
         return cleaned_data
     return inner
 filer.admin.fileadmin.FileAdminChangeFrom.clean = clean(  # noqa: E305
