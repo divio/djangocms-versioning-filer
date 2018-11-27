@@ -125,6 +125,7 @@ def ajax_upload(request, folder_id=None):
                 'alt_text': '',
                 'label': str(file_obj),
                 'file_id': file_obj.pk,
+                'grouper_id': file_grouper.pk,
             }
             # prepare preview thumbnail
             if type(file_obj) == Image:
