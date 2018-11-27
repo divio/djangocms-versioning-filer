@@ -30,9 +30,8 @@ class AdminFileGrouperWidget(ForeignKeyRawIdWidget):
         if obj:
             with nonversioned_manager(File):
                 file_obj = obj.file
-            file_value = file_obj.pk
         else:
-            file_obj = file_value = None
+            file_obj = None
         css_id = attrs.get('id', 'id_image_x')
         related_url = None
         if value:
@@ -49,18 +48,18 @@ class AdminFileGrouperWidget(ForeignKeyRawIdWidget):
         if not related_url:
             related_url = reverse('admin:filer-directory_listing-last')
         params = self.url_parameters()
-        params['_pick'] = 'file'
+        params['_pick'] = 'grouper'
         if params:
             lookup_url = '?' + urlencode(sorted(params.items()))
         else:
             lookup_url = ''
         if 'class' not in attrs:
             # The JavaScript looks for this hook.
-            attrs['class'] = 'vForeignKeyRawIdAdminField'
+            attrs['class'] = 'vForeignKeyRawIdAdminField filer-grouper-filer'
         # rendering the super for ForeignKeyRawIdWidget on purpose here because
         # we only need the input and none of the other stuff that
         # ForeignKeyRawIdWidget adds
-        hidden_input = super().render(name, file_value, attrs)
+        hidden_input = super().render(name, value, attrs)
         context = {
             'hidden_input': hidden_input,
             'lookup_url': '%s%s' % (related_url, lookup_url),

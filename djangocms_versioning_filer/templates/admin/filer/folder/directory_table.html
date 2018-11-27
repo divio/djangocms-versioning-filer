@@ -90,6 +90,9 @@
                                 {% if is_popup and filer_admin_context.pick_file %}
                                     <a class="insertlink insertlinkButton" href="#" onclick="opener.dismissRelatedImageLookupPopup(window, {{ file.id|unlocalize }}, '{{ file.icons.48|escapejs }}', '{{ file.label|escapejs }}'); return false;"
                                         title="{% trans 'Select this file' %}">&nbsp;</a>
+                                {% elif is_popup and filer_admin_context.pick_grouper %}
+                                    <a class="insertlink insertlinkButton" href="#" onclick="opener.dismissRelatedImageLookupPopup(window, {{ file.grouper_id|unlocalize }}, '{{ file.icons.48|escapejs }}', '{{ file.label|escapejs }}'); return false;"
+                                        title="{% trans 'Select this file' %}">&nbsp;</a>
                                 {% elif action_form and not is_popup %}
                                     <input type="checkbox" class="action-select" value="file-{{ item.pk }}" name="_selected_action">
                                 {% endif %}
@@ -98,12 +101,15 @@
                                 {% if is_popup and filer_admin_context.pick_file %}
                                     <a href="#" onclick="opener.dismissRelatedImageLookupPopup(window, {{ file.id|unlocalize }}, '{{ file.icons.48|escapejs }}', '{{ file.label|escapejs }}'); return false;"
                                         title="{% trans 'Select this file' %}">
+                                {% elif is_popup and filer_admin_context.pick_grouper %}
+                                    <a href="#" onclick="opener.dismissRelatedImageLookupPopup(window, {{ file.grouper_id|unlocalize }}, '{{ file.icons.48|escapejs }}', '{{ file.label|escapejs }}'); return false;"
+                                        title="{% trans 'Select this file' %}">
                                 {% elif has_change_permission %}
                                     <a href="{{ file.grouper.get_absolute_url }}{% filer_admin_context_url_params %}"
                                             title="{% blocktrans with file.label as item_label %}Change '{{ item_label }}' details{% endblocktrans %}">
                                 {% endif %}
                                     <img src="{% if file.icons.48 %}{{ file.icons.48 }}{% else %}{% static 'filer/icons/missingfile_48x48.png' %}{% endif %}" alt="{{ file.default_alt_text }}" width="28" height="28">
-                                {% if has_change_permission or is_popup and filer_admin_context.pick_file %}
+                                {% if has_change_permission or is_popup and filer_admin_context.pick_file or filer_admin_context.pick_grouper %}
                                     </a>
                                 {% endif %}
                             </td>
@@ -113,12 +119,15 @@
                                         {% if is_popup and filer_admin_context.pick_file %}
                                             <a href="#" onclick="opener.dismissRelatedImageLookupPopup(window, {{ file.id|unlocalize }}, '{{ file.icons.48|escapejs }}', '{{ file.label|escapejs }}'); return false;"
                                                 title="{% trans 'Select this file' %}">
+                                        {% elif is_popup and filer_admin_context.pick_grouper %}
+                                            <a href="#" onclick="opener.dismissRelatedImageLookupPopup(window, {{ file.grouper_id|unlocalize }}, '{{ file.icons.48|escapejs }}', '{{ file.label|escapejs }}'); return false;"
+                                                title="{% trans 'Select this file' %}">
                                         {% elif has_change_permission %}
                                             <a href="{{ file.grouper.get_absolute_url }}{% filer_admin_context_url_params %}"
                                                 title="{% blocktrans with file.label as item_label %}Change '{{ item_label }}' details{% endblocktrans %}">
                                         {% endif %}
                                         {{ file.label }}
-                                        {% if has_change_permission or is_popup and filer_admin_context.pick_file %}
+                                        {% if has_change_permission or is_popup and filer_admin_context.pick_file or filer_admin_context.pick_grouper %}
                                             </a>
                                         {% endif %}
                                     </strong>
