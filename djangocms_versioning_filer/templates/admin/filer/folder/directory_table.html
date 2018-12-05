@@ -12,6 +12,7 @@
                 <th class="column-icon">&nbsp;</th>
                 <th class="column-name">{% trans "Name" %}</th>
                 <th class="column-owner">{% trans "Owner" %}</th>
+                <th class="column-modified_date">{% trans "Modified date" %}</th>
                 <th class="column-size">{% trans "Size" %}</th>
                 <th class="column-action">{% trans "Action" %}</th>
             </tr>
@@ -26,7 +27,7 @@
                             <img src="{% static 'filer/icons/unfiled_folder_48x48.png' %}" alt="{% trans 'Folder Icon' %}" width="28" height="28">
                         </a>
                     </td>
-                    <td class="column-name" colspan="4">
+                    <td class="column-name" colspan="5">
                         <div>
                             <a href="{{ item.get_admin_directory_listing_url_path }}{% filer_admin_context_url_params %}"
                                 title="{% blocktrans with item.name as item_label %}Change '{{ item_label }}' folder details{% endblocktrans %}">
@@ -66,6 +67,9 @@
                             </td>
                             <td class="column-owner">
                                 {{ subfolder.owner|default:"n/a" }}
+                            </td>
+                            <td class="column-modified_date">
+                                {{ subfolder.modified_at }}
                             </td>
                             <td class="column-size">
                                 {% if not subfolder.is_root %}
@@ -139,6 +143,9 @@
                             <td class="column-owner">
                                 {{ file.owner|default:"n/a" }}
                             </td>
+                            <td class="column-modified_date">
+                                {{ file.modified_at }}
+                            </td>
                             <td class="column-size">
                                 <span class="tiny"> ({{ file.size|filesize:"auto1000long" }}{% ifequal file.file_type "Image" %}, {{ file.width }}x{{ file.height }} px{% endifequal %})</span>
                             </td>
@@ -155,7 +162,7 @@
                 {% endif %}
             {% empty %}
                 <tr>
-                    <td colspan="6" class="no-files"><span class="fa fa-arrow-down"></span>{% trans 'Drop files here or use the "Upload Files" button' %}</td>
+                    <td colspan="7" class="no-files"><span class="fa fa-arrow-down"></span>{% trans 'Drop files here or use the "Upload Files" button' %}</td>
                 </tr>
             {% endfor %}
         </tbody>
