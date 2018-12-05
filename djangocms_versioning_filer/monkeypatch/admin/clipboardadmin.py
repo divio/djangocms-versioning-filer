@@ -1,3 +1,4 @@
+from django.conf.urls import url
 from django.db.models import Value
 from django.db.models.functions import Coalesce
 from django.forms.models import modelform_factory
@@ -7,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 import filer
 from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.models import Version
+from filer.admin import ClipboardAdmin
 from filer import settings as filer_settings
 from filer.models import Folder, Image
 from filer.utils.files import (
@@ -15,6 +17,7 @@ from filer.utils.files import (
     handle_upload,
 )
 from filer.utils.loader import load_model
+from filer import views
 
 from ...helpers import create_file_version
 from ...models import (
@@ -150,4 +153,37 @@ def ajax_upload(request, folder_id=None):
                     form_errors,))
     except UploadException as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
 filer.admin.clipboardadmin.ajax_upload = ajax_upload  # noqa: E305
+
+
+def upload_check(request):
+    # Todo : Implement check
+    pass
+
+
+def get_urls(self):
+    return [
+            url(r'^operations/paste_clipboard_to_folder/$',
+                self.admin_site.admin_view(views.paste_clipboard_to_folder),
+                name='filer-paste_clipboard_to_folder'),
+            url(r'^operations/discard_clipboard/$',
+                self.admin_site.admin_view(views.discard_clipboard),
+                name='filer-discard_clipboard'),
+            url(r'^operations/delete_clipboard/$',
+                self.admin_site.admin_view(views.delete_clipboard),
+                name='filer-delete_clipboard'),
+            url(r'^operations/upload/(?P<folder_id>[0-9]+)/$',
+                ajax_upload,
+                name='filer-ajax_upload'),
+            url(r'^operations/upload/no_folder/$',
+                ajax_upload,
+                name='filer-ajax_upload'),
+            url(r'^operations/upload/check/$',
+                upload_check,
+                name='filer-ajax_upload')
+    ] + super(ClipboardAdmin, self).get_urls()
+
+
+filer.admin.clipboardadmin.get_urls = get_urls
