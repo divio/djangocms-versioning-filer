@@ -83,7 +83,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         self.assertFalse(form.is_valid())
         self.assertDictEqual(
             form.errors,
-            {'name': ['File with name image.jpg exisitng in folder Unsorted Uploads']},
+            {'name': ['File with name "image.jpg" already exists in "Unsorted Uploads" folder']},
         )
 
         form = ImageAdminForm(
@@ -99,7 +99,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         self.assertFalse(form.is_valid())
         self.assertDictEqual(
             form.errors,
-            {'name': ['File with name image.jpg exisitng in folder Unsorted Uploads']},
+            {'name': ['File with name "image.jpg" already exists in "Unsorted Uploads" folder']},
         )
 
         form = ImageAdminForm(
@@ -109,5 +109,5 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         self.assertFalse(form.is_valid())
         self.assertDictEqual(
             form.errors,
-            {'name': ['File with name image.jpg exisitng in folder Unsorted Uploads']},
+            {'name': ['File with name "image.jpg" already exists in "Unsorted Uploads" folder']},
         )
