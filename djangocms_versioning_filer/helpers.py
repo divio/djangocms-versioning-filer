@@ -2,6 +2,7 @@ import collections
 import os
 
 from django.apps import apps
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 
 import filer
@@ -74,3 +75,35 @@ def check_file_exists_in_folder(file_obj):
     return check_file_label_exists_in_folder(
         file_obj.label, file_obj.folder, exclude_file_pks=exclude_file_pks,
     )
+
+
+def filename_exists(request, folder_id=None):
+    from filer.models import Folder, File
+
+    FILE_EXISTS = 'File name already exists'
+
+    try:
+        # Get folder
+        folder = Folder.objects.get(pk=folder_id)
+    except Folder.DoesNotExist:
+        return
+
+    if folder:
+        if len(request.FILES) == 1:
+            # dont check if request is ajax or not, just grab the file
+            upload = list(request.FILES.values())[0]
+            filename = upload.name
+            if File.objects.filter(
+                original_filename=filename,
+                folder_id=folder_id
+            ):
+                raise ValidationError(FILE_EXISTS)
+        else:
+            # else process the request as usual
+            filename = request.GET.get('qqfile', False) or request.GET.get('filename', False) or ''
+            if File._base_manager.filter(
+                original_filename=filename,
+                folder_id=folder_id
+            ):
+                raise ValidationError(FILE_EXISTS)
+    return
