@@ -86,6 +86,7 @@ def filename_exists(request, folder_id=None):
         # Get folder
         folder = Folder.objects.get(pk=folder_id)
     except Folder.DoesNotExist:
+        # just return if folder not exists.
         return
 
     if folder:
@@ -93,17 +94,12 @@ def filename_exists(request, folder_id=None):
             # dont check if request is ajax or not, just grab the file
             upload = list(request.FILES.values())[0]
             filename = upload.name
-            if File.objects.filter(
-                original_filename=filename,
-                folder_id=folder_id
-            ):
-                raise ValidationError(FILE_EXISTS)
         else:
             # else process the request as usual
             filename = request.GET.get('qqfile', False) or request.GET.get('filename', False) or ''
-            if File._base_manager.filter(
+        if File._base_manager.filter(
                 original_filename=filename,
                 folder_id=folder_id
-            ):
+        ):
                 raise ValidationError(FILE_EXISTS)
     return
