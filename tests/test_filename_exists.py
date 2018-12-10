@@ -1,6 +1,8 @@
 import json
-from .base import BaseFilerVersioningTestCase
+
 from django.urls import reverse
+
+from .base import BaseFilerVersioningTestCase
 
 
 class FileNameExistsTests(BaseFilerVersioningTestCase):
@@ -22,7 +24,8 @@ class FileNameExistsTests(BaseFilerVersioningTestCase):
             )
             self.assertIn('success', json.loads(response.content))
             self.assertEqual(False, json.loads(response.content)['success'])
-            self.assertIn('message', json.loads(response.content))
+            self.assertIn('error', json.loads(response.content))
+            self.assertIn('File name already exists', json.loads(response.content)['error'])
 
     def test_filename_not_exists(self):
         with self.login_user_context(self.superuser):
@@ -34,3 +37,4 @@ class FileNameExistsTests(BaseFilerVersioningTestCase):
             )
             self.assertIn('success', json.loads(response.content))
             self.assertEqual(True, json.loads(response.content)['success'])
+            self.assertNotIn('error', json.loads(response.content))

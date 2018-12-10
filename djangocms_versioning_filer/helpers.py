@@ -86,7 +86,7 @@ def filename_exists(request, folder_id=None):
         # Get folder
         folder = Folder.objects.get(pk=folder_id)
     except Folder.DoesNotExist:
-        # just return if folder not exists.
+        # if folder not exists then not proceeding further check and return
         return
 
     if folder:
