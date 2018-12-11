@@ -6,8 +6,8 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.models import CMSPlugin
 
 from djangocms_attributes_field.fields import AttributesField
-
 from djangocms_audio.models import ALLOWED_EXTENSIONS, AudioFolder, AudioTrack
+
 from djangocms_versioning_filer.fields import FileGrouperField
 from djangocms_versioning_filer.models import (
     get_files_distinct_grouper_queryset,

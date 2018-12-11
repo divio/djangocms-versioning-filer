@@ -99,8 +99,8 @@ def filename_exists(request, folder_id=None):
             # else process the request as usual
             filename = request.GET.get('qqfile', False) or request.GET.get('filename', False) or ''
         if File.objects.filter(
-                original_filename=filename,
-                folder_id=folder_id
+            original_filename=filename,
+            folder_id=folder_id
         ):
                 raise ValidationError(FILE_EXISTS)
     return
