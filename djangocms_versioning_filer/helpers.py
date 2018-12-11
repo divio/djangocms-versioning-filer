@@ -102,5 +102,5 @@ def filename_exists(request, folder_id=None):
             original_filename=filename,
             folder_id=folder_id
         ):
-                raise ValidationError(FILE_EXISTS)
+            raise ValidationError(FILE_EXISTS)
     return
