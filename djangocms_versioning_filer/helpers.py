@@ -2,11 +2,13 @@ import collections
 import os
 
 from django.apps import apps
+from django.db.utils import IntegrityError
+from django.db.transaction import TransactionManagementError
 from django.core.files.base import ContentFile
 
 import filer
 from djangocms_versioning.models import Version
-from filer.models import File
+from filer.models import File, Folder
 
 from .models import get_files_distinct_grouper_queryset
 
@@ -74,3 +76,25 @@ def check_file_exists_in_folder(file_obj):
     return check_file_label_exists_in_folder(
         file_obj.label, file_obj.folder, exclude_file_pks=exclude_file_pks,
     )
+
+
+def check_folder_exists_in_folder(folder, name):
+    try:
+        subfolder = Folder.objects.get(parent=folder, name=name)
+        return subfolder
+    except Folder.DoesNotExist:
+        return False
+
+
+def add_subfolder(parentfolder, name):
+    # check that we're not creating a folder with a name that already exists at this node
+    exists = check_folder_exists_in_folder(parentfolder, name)
+    if exists:
+        return False
+    else:
+        subfolder = Folder(
+            parent=parentfolder,
+            name=name
+        )
+        subfolder.save()
+        return subfolder
