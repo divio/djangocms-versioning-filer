@@ -47,7 +47,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                 }
             )
 
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         original_filename = file_obj.original_filename
         filename = file_obj.file.name.split('/')[-1]
         file_obj.refresh_from_db()
@@ -71,7 +71,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                 }
             )
 
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         file_obj.refresh_from_db()
         self.assertEqual(file_obj.folder_id, self.folder.id)
         self.assertIn(file_obj, self.folder.files)
@@ -254,7 +254,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             grouper=same_file_in_other_folder_grouper,
             publish=True,
         )
-        self.assertEquals(FileGrouper.objects.count(), 3)
+        self.assertEqual(FileGrouper.objects.count(), 3)
 
         with self.login_user_context(self.superuser):
             self.client.post(
@@ -262,54 +262,54 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                 data={'file': file},
             )
 
-        self.assertEquals(FileGrouper.objects.count(), 4)
+        self.assertEqual(FileGrouper.objects.count(), 4)
         with nonversioned_manager(File):
             files = self.folder.files.all()
         new_file = files.latest('pk')
         new_file_grouper = FileGrouper.objects.latest('pk')
-        self.assertEquals(new_file.label, 'test2.pdf')
-        self.assertEquals(new_file.grouper, new_file_grouper)
+        self.assertEqual(new_file.label, 'test2.pdf')
+        self.assertEqual(new_file.grouper, new_file_grouper)
         versions = Version.objects.filter_by_grouper(new_file_grouper).order_by('pk')
-        self.assertEquals(versions.count(), 1)
-        self.assertEquals(versions[0].state, DRAFT)
+        self.assertEqual(versions.count(), 1)
+        self.assertEqual(versions[0].state, DRAFT)
 
         # Checking existing in self.folder file
-        self.assertEquals(self.file.label, 'test.pdf')
-        self.assertEquals(self.file.grouper, self.file_grouper)
+        self.assertEqual(self.file.label, 'test.pdf')
+        self.assertEqual(self.file.grouper, self.file_grouper)
         versions = Version.objects.filter_by_grouper(self.file_grouper).order_by('pk')
-        self.assertEquals(versions.count(), 1)
-        self.assertEquals(versions[0].state, PUBLISHED)
+        self.assertEqual(versions.count(), 1)
+        self.assertEqual(versions[0].state, PUBLISHED)
 
         # Checking file in diffrent folder with the same name as newly created file
-        self.assertEquals(same_file_in_other_folder.label, 'test2.pdf')
-        self.assertEquals(same_file_in_other_folder.grouper, same_file_in_other_folder_grouper)
+        self.assertEqual(same_file_in_other_folder.label, 'test2.pdf')
+        self.assertEqual(same_file_in_other_folder.grouper, same_file_in_other_folder_grouper)
         versions = Version.objects.filter_by_grouper(same_file_in_other_folder_grouper).order_by('pk')
-        self.assertEquals(versions.count(), 1)
-        self.assertEquals(versions[0].state, PUBLISHED)
+        self.assertEqual(versions.count(), 1)
+        self.assertEqual(versions[0].state, PUBLISHED)
 
     def test_ajax_upload_clipboardadmin_same_name_as_existing_file(self):
         file = self.create_file('test.pdf')
-        self.assertEquals(FileGrouper.objects.count(), 2)
+        self.assertEqual(FileGrouper.objects.count(), 2)
         with self.login_user_context(self.superuser):
             self.client.post(
                 reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
                 data={'file': file},
             )
 
-        self.assertEquals(FileGrouper.objects.count(), 2)
+        self.assertEqual(FileGrouper.objects.count(), 2)
 
         with nonversioned_manager(File):
             files = self.folder.files.all()
-        self.assertEquals(files.count(), 3)
-        self.assertEquals(self.file.label, 'test.pdf')
-        self.assertEquals(self.file.grouper, self.file_grouper)
+        self.assertEqual(files.count(), 3)
+        self.assertEqual(self.file.label, 'test.pdf')
+        self.assertEqual(self.file.grouper, self.file_grouper)
 
         versions = Version.objects.filter_by_grouper(self.file_grouper).order_by('pk')
-        self.assertEquals(versions.count(), 2)
-        self.assertEquals(versions[0].state, PUBLISHED)
-        self.assertEquals(versions[0].content, self.file)
-        self.assertEquals(versions[1].state, DRAFT)
-        self.assertEquals(versions[1].content, files.latest('pk'))
+        self.assertEqual(versions.count(), 2)
+        self.assertEqual(versions[0].state, PUBLISHED)
+        self.assertEqual(versions[0].content, self.file)
+        self.assertEqual(versions[1].state, DRAFT)
+        self.assertEqual(versions[1].content, files.latest('pk'))
 
     def test_ajax_upload_clipboardadmin_same_name_as_existing_draft_file(self):
         file_grouper = FileGrouper.objects.create()
@@ -320,44 +320,44 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             publish=False,
         )
         file = self.create_file('test1.pdf')
-        self.assertEquals(FileGrouper.objects.count(), 3)
+        self.assertEqual(FileGrouper.objects.count(), 3)
         with self.login_user_context(self.superuser):
             self.client.post(
                 reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
                 data={'file': file},
             )
 
-        self.assertEquals(FileGrouper.objects.count(), 3)
+        self.assertEqual(FileGrouper.objects.count(), 3)
 
         with nonversioned_manager(File):
             files = self.folder.files.all()
-        self.assertEquals(files.count(), 4)
-        self.assertEquals(file_obj.label, 'test1.pdf')
-        self.assertEquals(file_obj.grouper, file_grouper)
+        self.assertEqual(files.count(), 4)
+        self.assertEqual(file_obj.label, 'test1.pdf')
+        self.assertEqual(file_obj.grouper, file_grouper)
 
         versions = Version.objects.filter_by_grouper(file_grouper).order_by('pk')
-        self.assertEquals(versions.count(), 2)
-        self.assertEquals(versions[0].state, ARCHIVED)
-        self.assertEquals(versions[0].content, file_obj)
-        self.assertEquals(versions[1].state, DRAFT)
-        self.assertEquals(versions[1].content, files.latest('pk'))
+        self.assertEqual(versions.count(), 2)
+        self.assertEqual(versions[0].state, ARCHIVED)
+        self.assertEqual(versions[0].content, file_obj)
+        self.assertEqual(versions[1].state, DRAFT)
+        self.assertEqual(versions[1].content, files.latest('pk'))
 
     def test_ajax_upload_clipboardadmin_for_image_file(self):
         file = self.create_image('circles.jpg')
-        self.assertEquals(FileGrouper.objects.count(), 2)
+        self.assertEqual(FileGrouper.objects.count(), 2)
         with self.login_user_context(self.superuser):
             self.client.post(
                 reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
                 data={'file': file},
             )
 
-        self.assertEquals(FileGrouper.objects.count(), 3)
+        self.assertEqual(FileGrouper.objects.count(), 3)
 
         with nonversioned_manager(File):
             files = self.folder.files.all()
         new_file = files.latest('pk')
-        self.assertEquals(new_file.label, 'circles.jpg')
-        self.assertEquals(new_file.grouper, FileGrouper.objects.latest('pk'))
+        self.assertEqual(new_file.label, 'circles.jpg')
+        self.assertEqual(new_file.grouper, FileGrouper.objects.latest('pk'))
 
     @skipUnless(
         'djangocms_moderation' in settings.INSTALLED_APPS,
@@ -370,9 +370,9 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             publish=False,
         )
         file = self.create_image('test1.jpg')
-        self.assertEquals(FileGrouper.objects.count(), 3)
+        self.assertEqual(FileGrouper.objects.count(), 3)
         with nonversioned_manager(File):
-            self.assertEquals(File.objects.count(), 3)
+            self.assertEqual(File.objects.count(), 3)
 
         from djangocms_moderation.models import Workflow, ModerationCollection
         wf = Workflow.objects.create(name='Workflow 1', is_default=True)
@@ -387,11 +387,11 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                 data={'file': file},
             )
 
-        self.assertEquals(FileGrouper.objects.count(), 3)
+        self.assertEqual(FileGrouper.objects.count(), 3)
         with nonversioned_manager(File):
-            self.assertEquals(File.objects.count(), 3)
+            self.assertEqual(File.objects.count(), 3)
         error_msg = 'Cannot archive existing test1.jpg file version'
-        self.assertEquals(response.json()['error'], error_msg)
+        self.assertEqual(response.json()['error'], error_msg)
 
     def test_folderadmin_directory_listing(self):
         folder = Folder.objects.create(name='test folder 9')
@@ -607,14 +607,14 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             with nonversioned_manager(File):
                 f.refresh_from_db()
 
-        self.assertEquals(file0.url, '/media/f00/test.xls')
+        self.assertEqual(file0.url, '/media/f00/test.xls')
         self.assertFalse(file0.file.storage.exists('f0/test.xls'))
         self.assertTrue(file0.file.storage.exists('f00/test.xls'))
 
-        self.assertEquals(file1.url, '/media/f1/test.xls')
-        self.assertEquals(file2.url, '/media/f1/f2/test.xls')
-        self.assertEquals(file3.url, '/media/f1/f3/test.xls')
-        self.assertEquals(file4.url, '/media/f1/f3/f4/test.xls')
+        self.assertEqual(file1.url, '/media/f1/test.xls')
+        self.assertEqual(file2.url, '/media/f1/f2/test.xls')
+        self.assertEqual(file3.url, '/media/f1/f3/test.xls')
+        self.assertEqual(file4.url, '/media/f1/f3/f4/test.xls')
         self.assertIn('filer_public', draft_file.url)
         self.assertIn('test2.xls', draft_file.url)
         self.assertIn('filer_public', unpublished_file.url)
@@ -631,11 +631,11 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             with nonversioned_manager(File):
                 f.refresh_from_db()
 
-        self.assertEquals(file0.url, '/media/f00/test.xls')
-        self.assertEquals(file1.url, '/media/f10/test.xls')
-        self.assertEquals(file2.url, '/media/f10/f2/test.xls')
-        self.assertEquals(file3.url, '/media/f10/f3/test.xls')
-        self.assertEquals(file4.url, '/media/f10/f3/f4/test.xls')
+        self.assertEqual(file0.url, '/media/f00/test.xls')
+        self.assertEqual(file1.url, '/media/f10/test.xls')
+        self.assertEqual(file2.url, '/media/f10/f2/test.xls')
+        self.assertEqual(file3.url, '/media/f10/f3/test.xls')
+        self.assertEqual(file4.url, '/media/f10/f3/f4/test.xls')
         self.assertIn('filer_public', draft_file.url)
         self.assertIn('test2.xls', draft_file.url)
         self.assertNotIn('f10', draft_file.url)
@@ -655,11 +655,11 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             with nonversioned_manager(File):
                 f.refresh_from_db()
 
-        self.assertEquals(file0.url, '/media/f00/test.xls')
-        self.assertEquals(file1.url, '/media/f10/test.xls')
-        self.assertEquals(file2.url, '/media/f10/f2/test.xls')
-        self.assertEquals(file3.url, '/media/f10/f30%20test/test.xls')
-        self.assertEquals(file4.url, '/media/f10/f30%20test/f4/test.xls')
+        self.assertEqual(file0.url, '/media/f00/test.xls')
+        self.assertEqual(file1.url, '/media/f10/test.xls')
+        self.assertEqual(file2.url, '/media/f10/f2/test.xls')
+        self.assertEqual(file3.url, '/media/f10/f30%20test/test.xls')
+        self.assertEqual(file4.url, '/media/f10/f30%20test/f4/test.xls')
         self.assertIn('filer_public', draft_file.url)
         self.assertIn('test2.xls', draft_file.url)
         self.assertNotIn('f10', draft_file.url)
@@ -719,7 +719,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                 },
             )
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
         self.assertIn(
             '/en/admin/djangocms_moderation/moderationcollection/item/add-items/',
             response.url,
@@ -731,4 +731,4 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             content_type_id=ContentType.objects.get_for_model(File),
             object_id__in=[file0.pk, file1.pk, file2.pk, file3.pk, draft_file4.pk],
         ).values_list('id', flat=True)
-        self.assertEquals(set(proper_ids), set(version_ids))
+        self.assertEqual(set(proper_ids), set(version_ids))
