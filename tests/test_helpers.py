@@ -23,7 +23,6 @@ class HelperTests(BaseFilerVersioningTestCase):
         self.assertFalse(helpers.check_folder_exists_in_folder(self.folder, 'olivertwist'))
         subfolder = helpers.add_subfolder(self.folder, 'olivertwist')
         self.assertEquals(helpers.check_folder_exists_in_folder(self.folder, 'olivertwist'), subfolder)
-
         # add a folder to the sub-folder, then check that it's in the sub-folder, not the root folder
         subfolder2 = helpers.add_subfolder(subfolder, 'pippilongstockings')
         self.assertEquals(helpers.check_folder_exists_in_folder(subfolder, 'pippilongstockings'), subfolder2)

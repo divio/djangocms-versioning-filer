@@ -2,8 +2,6 @@ import collections
 import os
 
 from django.apps import apps
-from django.db.utils import IntegrityError
-from django.db.transaction import TransactionManagementError
 from django.core.files.base import ContentFile
 
 import filer
@@ -87,7 +85,9 @@ def check_folder_exists_in_folder(folder, name):
 
 
 def add_subfolder(parentfolder, name):
-    # check that we're not creating a folder with a name that already exists at this node
+    """ 
+    Check that we're not creating a folder with a name that already exists at this node
+    """
     exists = check_folder_exists_in_folder(parentfolder, name)
     if exists:
         return False

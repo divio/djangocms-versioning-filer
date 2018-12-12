@@ -26,7 +26,6 @@ from ...models import (
 
 @csrf_exempt
 def ajax_upload(request, folder_id=None):
-    # import ipdb; ipdb.set_trace()
     folder = None
     if folder_id:
         try:
@@ -40,15 +39,11 @@ def ajax_upload(request, folder_id=None):
         return JsonResponse({'error': filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER})
     try:
         if len(request.FILES) == 1:
-            print('handle_request_files_upload')
             # dont check if request is ajax or not, just grab the file
             upload, filename, is_raw = handle_request_files_upload(request)
         else:
-            print('handle_upload')
             # else process the request as usual
             upload, filename, is_raw = handle_upload(request)
-
-        print(filename)
 
         # find the file type
         for filer_class in filer_settings.FILER_FILE_MODELS:
@@ -66,26 +61,20 @@ def ajax_upload(request, folder_id=None):
         if uploadform.is_valid():
             file_obj = uploadform.save(commit=False)
             # Enforce the FILER_IS_PUBLIC_DEFAULT
-            file_obj.iNos_public = filer_settings.FILER_IS_PUBLIC_DEFAULT
-
+            file_obj.is_public = filer_settings.FILER_IS_PUBLIC_DEFAULT
             # manage folder allocations
             path = request.POST.get('path')
-            # import ipdb; ipdb.set_trace()
             if path:
-                pathSplit = path.split('/')
-                # if no folders in supplied path, then add to current folder
-                if len(pathSplit) == 0:
-                    file_obj.folder = folder
+                path_split = path.split('/')
                 # if there are folders in the supplied path, find / create as necessary
-                else:
-                    subfolder = folder
-                    for segment in pathSplit:
-                        subfolder = check_folder_exists_in_folder(subfolder, segment)
-                        if subfolder:
-                            folder = subfolder
-                        else:
-                            subfolder = add_subfolder(folder, segment)
-                        file_obj.folder = subfolder
+                subfolder = folder
+                for segment in path_split:
+                    subfolder = check_folder_exists_in_folder(subfolder, segment)
+                    if subfolder:
+                        folder = subfolder
+                    else:
+                        subfolder = add_subfolder(folder, segment)
+                    file_obj.folder = subfolder
             else:
                 file_obj.folder = folder
             same_name_file_qs = get_files_distinct_grouper_queryset().annotate(
