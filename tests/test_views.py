@@ -1,12 +1,15 @@
+import os
 from unittest import skipUnless
 from urllib.parse import parse_qs, urlparse
 
 from django.conf import settings
 from django.contrib.admin import helpers
 from django.contrib.contenttypes.models import ContentType
+from django.core.files import File as DjangoFile
 from django.urls import reverse
 
 from cms.utils.urlutils import add_url_parameters
+from cms.test_utils.testcases import CMSTestCase
 
 from djangocms_versioning.constants import ARCHIVED, DRAFT, PUBLISHED
 from djangocms_versioning.helpers import nonversioned_manager
@@ -732,3 +735,354 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             object_id__in=[file0.pk, file1.pk, file2.pk, file3.pk, draft_file4.pk],
         ).values_list('id', flat=True)
         self.assertEqual(set(proper_ids), set(version_ids))
+
+
+# TODO/NOTE: What happens when multiple files are uploaded, particularly
+# if a structure like so is uploaded:
+# folder
+# - file1
+# - subfolder
+# -- file2
+# Is this somehow handled by the FED side to make more than one request
+# to ajax_upload?
+class TestAjaxUploadViewFolderOperations(CMSTestCase):
+
+    def setUp(self):
+        self.superuser = self.get_superuser()
+
+    def create_file(self, original_filename, content='content'):
+        filename = os.path.join(
+            settings.FILE_UPLOAD_TEMP_DIR, original_filename)
+        with open(filename, 'w') as f:
+            f.write(content)
+        return DjangoFile(open(filename, 'rb'), name=original_filename)
+
+    def test_ajax_upload_clipboardadmin_no_folder(self):
+        """If no folder is specified in the POST url or data, no folder
+        should be created or set on the file object.
+        """
+        url = reverse('admin:filer-ajax_upload')
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            self.client.post(url, {'file': file_obj})
+
+        # No folders were created
+        self.assertEqual(Folder.objects.all().count(), 0)
+
+        # We should have one file which has its folder field set to None
+        files = File._base_manager.all()
+        self.assertEqual(files.count(), 1)
+        self.assertIsNone(files.get().folder)
+
+    def test_ajax_upload_clipboardadmin_folder_id_does_not_exist(self):
+        """If folder with folder_id does not exist, don't create any
+        folders or files and return error msg in json response.
+        """
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': 88})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(url, {'file': file_obj})
+
+        # We should get a 200 json response with an error
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'error': "Can't find folder to upload. Please refresh and try again"
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+        # We should no folders and no files after this POST call
+        self.assertEqual(Folder.objects.all().count(), 0)
+        self.assertEqual(File._base_manager.all().count(), 0)
+
+    def test_ajax_upload_clipboardadmin_with_folder_id(self):
+        """If a folder id is specified in the POST url then the
+        file should be added to that folder.
+        """
+        # Set up some nested folders
+        folder = Folder.objects.create(name='folder')
+        subfolder = Folder.objects.create(
+            name='subfolder', parent=folder)
+        subsubfolder = Folder.objects.create(
+            name='subsubfolder', parent=subfolder)
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': subsubfolder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            self.client.post(url, {'file': file_obj})
+
+        # We should still have 3 folders after this POST call:
+        # folder, subfolder and subsubfolder
+        self.assertEqual(Folder.objects.all().count(), 3)
+        # The tree structure of these folders should not change
+        folder.refresh_from_db()
+        subfolder.refresh_from_db()
+        subsubfolder.refresh_from_db()
+        self.assertIsNone(folder.parent)
+        self.assertEqual(subfolder.parent, folder)
+        self.assertEqual(subsubfolder.parent, subfolder)
+
+        # We should have one file which is in subsubfolder
+        files = File._base_manager.all()
+        self.assertEqual(files.count(), 1)
+        self.assertEqual(files.get().folder, subsubfolder)
+
+    def test_ajax_upload_clipboardadmin_no_folder_id_new_folder(self):
+        """If no folder id is specified, but a path param is sent
+        in the POST data then the folder in the path param should be
+        created and the file added to it.
+        """
+        url = reverse('admin:filer-ajax_upload')
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                url, {'path': 'folder', 'file': file_obj})
+
+        # We should have 1 folder after this POST call
+        self.assertEqual(Folder.objects.all().count(), 1)
+        folder = Folder.objects.get(name='folder')
+        # No parent should be created
+        self.assertIsNone(folder.parent)
+
+        # We should have one file which is in folder
+        files = File._base_manager.all()
+        self.assertEqual(files.count(), 1)
+        self.assertEqual(files.get().folder, folder)
+
+    def test_ajax_upload_clipboardadmin_with_folder_id_new_folder(self):
+        """If both a folder id and a path are specified, the new
+        folder containing the file should be created in the folder
+        specified by folder_id.
+        """
+        folder = Folder.objects.create(name='folder')
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                url, {'path': 'subfolder', 'file': file_obj})
+
+        # We should have 2 folders after this POST call:
+        # folder, subfolder
+        self.assertEqual(Folder.objects.all().count(), 2)
+        folder.refresh_from_db()
+        subfolder = Folder.objects.get(name='subfolder')
+        # The folder structure should be folder/subfolder
+        self.assertIsNone(folder.parent)
+        self.assertEqual(subfolder.parent, folder)
+
+        # We should have one file which is in subfolder
+        files = File._base_manager.all()
+        self.assertEqual(files.count(), 1)
+        self.assertEqual(files.get().folder, subfolder)
+
+    def test_ajax_upload_clipboardadmin_with_folder_id_new_folder_nested(self):
+        """If both a folder id and a nested path param are
+        specified, the newly created folders should be created in the
+        folder specified by folder_id."""
+        folder = Folder.objects.create(name='folder')
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                url, {'path': 'subfolder/subsubfolder', 'file': file_obj})
+
+        # We should have 3 folders after this POST call:
+        # folder, subfolder and subsubfolder
+        self.assertEqual(Folder.objects.all().count(), 3)
+        folder.refresh_from_db()
+        subfolder = Folder.objects.get(name='subfolder')
+        subsubfolder = Folder.objects.get(name='subsubfolder')
+        # The folder structure should be folder/subfolder/subsubfolder
+        self.assertIsNone(folder.parent)
+        self.assertEqual(subfolder.parent, folder)
+        self.assertEqual(subsubfolder.parent, subfolder)
+
+        # We should have one file which has its parent set to subsubfolder
+        files = File._base_manager.all()
+        self.assertEqual(files.count(), 1)
+        self.assertEqual(files.get().folder, subsubfolder)
+
+    def test_ajax_upload_clipboardadmin_no_folder_id_existing_folder(self):
+        """If no folder id is specified, but a path param of an existing
+        folder is sent in the POST data then the existing folder from
+        the path should be used (but not created anew).
+        """
+        folder = Folder.objects.create(name='folder')
+        url = reverse('admin:filer-ajax_upload')
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                url, {'path': 'folder', 'file': file_obj})
+
+        # We should still have 1 folder after this POST call
+        self.assertEqual(Folder.objects.all().count(), 1)
+        folder.refresh_from_db()
+        # No parent should have been created
+        self.assertIsNone(folder.parent)
+
+        # We should have one file which has its folder set to folder
+        files = File._base_manager.all()
+        self.assertEqual(files.count(), 1)
+        self.assertEqual(files.get().folder, folder)
+
+    def test_ajax_upload_clipboardadmin_with_folder_id_existing_folder(self):
+        """If both a folder id and a path to an existing folder are
+        specified, the code should look for the existing folder in the
+        folder specified by folder id.
+        """
+        folder = Folder.objects.create(name='folder')
+        subfolder = Folder.objects.create(name='subfolder', parent=folder)
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                url, {'path': 'subfolder', 'file': file_obj})
+
+        # We should still have 2 folders after this POST call:
+        # folder, subfolder
+        self.assertEqual(Folder.objects.all().count(), 2)
+        folder.refresh_from_db()
+        subfolder.refresh_from_db()
+        # The folder structure should still be folder/subfolder
+        self.assertIsNone(folder.parent)
+        self.assertEqual(subfolder.parent, folder)
+
+        # We should have one file which has its parent set to subfolder
+        files = File._base_manager.all()
+        self.assertEqual(files.count(), 1)
+        self.assertEqual(files.get().folder, subfolder)
+
+    def test_ajax_upload_clipboardadmin_without_folder_id_existing_folder_nested(self):
+        """If there's no folder id specified, but there's a nested path
+        to an existing folder in the POST params,
+        the file should be added to the existing folder."""
+        folder = Folder.objects.create(name='folder')
+        subfolder = Folder.objects.create(
+            name='subfolder', parent=folder)
+        subsubfolder = Folder.objects.create(
+            name='subfolder', parent=subfolder)
+        url = reverse('admin:filer-ajax_upload')
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                url, {'path': 'folder/subfolder/subsubfolder', 'file': file_obj})
+
+        # We should still have 3 folders after this POST call:
+        # folder, subfolder and subsubfolder
+        self.assertEqual(Folder.objects.all().count(), 3)
+        folder.refresh_from_db()
+        subfolder.refresh_from_db()
+        subsubfolder.refresh_from_db()
+        # The folder structure should be as folder/subfolder/subsubfolder
+        self.assertIsNone(folder.parent)
+        self.assertEqual(subfolder.parent, folder)
+        self.assertEqual(subsubfolder.parent, subfolder)
+
+        # We should have one file which has its parent set to subsubfolder
+        files = File._base_manager.all()
+        self.assertEqual(files.count(), 1)
+        self.assertEqual(files.get().folder, subsubfolder)
+
+    def test_ajax_upload_clipboardadmin_with_folder_id_existing_folder_nested(self):
+        """If both a folder id and a nested path to an existing folder
+        are specified, the file should be added to the existing folder.
+        """
+        folder = Folder.objects.create(name='folder')
+        subfolder = Folder.objects.create(
+            name='subfolder', parent=folder)
+        subsubfolder = Folder.objects.create(
+            name='subfolder', parent=subfolder)
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                url, {'path': 'subfolder/subsubfolder', 'file': file_obj})
+
+        # We should still have 3 folders after this POST call:
+        # folder, subfolder and subsubfolder
+        self.assertEqual(Folder.objects.all().count(), 3)
+        folder.refresh_from_db()
+        subfolder.refresh_from_db()
+        subsubfolder.refresh_from_db()
+        # The folder structure should be folder/subfolder/subsubfolder
+        self.assertIsNone(folder.parent)
+        self.assertEqual(subfolder.parent, folder)
+        self.assertEqual(subsubfolder.parent, subfolder)
+
+        # We should have one file which has its parent set to subsubfolder
+        files = File._base_manager.all()
+        self.assertEqual(files.count(), 1)
+        self.assertEqual(files.get().folder, subsubfolder)
+
+    def test_ajax_upload_clipboardadmin_nested_with_existing_and_new_with_folder_id(self):
+        """A folder id is specified and one of the nested folders in
+        path already exists.
+        """
+        folder = Folder.objects.create(name='folder')
+        subfolder = Folder.objects.create(
+            name='subfolder', parent=folder)
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                url, {'path': 'subfolder/subsubfolder', 'file': file_obj})
+
+        # We should have 3 folders after this POST call:
+        # folder, subfolder and subsubfolder
+        self.assertEqual(Folder.objects.all().count(), 3)
+        folder.refresh_from_db()
+        subfolder.refresh_from_db()
+        subsubfolder = Folder.objects.get(name='subsubfolder')
+        # The folder structure should be folder/subfolder/subsubfolder
+        self.assertIsNone(folder.parent)
+        self.assertEqual(subfolder.parent, folder)
+        self.assertEqual(subsubfolder.parent, subfolder)
+
+        # We should have one file which has its parent set to subsubfolder
+        files = File._base_manager.all()
+        self.assertEqual(files.count(), 1)
+        self.assertEqual(files.get().folder, subsubfolder)
+
+    def test_ajax_upload_clipboardadmin_nested_with_existing_and_new_no_folder_id(self):
+        """No folder id is specified and one of the three folders in
+        the nested path already exist.
+        """
+        folder = Folder.objects.create(name='folder')
+        url = reverse('admin:filer-ajax_upload')
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                url, {'path': 'folder/subfolder/subsubfolder', 'file': file_obj})
+
+        # We should have 3 folders after this POST call:
+        # folder, subfolder and subsubfolder
+        self.assertEqual(Folder.objects.all().count(), 3)
+        folder.refresh_from_db()
+        subfolder = Folder.objects.get(name='subfolder')
+        subsubfolder = Folder.objects.get(name='subsubfolder')
+        # The folder structure should be folder/subfolder/subsubfolder
+        self.assertIsNone(folder.parent)
+        self.assertEqual(subfolder.parent, folder)
+        self.assertEqual(subsubfolder.parent, subfolder)
+
+        # We should have one file which has its parent set to subsubfolder
+        files = File._base_manager.all()
+        self.assertEqual(files.count(), 1)
+        self.assertEqual(files.get().folder, subsubfolder)
