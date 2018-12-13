@@ -971,7 +971,7 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         subfolder = Folder.objects.create(
             name='subfolder', parent=folder)
         subsubfolder = Folder.objects.create(
-            name='subfolder', parent=subfolder)
+            name='subsubfolder', parent=subfolder)
         url = reverse('admin:filer-ajax_upload')
         file_obj = self.create_file('test-file')
 
@@ -1003,7 +1003,7 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         subfolder = Folder.objects.create(
             name='subfolder', parent=folder)
         subsubfolder = Folder.objects.create(
-            name='subfolder', parent=subfolder)
+            name='subsubfolder', parent=subfolder)
         url = reverse(
             'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
         file_obj = self.create_file('test-file')

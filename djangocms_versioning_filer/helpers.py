@@ -74,27 +74,3 @@ def check_file_exists_in_folder(file_obj):
     return check_file_label_exists_in_folder(
         file_obj.label, file_obj.folder, exclude_file_pks=exclude_file_pks,
     )
-
-
-def check_folder_exists_in_folder(folder, name):
-    try:
-        subfolder = Folder.objects.get(parent=folder, name=name)
-        return subfolder
-    except Folder.DoesNotExist:
-        return False
-
-
-def add_subfolder(parentfolder, name):
-    """ 
-    Check that we're not creating a folder with a name that already exists at this node
-    """
-    exists = check_folder_exists_in_folder(parentfolder, name)
-    if exists:
-        return False
-    else:
-        subfolder = Folder(
-            parent=parentfolder,
-            name=name
-        )
-        subfolder.save()
-        return subfolder

@@ -16,7 +16,7 @@ from filer.utils.files import (
 )
 from filer.utils.loader import load_model
 
-from ...helpers import add_subfolder, create_file_version, check_folder_exists_in_folder
+from ...helpers import create_file_version
 from ...models import (
     FileGrouper,
     NullIfEmptyStr,
@@ -36,6 +36,7 @@ def ajax_upload(request, folder_id=None):
 
     # check permissions
     if folder and not folder.has_add_children_permission(request):
+        # TODO: Test
         return JsonResponse({'error': filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER})
     try:
         if len(request.FILES) == 1:
@@ -64,19 +65,15 @@ def ajax_upload(request, folder_id=None):
             file_obj.is_public = filer_settings.FILER_IS_PUBLIC_DEFAULT
             # manage folder allocations
             path = request.POST.get('path')
-            if path:
-                path_split = path.split('/')
-                # if there are folders in the supplied path, find / create as necessary
-                subfolder = folder
-                for segment in path_split:
-                    subfolder = check_folder_exists_in_folder(subfolder, segment)
-                    if subfolder:
-                        folder = subfolder
-                    else:
-                        subfolder = add_subfolder(folder, segment)
-                    file_obj.folder = subfolder
-            else:
-                file_obj.folder = folder
+
+            # Set the file's folder
+            path_split = path.split('/') if path else []
+            folder_obj = folder
+            for segment in path_split:
+                folder_obj = Folder.objects.get_or_create(
+                    name=segment, parent=folder_obj)[0]
+            file_obj.folder = folder_obj
+
             same_name_file_qs = get_files_distinct_grouper_queryset().annotate(
                 _name=NullIfEmptyStr('name'),
                 _original_filename=NullIfEmptyStr('original_filename'),
@@ -162,5 +159,6 @@ def ajax_upload(request, folder_id=None):
                 "AJAX request not valid: form invalid '%s'" % (
                     form_errors,))
     except UploadException as e:
+        # TODO: Test
         return JsonResponse({'error': str(e)}, status=500)
 filer.admin.clipboardadmin.ajax_upload = ajax_upload  # noqa: E305
