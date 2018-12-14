@@ -212,6 +212,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         paginated_items = paginator.page(paginator.num_pages)
 
     context = self.admin_site.each_context(request)
+    # import ipdb; ipdb.set_trace()
     context.update({
         'folder': folder,
         'clipboard_files': get_files_distinct_grouper_queryset().filter(
