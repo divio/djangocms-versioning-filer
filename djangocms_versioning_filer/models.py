@@ -1,7 +1,11 @@
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Func
 from django.utils.functional import cached_property
+from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
+
+from cms.utils.helpers import is_editable_model
 
 from filer.models import File
 
@@ -32,6 +36,23 @@ class FileGrouper(models.Model):
     def get_absolute_url(self):
         from djangocms_versioning.helpers import version_list_url_for_grouper
         return version_list_url_for_grouper(self)
+
+
+def get_preview_url(self):
+    # If the object is editable the preview view should be used.
+    if is_editable_model(self.__class__):
+        url = get_object_preview_url(self)
+    # Or else, the standard change view should be used
+    else:
+        url = reverse('admin:{app}_{model}_change'.format(
+            app=self._meta.app_label,
+            model=self._meta.model_name,
+        ), args=[self.pk])
+
+    return url
+
+
+File.get_preview_url = get_preview_url
 
 
 grouper_fk_field = models.ForeignKey(
