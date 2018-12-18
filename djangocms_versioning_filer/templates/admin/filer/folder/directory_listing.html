@@ -46,7 +46,7 @@
             <a href="{% url 'admin:app_list' app_label='filer' %}" title="{% trans 'Go back to Filer app' %}">
                 {% trans "Filer" %}
             </a>
-            {% if not folder.is_root and folder.is_smart_folder %}
+            {% if not instance.is_root and instance.is_smart_folder %}
                 &rsaquo;
                 <a href="{% url 'admin:filer-directory_listing-root' %}" title="{% trans 'Go back to root folder' %}">{% trans "root" %}</a>
             {% endif %}
@@ -59,18 +59,18 @@
             {% endfor %}
             {% if breadcrumbs_action %}
                 &rsaquo;
-                <a href="{{ folder.get_admin_directory_listing_url_path }}"
-                    title="{% blocktrans with folder.name as folder_name %}Go back to '{{ folder_name }}' folder{% endblocktrans %}">
-                    {% if folder.label %}
-                        {{ folder.label }}
+                <a href="{{ instance.get_admin_directory_listing_url_path }}"
+                    title="{% blocktrans with instance.name as folder_name %}Go back to '{{ folder_name }}' folder{% endblocktrans %}">
+                    {% if instance.label %}
+                        {{ instance.label }}
                     {% else %}
-                        {{ folder.name }}
+                        {{ instance.name }}
                     {% endif %}
                 </a>
                 &rsaquo;
                 {{ breadcrumbs_action }}
             {% else %}
-                {% if not folder.is_root and folder.is_smart_folder %}
+                {% if not instance.is_root and instance.is_smart_folder %}
                     &rsaquo;
                 {% endif %}
                 {% if folder.label %}
