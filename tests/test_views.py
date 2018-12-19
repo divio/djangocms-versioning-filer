@@ -751,7 +751,10 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         return DjangoFile(open(filename, 'rb'), name=original_filename)
 
     @patch.object(Folder, 'has_add_children_permission', Mock(return_value=True))
-    def test_ajax_upload_clipboardadmin_user_with_perms_can_access(self):
+    def test_ajax_upload_clipboardadmin_user_with_perms_for_adding_children_can_access(self):
+        """If folder.has_add_children_permissions returns True then
+        we should allow file upload
+        """
         user = self._create_user('albert')
         folder = Folder.objects.create(name='folder')
         url = reverse(
@@ -772,7 +775,10 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         self.assertDictEqual(response.json(), expected_json)
 
     @patch.object(Folder, 'has_add_children_permission', Mock(return_value=False))
-    def test_ajax_upload_clipboardadmin_user_without_perms_cannot_access(self):
+    def test_ajax_upload_clipboardadmin_user_without_perms_for_adding_children_cannot_access(self):
+        """If folder.has_add_children_permissions returns False then
+        we should not allow file upload
+        """
         user = self._create_user('albert')
         folder = Folder.objects.create(name='folder')
         url = reverse(
@@ -788,7 +794,10 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         }
         self.assertDictEqual(response.json(), expected_json)
 
-    def test_ajax_upload_clipboardadmin_anonymous_user_cant_access(self):
+    def test_ajax_upload_clipboardadmin_anonymous_user_cant_access_with_folder_id(self):
+        """If trying to access the url as an anonymous user with an
+        upload folder specified, we should not allow file upload
+        """
         folder = Folder.objects.create(name='folder')
         url = reverse(
             'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
@@ -799,6 +808,88 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         self.assertEqual(response.status_code, 200)
         expected_json = {
             'error': "Can't use this folder, Permission Denied. Please select another folder."
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    def test_ajax_upload_clipboardadmin_anonymous_user_cant_get_info_if_folder_exists(self):
+        """If trying to access the url as an anonymous user with an
+        id of an upload folder that doesn't exist, we should
+        give the user the same message as when a folder exists.
+        Otherwise a potential attacker could use this to find out which
+        folders exist or not.
+        """
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': 333})
+        file_obj = self.create_file('test-file')
+
+        response = self.client.post(url, {'file': file_obj})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'error': "Can't use this folder, Permission Denied. Please select another folder."
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    def test_ajax_upload_clipboardadmin_anonymous_user_cant_access_no_folder_id(self):
+        """If trying to access the url as an anonymous user with no
+        upload folder specified, we should not allow file upload.
+        """
+        url = reverse('admin:filer-ajax_upload')
+        file_obj = self.create_file('test-file')
+
+        response = self.client.post(url, {'file': file_obj})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'error': "Can't use this folder, Permission Denied. Please select another folder."
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    @patch.object(Folder, 'can_have_subfolders', False)
+    def test_ajax_upload_clipboardadmin_folder_that_cant_have_subfolders_path_specified(self):
+        """If trying to access the url with a folder and path param
+        specified, then we should not allow access for a folder that
+        can't have subfolders
+        """
+        user = self._create_user('albert')
+        folder = Folder.objects.create(name='folder')
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(user):
+            response = self.client.post(
+                url, {'file': file_obj, 'path': 'subfolder/subsubfolder'})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'error': "Can't use this folder, Permission Denied. Please select another folder."
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    @patch.object(Folder, 'can_have_subfolders', False)
+    def test_ajax_upload_clipboardadmin_folder_that_cant_have_subfolders_path_unspecified(self):
+        """If trying to access the url with a folder specified but no
+        path, then we should allow access for a folder that
+        can't have subfolders because we definitely won't be creating
+        any folders
+        """
+        user = self._create_user('albert', is_staff=True)
+        folder = Folder.objects.create(name='folder')
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(user):
+            response = self.client.post(url, {'file': file_obj})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'file_id': 1,
+            'thumbnail': '/static/filer/icons/file_32x32.png',
+            'grouper_id': 1,
+            'alt_text': '',
+            'label': 'test-file'
         }
         self.assertDictEqual(response.json(), expected_json)
 

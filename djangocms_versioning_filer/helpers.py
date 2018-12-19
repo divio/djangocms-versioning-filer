@@ -6,7 +6,7 @@ from django.core.files.base import ContentFile
 
 import filer
 from djangocms_versioning.models import Version
-from filer.models import File, Folder
+from filer.models import File
 
 from .models import get_files_distinct_grouper_queryset
 

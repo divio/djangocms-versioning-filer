@@ -27,16 +27,33 @@ from ...models import (
 @csrf_exempt
 def ajax_upload(request, folder_id=None):
     folder = None
-    if folder_id:
+    path = request.POST.get('path')
+
+    # check permissions and data
+    error_msg = None
+    if not request.user.is_authenticated:
+        # User is not logged in. Return a generic message that gives
+        # no data info (such as whether a folder exists or not)
+        error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
+    elif folder_id:
         try:
-            # Get folder
             folder = Folder.objects.get(pk=folder_id)
         except Folder.DoesNotExist:
-            return JsonResponse({'error': filer.admin.clipboardadmin.NO_FOLDER_ERROR})
-
-    # check permissions
-    if folder and not folder.has_add_children_permission(request):
-        return JsonResponse({'error': filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER})
+            # A folder with id=folder_id does not exist so return
+            # an error message specifying this
+            error_msg = filer.admin.clipboardadmin.NO_FOLDER_ERROR
+        else:
+            # Now check if the user has sufficient permissions to
+            # upload a file to the folder with id=folder_id and return
+            # an error message if not
+            no_folder_perms = (
+                not folder.has_add_children_permission(request) or
+                (path and not folder.can_have_subfolders)
+            )
+            if no_folder_perms:
+                error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
+    if error_msg:
+        return JsonResponse({'error': error_msg})
 
     try:
         if len(request.FILES) == 1:
@@ -65,7 +82,6 @@ def ajax_upload(request, folder_id=None):
             file_obj.is_public = filer_settings.FILER_IS_PUBLIC_DEFAULT
 
             # Set the file's folder
-            path = request.POST.get('path')
             path_split = path.split('/') if path else []
             current_folder = folder
             for segment in path_split:
