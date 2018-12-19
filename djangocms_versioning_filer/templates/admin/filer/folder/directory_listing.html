@@ -50,7 +50,7 @@
                 &rsaquo;
                 <a href="{% url 'admin:filer-directory_listing-root' %}" title="{% trans 'Go back to root folder' %}">{% trans "root" %}</a>
             {% endif %}
-             {%  if not instance %}
+             {%  if folder %}
                 {% for ancestor_folder in folder.logical_path %}
                     &rsaquo;
                     <a href="{{ ancestor_folder.get_admin_directory_listing_url_path }}"
