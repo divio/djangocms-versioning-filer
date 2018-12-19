@@ -68,7 +68,7 @@
             {% endfor %}
             {% if breadcrumbs_action %}
                 &rsaquo;
-                <a href="{{ folder.get_admin_directory_listing_url_path }}"
+                <a href="{{ instance.get_admin_directory_listing_url_path }}"
                     title="{% blocktrans with instance.name as folder_name %}Go back to '{{ folder_name }}' folder{% endblocktrans %}">
                     {% if instance.label %}
                         {{ instance.label }}
@@ -79,10 +79,13 @@
                 &rsaquo;
                 {{ breadcrumbs_action }}
             {% else %}
+                {% if not instance.is_root and instance.is_smart_folder %}
                     &rsaquo;
+                {% endif %}
                 {% if instance.label %}
                     {{ instance.label }}
                 {% else %}
+                    &rsaquo;
                     {{ folder.name }}
                 {% endif %}
             {% endif %}
