@@ -1,4 +1,5 @@
 import os
+from mock import patch, Mock
 from unittest import skipUnless
 from urllib.parse import parse_qs, urlparse
 
@@ -737,14 +738,71 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertEqual(set(proper_ids), set(version_ids))
 
 
-# TODO/NOTE: What happens when multiple files are uploaded, particularly
-# if a structure like so is uploaded:
-# folder
-# - file1
-# - subfolder
-# -- file2
-# Is this somehow handled by the FED side to make more than one request
-# to ajax_upload?
+# NOTE: Returning 200 when permissions don't match is a bit strange,
+# one would expect a 403 or 400, but this is what the frontend
+# seems to expect currently
+class TestAjaxUploadViewPermissions(CMSTestCase):
+
+    def create_file(self, original_filename, content='content'):
+        filename = os.path.join(
+            settings.FILE_UPLOAD_TEMP_DIR, original_filename)
+        with open(filename, 'w') as f:
+            f.write(content)
+        return DjangoFile(open(filename, 'rb'), name=original_filename)
+
+    @patch.object(Folder, 'has_add_children_permission', Mock(return_value=True))
+    def test_ajax_upload_clipboardadmin_user_with_perms_can_access(self):
+        user = self._create_user('albert')
+        folder = Folder.objects.create(name='folder')
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(user):
+            response = self.client.post(url, {'file': file_obj})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'file_id': 1,
+            'thumbnail': '/static/filer/icons/file_32x32.png',
+            'grouper_id': 1,
+            'alt_text': '',
+            'label': 'test-file'
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    @patch.object(Folder, 'has_add_children_permission', Mock(return_value=False))
+    def test_ajax_upload_clipboardadmin_user_without_perms_cannot_access(self):
+        user = self._create_user('albert')
+        folder = Folder.objects.create(name='folder')
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(user):
+            response = self.client.post(url, {'file': file_obj})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'error': "Can't use this folder, Permission Denied. Please select another folder."
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    def test_ajax_upload_clipboardadmin_anonymous_user_cant_access(self):
+        folder = Folder.objects.create(name='folder')
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        response = self.client.post(url, {'file': file_obj})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'error': "Can't use this folder, Permission Denied. Please select another folder."
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+
 class TestAjaxUploadViewFolderOperations(CMSTestCase):
 
     def setUp(self):

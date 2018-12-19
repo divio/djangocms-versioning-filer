@@ -36,8 +36,8 @@ def ajax_upload(request, folder_id=None):
 
     # check permissions
     if folder and not folder.has_add_children_permission(request):
-        # TODO: Test
         return JsonResponse({'error': filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER})
+
     try:
         if len(request.FILES) == 1:
             # dont check if request is ajax or not, just grab the file
@@ -63,16 +63,15 @@ def ajax_upload(request, folder_id=None):
             file_obj = uploadform.save(commit=False)
             # Enforce the FILER_IS_PUBLIC_DEFAULT
             file_obj.is_public = filer_settings.FILER_IS_PUBLIC_DEFAULT
-            # manage folder allocations
-            path = request.POST.get('path')
 
             # Set the file's folder
+            path = request.POST.get('path')
             path_split = path.split('/') if path else []
-            folder_obj = folder
+            current_folder = folder
             for segment in path_split:
-                folder_obj = Folder.objects.get_or_create(
-                    name=segment, parent=folder_obj)[0]
-            file_obj.folder = folder_obj
+                current_folder = Folder.objects.get_or_create(
+                    name=segment, parent=current_folder)[0]
+            file_obj.folder = current_folder
 
             same_name_file_qs = get_files_distinct_grouper_queryset().annotate(
                 _name=NullIfEmptyStr('name'),
