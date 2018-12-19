@@ -69,8 +69,8 @@
             {% if breadcrumbs_action %}
                 &rsaquo;
                 <a href="{{ folder.get_admin_directory_listing_url_path }}"
-                    title="{% blocktrans with folder.name as folder_name %}Go back to '{{ folder_name }}' folder{% endblocktrans %}">
-                    {% if instance.label   %}
+                    title="{% blocktrans with instance.name as folder_name %}Go back to '{{ folder_name }}' folder{% endblocktrans %}">
+                    {% if instance.label %}
                         {{ instance.label }}
                     {% else %}
                         {{ instance.name }}
