@@ -97,8 +97,18 @@ def ajax_upload(request, folder_id=None):
             path_split = path.split('/') if path else []
             current_folder = folder
             for segment in path_split:
-                current_folder = Folder.objects.get_or_create(
-                    name=segment, parent=current_folder)[0]
+                try:
+                    current_folder = Folder.objects.get(
+                        name=segment, parent=current_folder)
+                except Folder.DoesNotExist:
+                    current_folder = Folder.objects.create(
+                        name=segment, parent=current_folder)
+                else:
+                    # If the folder already exists, check the user is
+                    # allowed to upload here
+                    if not current_folder.has_add_children_permission(request):
+                        error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
+                        return JsonResponse({'error': error_msg})
             file_obj.folder = current_folder
 
             same_name_file_qs = get_files_distinct_grouper_queryset().annotate(

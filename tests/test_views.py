@@ -755,7 +755,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         """If folder.has_add_children_permissions returns True then
         we should allow file upload
         """
-        user = self._create_user('albert')
+        user = self.get_superuser()
         folder = Folder.objects.create(name='folder')
         url = reverse(
             'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
@@ -779,7 +779,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         """If folder.has_add_children_permissions returns False then
         we should not allow file upload
         """
-        user = self._create_user('albert')
+        user = self.get_superuser()
         folder = Folder.objects.create(name='folder')
         url = reverse(
             'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
@@ -787,6 +787,145 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
 
         with self.login_user_context(user):
             response = self.client.post(url, {'file': file_obj})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'error': "Can't use this folder, Permission Denied. Please select another folder."
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    @patch.object(Folder, 'has_add_children_permission', Mock(return_value=True))
+    def test_ajax_upload_clipboardadmin_user_with_perms_for_adding_children_can_access_with_existing_path_and_folder_id(self):
+        user = self.get_superuser()
+        folder = Folder.objects.create(name='folder')
+        Folder.objects.create(name='subfolder')
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(user):
+            response = self.client.post(
+                url, {'file': file_obj, 'path': 'subfolder'})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'file_id': 1,
+            'thumbnail': '/static/filer/icons/file_32x32.png',
+            'grouper_id': 1,
+            'alt_text': '',
+            'label': 'test-file'
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    # NOTE: Mocked to return True for check on parent and False on subfolder
+    @patch.object(Folder, 'has_add_children_permission', side_effect=[True, False])
+    def test_ajax_upload_clipboardadmin_user_without_perms_for_adding_children_cannot_access_with_existing_path_and_folder_id(
+        self, mocked_perms
+    ):
+        user = self.get_superuser()
+        folder = Folder.objects.create(name='folder')
+        Folder.objects.create(name='subfolder', parent=folder)
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(user):
+            response = self.client.post(
+                url, {'file': file_obj, 'path': 'subfolder'})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'error': "Can't use this folder, Permission Denied. Please select another folder."
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    @patch.object(Folder, 'has_add_children_permission', Mock(return_value=True))
+    def test_ajax_upload_clipboardadmin_user_with_perms_for_adding_children_can_access_with_existing_nested_path_without_folder_id(self):
+        user = self.get_superuser()
+        folder = Folder.objects.create(name='folder')
+        subfolder = Folder.objects.create(name='subfolder', parent=folder)
+        Folder.objects.create(name='subsubfolder', parent=subfolder)
+        url = reverse('admin:filer-ajax_upload')
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(user):
+            response = self.client.post(
+                url, {'file': file_obj, 'path': 'folder/subfolder/subsubfolder'})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'file_id': 1,
+            'thumbnail': '/static/filer/icons/file_32x32.png',
+            'grouper_id': 1,
+            'alt_text': '',
+            'label': 'test-file'
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    # NOTE: Mocked to return True for check on parents and False on subsubfolder
+    @patch.object(Folder, 'has_add_children_permission', side_effect=[True, True, False])
+    def test_ajax_upload_clipboardadmin_user_without_perms_for_adding_children_cannot_access_with_existing_nested_path_without_folder_id(
+        self, mocked_perms
+    ):
+        user = self.get_superuser()
+        folder = Folder.objects.create(name='folder')
+        subfolder = Folder.objects.create(name='subfolder', parent=folder)
+        Folder.objects.create(name='subsubfolder', parent=subfolder)
+        url = reverse('admin:filer-ajax_upload')
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(user):
+            response = self.client.post(
+                url, {'file': file_obj, 'path': 'folder/subfolder/subsubfolder'})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'error': "Can't use this folder, Permission Denied. Please select another folder."
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    @patch.object(Folder, 'has_add_children_permission', Mock(return_value=True))
+    def test_ajax_upload_clipboardadmin_user_with_perms_for_adding_children_can_access_with_existing_nested_path_with_folder_id(self):
+        user = self.get_superuser()
+        root_folder = Folder.objects.create(name='root')
+        folder = Folder.objects.create(name='folder', parent=root_folder)
+        subfolder = Folder.objects.create(name='subfolder', parent=folder)
+        Folder.objects.create(name='subsubfolder', parent=subfolder)
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': root_folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(user):
+            response = self.client.post(
+                url, {'file': file_obj, 'path': 'folder/subfolder/subsubfolder'})
+
+        self.assertEqual(response.status_code, 200)
+        expected_json = {
+            'file_id': 1,
+            'thumbnail': '/static/filer/icons/file_32x32.png',
+            'grouper_id': 1,
+            'alt_text': '',
+            'label': 'test-file'
+        }
+        self.assertDictEqual(response.json(), expected_json)
+
+    # NOTE: Mocked to return True for check on parents and False on subsubfolder
+    @patch.object(Folder, 'has_add_children_permission', side_effect=[True, True, True, False])
+    def test_ajax_upload_clipboardadmin_user_without_perms_for_adding_children_cannot_access_with_existing_nested_path_with_folder_id(
+        self, mocked_perms
+    ):
+        user = self.get_superuser()
+        root_folder = Folder.objects.create(name='root')
+        folder = Folder.objects.create(name='folder', parent=root_folder)
+        subfolder = Folder.objects.create(name='subfolder', parent=folder)
+        Folder.objects.create(name='subsubfolder', parent=subfolder)
+        url = reverse(
+            'admin:filer-ajax_upload', kwargs={'folder_id': root_folder.id})
+        file_obj = self.create_file('test-file')
+
+        with self.login_user_context(user):
+            response = self.client.post(
+                url, {'file': file_obj, 'path': 'folder/subfolder/subsubfolder'})
 
         self.assertEqual(response.status_code, 200)
         expected_json = {
@@ -941,7 +1080,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         specified, then we should not allow access for a folder that
         can't have subfolders
         """
-        user = self._create_user('albert')
+        user = self.get_superuser()
         folder = Folder.objects.create(name='folder')
         url = reverse(
             'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
@@ -965,7 +1104,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         any folders (it's the path param that can trigger folder
         creation).
         """
-        user = self._create_user('albert', is_staff=True)
+        user = self.get_superuser()
         folder = Folder.objects.create(name='folder')
         url = reverse(
             'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
