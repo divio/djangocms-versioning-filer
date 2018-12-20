@@ -94,7 +94,7 @@ HELPER_SETTINGS = {
 
 def run():
     from djangocms_helper import runner
-    runner.cms('djangocms_versioning_filer', extra_args=['tests.test_views.TestAjaxUploadViewPermissions'])
+    runner.cms('djangocms_versioning_filer', extra_args=[])
 
 
 if __name__ == "__main__":
