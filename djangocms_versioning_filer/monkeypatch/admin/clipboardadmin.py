@@ -52,6 +52,18 @@ def ajax_upload(request, folder_id=None):
             )
             if no_folder_perms:
                 error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
+    elif (
+        not request.user.is_superuser and
+        path and
+        not filer.settings.FILER_ALLOW_REGULAR_USERS_TO_ADD_ROOT_FOLDERS
+    ):
+        # If uploading the file to Unsorted Uploads (i.e. no folder_id)
+        # but filer is set to disallow regular users to add
+        # folders there and the user is not a superuser and is uploading
+        # folders rather than just a file (i.e. specifying the path
+        # param) then return an error message
+        error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
+
     if error_msg:
         return JsonResponse({'error': error_msg})
 
