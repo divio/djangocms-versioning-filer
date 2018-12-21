@@ -28,6 +28,7 @@ from ...models import (
 def ajax_upload(request, folder_id=None):
     folder = None
     path = request.POST.get('path')
+    path_split = path.split('/') if path else []
 
     # check permissions and data
     error_msg = None
@@ -54,15 +55,17 @@ def ajax_upload(request, folder_id=None):
                 error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
     elif (
         not request.user.is_superuser and
-        path and
+        path_split and
         not filer.settings.FILER_ALLOW_REGULAR_USERS_TO_ADD_ROOT_FOLDERS
     ):
         # If uploading the file to Unsorted Uploads (i.e. no folder_id)
         # but filer is set to disallow regular users to add
         # folders there and the user is not a superuser and is uploading
-        # folders rather than just a file (i.e. specifying the path
-        # param) then return an error message
-        error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
+        # folders that aren't yet created on the server (i.e.
+        # specifying the path param with folders that don't yet exist)
+        # return an error message
+        if not Folder.objects.filter(name=path_split[0], parent=None).exists():
+            error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
 
     if error_msg:
         return JsonResponse({'error': error_msg})
@@ -94,7 +97,6 @@ def ajax_upload(request, folder_id=None):
             file_obj.is_public = filer_settings.FILER_IS_PUBLIC_DEFAULT
 
             # Set the file's folder
-            path_split = path.split('/') if path else []
             current_folder = folder
             for segment in path_split:
                 try:
