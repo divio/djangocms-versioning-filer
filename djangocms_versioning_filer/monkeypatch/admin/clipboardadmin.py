@@ -8,7 +8,7 @@ import filer
 from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.models import Version
 from filer import settings as filer_settings
-from filer.models import Folder, FolderRoot, Image
+from filer.models import Folder, Image
 from filer.utils.files import (
     UploadException,
     handle_request_files_upload,
@@ -101,6 +101,11 @@ def ajax_upload(request, folder_id=None):
                     current_folder = Folder.objects.get(
                         name=segment, parent=current_folder)
                 except Folder.DoesNotExist:
+                    # If the current_folder can't have subfolders then
+                    # return a permission error
+                    if current_folder and not current_folder.can_have_subfolders:
+                        error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
+                        return JsonResponse({'error': error_msg})
                     current_folder = Folder.objects.create(
                         name=segment, parent=current_folder)
                 else:
