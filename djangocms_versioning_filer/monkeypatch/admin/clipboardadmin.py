@@ -27,16 +27,49 @@ from ...models import (
 @csrf_exempt
 def ajax_upload(request, folder_id=None):
     folder = None
-    if folder_id:
+    path = request.POST.get('path')
+    path_split = path.split('/') if path else []
+
+    # check permissions and data
+    error_msg = None
+    if not request.user.is_authenticated:
+        # User is not logged in. Return a generic message that gives
+        # no data info (such as whether a folder exists or not)
+        error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
+    elif folder_id:
         try:
-            # Get folder
             folder = Folder.objects.get(pk=folder_id)
         except Folder.DoesNotExist:
-            return JsonResponse({'error': filer.admin.clipboardadmin.NO_FOLDER_ERROR})
+            # A folder with id=folder_id does not exist so return
+            # an error message specifying this
+            error_msg = filer.admin.clipboardadmin.NO_FOLDER_ERROR
+        else:
+            # Now check if the user has sufficient permissions to
+            # upload a file to the folder with id=folder_id and return
+            # an error message if not
+            no_folder_perms = (
+                not folder.has_add_children_permission(request) or
+                (path and not folder.can_have_subfolders)
+            )
+            if no_folder_perms:
+                error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
+    elif (
+        not request.user.is_superuser and
+        path_split and
+        not filer.settings.FILER_ALLOW_REGULAR_USERS_TO_ADD_ROOT_FOLDERS
+    ):
+        # If uploading the file to Unsorted Uploads (i.e. no folder_id)
+        # but filer is set to disallow regular users to add
+        # folders there and the user is not a superuser and is uploading
+        # folders that aren't yet created on the server (i.e.
+        # specifying the path param with folders that don't yet exist)
+        # return an error message
+        if not Folder.objects.filter(name=path_split[0], parent=None).exists():
+            error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
 
-    # check permissions
-    if folder and not folder.has_add_children_permission(request):
-        return JsonResponse({'error': filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER})
+    if error_msg:
+        return JsonResponse({'error': error_msg})
+
     try:
         if len(request.FILES) == 1:
             # dont check if request is ajax or not, just grab the file
@@ -62,7 +95,28 @@ def ajax_upload(request, folder_id=None):
             file_obj = uploadform.save(commit=False)
             # Enforce the FILER_IS_PUBLIC_DEFAULT
             file_obj.is_public = filer_settings.FILER_IS_PUBLIC_DEFAULT
-            file_obj.folder = folder
+
+            # Set the file's folder
+            current_folder = folder
+            for segment in path_split:
+                try:
+                    current_folder = Folder.objects.get(
+                        name=segment, parent=current_folder)
+                except Folder.DoesNotExist:
+                    # If the current_folder can't have subfolders then
+                    # return a permission error
+                    if current_folder and not current_folder.can_have_subfolders:
+                        error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
+                        return JsonResponse({'error': error_msg})
+                    current_folder = Folder.objects.create(
+                        name=segment, parent=current_folder)
+                else:
+                    # If the folder already exists, check the user is
+                    # allowed to upload here
+                    if not current_folder.has_add_children_permission(request):
+                        error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
+                        return JsonResponse({'error': error_msg})
+            file_obj.folder = current_folder
 
             same_name_file_qs = get_files_distinct_grouper_queryset().annotate(
                 _name=NullIfEmptyStr('name'),
@@ -149,5 +203,6 @@ def ajax_upload(request, folder_id=None):
                 "AJAX request not valid: form invalid '%s'" % (
                     form_errors,))
     except UploadException as e:
+        # TODO: Test
         return JsonResponse({'error': str(e)}, status=500)
 filer.admin.clipboardadmin.ajax_upload = ajax_upload  # noqa: E305
