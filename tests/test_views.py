@@ -1843,6 +1843,7 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
             name='subfolder', parent=folder)
         subsubfolder = Folder.objects.create(
             name='subsubfolder', parent=subfolder)
+
         url = reverse(
             'admin:filer-ajax_upload', kwargs={'folder_id': folder.id})
         file_obj = self.create_file('test-file')

@@ -27,6 +27,20 @@ class Migration(migrations.Migration):
             name='grouper',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='files', to='djangocms_versioning_filer.FileGrouper'),
         ),
+        migrations.AlterModelManagers(
+            name='file',
+            managers=[
+                ('objects', django.db.models.manager.Manager()),
+                ('_original_manager', django.db.models.manager.Manager()),
+            ],
+        ),
+        migrations.AlterModelManagers(
+            name='image',
+            managers=[
+                ('objects', django.db.models.manager.Manager()),
+                ('_original_manager', django.db.models.manager.Manager()),
+            ],
+        )
     ]
 
     replaces = (('filer', __module__.rsplit('.', 1)[-1]),)
