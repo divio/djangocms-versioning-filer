@@ -11,7 +11,7 @@ from django.utils.http import urlquote, urlunquote
 from django.utils.translation import ugettext as _, ungettext
 
 import filer
-from djangocms_versioning.constants import DRAFT
+from djangocms_versioning.constants import DRAFT, PUBLISHED
 from filer.admin.tools import (
     AdminContext,
     admin_url_params_encoded,
@@ -314,16 +314,32 @@ def filer_add_items_to_collection(self, request, files_qs, folders_qs):
     return add_items_to_collection(self, request, files_qs)
 
 
+def filer_add_items_to_unpublish_collection(self, request, files_qs, folders_qs):
+    from djangocms_moderation.admin_actions import add_item_to_unpublish_collection
+    for folder in folders_qs:
+        files_qs |= get_files_distinct_grouper_queryset().filter(
+            folder__in=folder.get_descendants(include_self=True),
+        )
+    files_qs = files_qs.filter(versions__state=PUBLISHED)
+    return add_item_to_unpublish_collection(self, request, files_qs)
+
+
 def get_actions(func):
     def inner(self, request):
         actions = func(self, request)
 
         if is_moderation_enabled():
             from djangocms_moderation.admin_actions import add_items_to_collection
+            from djangocms_moderation.admin_actions import add_item_to_unpublish_collection
             actions['add_items_to_collection'] = (
                 filer_add_items_to_collection,
                 'add_items_to_collection',
                 add_items_to_collection.short_description,
+            )
+            actions['add_item_to_unpublish_collection'] = (
+                filer_add_items_to_unpublish_collection,
+                'add_item_to_unpublish_collection',
+                add_item_to_unpublish_collection.short_description
             )
         return actions
     return inner
