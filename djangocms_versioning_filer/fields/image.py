@@ -19,7 +19,8 @@ class AdminImageGrouperFormField(AdminFileGrouperFormField):
     def clean(self, value):
         Image = load_model(filer.settings.FILER_IMAGE_MODEL)
         self.queryset = self.queryset.filter(files__in=File._base_manager.instance_of(Image)).distinct()
-        return super().clean(value)
+        value = super().clean(value)
+        return value
 
 
 class ImageGrouperField(FileGrouperField):
