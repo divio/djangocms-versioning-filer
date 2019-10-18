@@ -144,7 +144,7 @@ class FileGrouperField(models.ForeignKey):
         defaults = {
             'form_class': self.default_form_class,
             'rel': self.rel,
-            'to_field_name': 'files',
+            'to_field_name': 'files__grouper_id',
         }
         defaults.update(kwargs)
         return super().formfield(**defaults)
