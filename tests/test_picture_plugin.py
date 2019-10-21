@@ -30,7 +30,7 @@ class FilerPicturePluginTestCase(BaseFilerVersioningTestCase):
     def test_plugin_form_create(self):
         form = VersionedPictureForm(
             data={
-                'file_grouper': self.image,
+                'file_grouper': self.image.grouper,
                 'template': 'default',
                 'use_responsive_image': 'yes'
             },

@@ -258,7 +258,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             grouper=same_file_in_other_folder_grouper,
             publish=True,
         )
-        self.assertEqual(FileGrouper.objects.count(), 3)
+        current_grouper_count = FileGrouper.objects.count()
 
         with self.login_user_context(self.superuser):
             self.client.post(
@@ -266,7 +266,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                 data={'file': file},
             )
 
-        self.assertEqual(FileGrouper.objects.count(), 4)
+        self.assertEqual(FileGrouper.objects.count(), current_grouper_count + 1)
         with nonversioned_manager(File):
             files = self.folder.files.all()
         new_file = files.latest('pk')
@@ -293,14 +293,14 @@ class FilerViewTests(BaseFilerVersioningTestCase):
 
     def test_ajax_upload_clipboardadmin_same_name_as_existing_file(self):
         file = self.create_file('test.pdf')
-        self.assertEqual(FileGrouper.objects.count(), 2)
+        current_grouper_count = FileGrouper.objects.count()
         with self.login_user_context(self.superuser):
             self.client.post(
                 reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
                 data={'file': file},
             )
 
-        self.assertEqual(FileGrouper.objects.count(), 2)
+        self.assertEqual(FileGrouper.objects.count(), current_grouper_count)
 
         with nonversioned_manager(File):
             files = self.folder.files.all()
@@ -324,14 +324,14 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             publish=False,
         )
         file = self.create_file('test1.pdf')
-        self.assertEqual(FileGrouper.objects.count(), 3)
+        current_grouper_count = FileGrouper.objects.count()
         with self.login_user_context(self.superuser):
             self.client.post(
                 reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
                 data={'file': file},
             )
 
-        self.assertEqual(FileGrouper.objects.count(), 3)
+        self.assertEqual(FileGrouper.objects.count(), current_grouper_count)
 
         with nonversioned_manager(File):
             files = self.folder.files.all()
@@ -348,14 +348,14 @@ class FilerViewTests(BaseFilerVersioningTestCase):
 
     def test_ajax_upload_clipboardadmin_for_image_file(self):
         file = self.create_image('circles.jpg')
-        self.assertEqual(FileGrouper.objects.count(), 2)
+        current_grouper_count = FileGrouper.objects.count()
         with self.login_user_context(self.superuser):
             self.client.post(
                 reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
                 data={'file': file},
             )
 
-        self.assertEqual(FileGrouper.objects.count(), 3)
+        self.assertEqual(FileGrouper.objects.count(), current_grouper_count + 1)
 
         with nonversioned_manager(File):
             files = self.folder.files.all()
@@ -374,7 +374,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             publish=False,
         )
         file = self.create_image('test1.jpg')
-        self.assertEqual(FileGrouper.objects.count(), 3)
+        current_grouper_count = FileGrouper.objects.count()
         with nonversioned_manager(File):
             self.assertEqual(File.objects.count(), 3)
 
@@ -391,7 +391,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                 data={'file': file},
             )
 
-        self.assertEqual(FileGrouper.objects.count(), 3)
+        self.assertEqual(FileGrouper.objects.count(), current_grouper_count)
         with nonversioned_manager(File):
             self.assertEqual(File.objects.count(), 3)
         error_msg = 'Cannot archive existing test1.jpg file version'

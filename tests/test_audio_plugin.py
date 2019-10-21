@@ -17,6 +17,7 @@ class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
             folder=self.folder,
             grouper=self.audio_file_grouper,
         )
+        self.client.force_login(self.superuser)
 
     def test_add_plugin(self):
         parent_plugin = add_plugin(
@@ -32,13 +33,13 @@ class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
             parent=parent_plugin,
         )
 
-        with self.login_user_context(self.superuser):
-            data = {'file_grouper': self.audio_file.pk}
-            response = self.client.post(uri, data)
+        data = {'file_grouper': self.audio_file_grouper.pk}
+        response = self.client.post(uri, data)
         self.assertEquals(response.status_code, 200)
 
         plugin = CMSPlugin.objects.latest('pk')
-        self.assertEquals(plugin.get_bound_plugin().file_grouper.file.url, self.audio_file.url)
+        audioplayer = plugin.get_bound_plugin()
+        self.assertEquals(audioplayer.file_grouper.file.url, self.audio_file.url)
 
     def test_plugin_rendering(self):
         parent_plugin = add_plugin(
@@ -62,8 +63,9 @@ class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
             publish=False,
         )
 
-        with self.login_user_context(self.superuser):
-            response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
+        response = self.client.get(
+            get_object_preview_url(self.placeholder.source, self.language)
+        )
         self.assertContains(response, self.audio_file.url)
         self.assertNotContains(response, audio_track_file_obj.url)
 
@@ -81,8 +83,9 @@ class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
             file_grouper=audio_file_grouper_2,
         )
 
-        with self.login_user_context(self.superuser):
-            response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
+        response = self.client.get(
+            get_object_preview_url(self.placeholder.source, self.language)
+        )
         self.assertContains(response, draft_file.url)
         self.assertContains(response, audio_track_file_obj.url)
 
@@ -123,8 +126,9 @@ class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
             publish=False,
         )
 
-        with self.login_user_context(self.superuser):
-            response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
+        response = self.client.get(
+            get_object_preview_url(self.placeholder.source, self.language)
+        )
 
         self.assertContains(response, draft_file.url)
         self.assertContains(response, draft_file_2.url)

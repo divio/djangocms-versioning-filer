@@ -44,6 +44,13 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             name='folder_inside',
             parent=self.folder,
         )
+
+        # Grouper and file has different PK, this makes sure that's
+        # the case during tests!
+        FileGrouper.objects.create()
+        FileGrouper.objects.create()
+        FileGrouper.objects.create()
+
         self.file_grouper = FileGrouper.objects.create()
         self.file = self.create_file_obj(
             original_filename='test.pdf',

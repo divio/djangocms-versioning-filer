@@ -116,11 +116,13 @@ class AdminFileGrouperFormField(forms.ModelChoiceField):
 
     def clean(self, value):
         value = super().clean(value)
-        published_exists = Version.objects.filter_by_grouper(value).filter(
-            state="published"
-        ).exists()
-        if not published_exists:
-            raise ValidationError("No published version currently exists, publish it first")
+
+        if value is not None and self.required is False:
+            published_exists = Version.objects.filter_by_grouper(value).filter(
+                state="published"
+            ).exists()
+            if not published_exists:
+                raise ValidationError("No published version currently exists, publish it first")
 
         return value
 
