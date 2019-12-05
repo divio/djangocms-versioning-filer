@@ -113,7 +113,6 @@ class AdminFileGrouperFormField(forms.ModelChoiceField):
         return {}
 
     def to_python(self, value):
-        self.queryset = self.queryset.distinct('id')
         obj = super().to_python(value)
         if not obj:
             return obj
