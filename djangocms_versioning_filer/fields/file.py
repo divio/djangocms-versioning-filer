@@ -5,13 +5,11 @@ from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
 from django.core.urlresolvers import reverse
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 
-from djangocms_versioning.models import Version
 from djangocms_versioning.helpers import nonversioned_manager
 from filer import settings as filer_settings
 from filer.models import File
@@ -113,18 +111,6 @@ class AdminFileGrouperFormField(forms.ModelChoiceField):
     def widget_attrs(self, widget):
         widget.required = self.required
         return {}
-
-    def clean(self, value):
-        value = super().clean(value)
-
-        if value is not None and self.required is False:
-            published_exists = Version.objects.filter_by_grouper(value).filter(
-                state="published"
-            ).exists()
-            if not published_exists:
-                raise ValidationError("No published version currently exists, publish it first")
-
-        return value
 
     def to_python(self, value):
         self.queryset = self.queryset.distinct('id')
