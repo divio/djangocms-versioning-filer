@@ -113,6 +113,8 @@ class AdminFileGrouperFormField(forms.ModelChoiceField):
         return {}
 
     def to_python(self, value):
+        # Filter out any repeated values for the grouper
+        self.queryset = self.queryset.distinct()
         obj = super().to_python(value)
         if not obj:
             return obj
