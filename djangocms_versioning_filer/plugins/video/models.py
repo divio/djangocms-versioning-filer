@@ -59,6 +59,7 @@ class VersionedVideoPlayer(CMSPlugin):
     cmsplugin_ptr = models.OneToOneField(
         CMSPlugin,
         related_name='%(app_label)s_%(class)s',
+        on_delete=models.CASCADE,
         parent_link=True,
     )
 

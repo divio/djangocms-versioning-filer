@@ -56,6 +56,39 @@ class FilerFilePluginTestCase(BaseFilerVersioningTestCase):
         self.assertContains(response, draft_file.url)
 
 
+    def test_plugin_addition_with_multiple_content_versions_for_a_grouper(self):
+        """
+        The plugin should be able to select a file with multiple versions attached to a grouper.
+        """
+        self.client.force_login(self.superuser)
+        folder = Folder.objects.create(name='test folder')
+        file_grouper = FileGrouper.objects.create()
+        file_version_1 = self.create_file_obj(
+            original_filename='myfile.txt',
+            folder=folder,
+            grouper=file_grouper,
+            publish=True,
+        )
+        file_version_2 = self.create_file_obj(
+            original_filename='myfile.txt',
+            folder=folder,
+            grouper=file_grouper,
+            publish=False,
+        )
+        
+        uri = self.get_add_plugin_uri(
+            placeholder=self.placeholder,
+            plugin_type='FilePlugin',
+            language=self.language,
+        )
+        data = {'file_grouper': file_grouper.pk, 'template': 'default'}
+        response = self.client.post(uri, data)
+        plugin = CMSPlugin.objects.latest('pk')
+
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(plugin.get_bound_plugin().file_grouper.file.url, file_version_2.grouper.file.url)
+
+
 class FilerFolderPluginTestCase(BaseFilerVersioningTestCase):
 
     def test_plugin_rendering(self):
