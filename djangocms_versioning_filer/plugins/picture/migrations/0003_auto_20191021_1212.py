@@ -15,19 +15,16 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='versionedpicture',
             name='caption_text',
-            field=models.TextField(blank=True, default='', help_text='Provide a description, attribution, copyright or other information.', verbose_name='Caption text'),
-            preserve_default=False,
+            field=models.TextField(blank=True, help_text='Provide a description, attribution, copyright or other information.', verbose_name='Caption text'),
         ),
         migrations.AlterField(
             model_name='versionedpicture',
             name='external_picture',
-            field=models.URLField(blank=True, default='', help_text='If provided, overrides the embedded image. Certain options such as cropping are not applicable to external images.', max_length=255, verbose_name='External image'),
-            preserve_default=False,
+            field=models.URLField(blank=True, help_text='If provided, overrides the embedded image. Certain options such as cropping are not applicable to external images.', max_length=255, verbose_name='External image'),
         ),
         migrations.AlterField(
             model_name='versionedpicture',
             name='link_url',
-            field=models.URLField(blank=True, default='', help_text='Wraps the image in a link to an external URL.', max_length=2040, verbose_name='External URL'),
-            preserve_default=False,
+            field=models.URLField(blank=True, help_text='Wraps the image in a link to an external URL.', max_length=2040, verbose_name='External URL'),
         ),
     ]
