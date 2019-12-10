@@ -12,9 +12,9 @@ from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.helpers import nonversioned_manager
 from djangocms_versioning.models import Version
 from filer.models import File, Folder
-from filer.tests.helpers import create_image
 from filer.utils.loader import load_model
 
+from djangocms_versioning_filer.test_utils.helpers import create_image
 from djangocms_versioning_filer.helpers import create_file_version
 from djangocms_versioning_filer.models import FileGrouper
 
@@ -44,6 +44,13 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             name='folder_inside',
             parent=self.folder,
         )
+
+        # Grouper and file has different PK, this makes sure that's
+        # the case during tests!
+        FileGrouper.objects.create()
+        FileGrouper.objects.create()
+        FileGrouper.objects.create()
+
         self.file_grouper = FileGrouper.objects.create()
         self.file = self.create_file_obj(
             original_filename='test.pdf',

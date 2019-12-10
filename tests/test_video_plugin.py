@@ -17,6 +17,7 @@ class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
             folder=self.folder,
             grouper=self.video_file_grouper,
         )
+        self.client.force_login(self.superuser)
 
     def test_add_plugin(self):
         parent_plugin = add_plugin(
@@ -33,9 +34,8 @@ class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
             parent=parent_plugin,
         )
 
-        with self.login_user_context(self.superuser):
-            data = {'file_grouper': self.video_file.pk}
-            response = self.client.post(uri, data)
+        data = {'file_grouper': self.video_file_grouper.pk}
+        response = self.client.post(uri, data)
         self.assertEquals(response.status_code, 200)
 
         plugin = CMSPlugin.objects.latest('pk')
@@ -48,9 +48,8 @@ class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
             language=self.language,
         )
 
-        with self.login_user_context(self.superuser):
-            data = {'template': 'default'}
-            response = self.client.post(uri, data)
+        data = {'template': 'default'}
+        response = self.client.post(uri, data)
         self.assertEquals(response.status_code, 200)
 
         plugin = CMSPlugin.objects.latest('pk')
@@ -63,14 +62,13 @@ class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
             language=self.language,
         )
 
-        with self.login_user_context(self.superuser):
-            data = {'template': 'default', 'poster_grouper': self.file.pk}
-            self.client.post(uri, data)
+        data = {'template': 'default', 'poster_grouper': self.file_grouper.pk}
+        self.client.post(uri, data)
         self.assertEquals(CMSPlugin.objects.count(), 0)
 
-        with self.login_user_context(self.superuser):
-            data = {'template': 'default', 'poster_grouper': self.image.pk}
-            self.client.post(uri, data)
+        data = {'template': 'default', 'poster_grouper': self.image_grouper.pk}
+        self.client.post(uri, data)
+
         plugin = CMSPlugin.objects.latest('pk')
         self.assertEquals(plugin.plugin_type, 'VideoPlayerPlugin')
         self.assertEquals(plugin.get_bound_plugin().poster, self.image)
@@ -97,8 +95,7 @@ class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
             publish=False,
         )
 
-        with self.login_user_context(self.superuser):
-            response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
+        response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
         self.assertContains(response, self.video_file.url)
         self.assertNotContains(response, video_track_file_obj.url)
 
@@ -116,7 +113,6 @@ class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
             file_grouper=video_file_grouper_2,
         )
 
-        with self.login_user_context(self.superuser):
-            response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
+        response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
         self.assertContains(response, draft_file.url)
         self.assertContains(response, video_track_file_obj.url)

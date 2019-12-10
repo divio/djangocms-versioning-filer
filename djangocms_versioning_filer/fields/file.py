@@ -4,7 +4,7 @@ import warnings
 from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.http import urlencode
@@ -113,6 +113,8 @@ class AdminFileGrouperFormField(forms.ModelChoiceField):
         return {}
 
     def to_python(self, value):
+        # Filter out any repeated values for the grouper
+        self.queryset = self.queryset.distinct()
         obj = super().to_python(value)
         if not obj:
             return obj
@@ -144,7 +146,7 @@ class FileGrouperField(models.ForeignKey):
         defaults = {
             'form_class': self.default_form_class,
             'rel': self.rel,
-            'to_field_name': 'files',
+            'to_field_name': 'files__grouper_id',
         }
         defaults.update(kwargs)
         return super().formfield(**defaults)

@@ -11,6 +11,10 @@ from .base import BaseFilerVersioningTestCase
 
 class FilerFilePluginTestCase(BaseFilerVersioningTestCase):
 
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.superuser)
+
     def test_add_plugin(self):
         uri = self.get_add_plugin_uri(
             placeholder=self.placeholder,
@@ -18,9 +22,8 @@ class FilerFilePluginTestCase(BaseFilerVersioningTestCase):
             language=self.language,
         )
 
-        with self.login_user_context(self.superuser):
-            data = {'file_grouper': self.file.pk, 'template': 'default'}
-            response = self.client.post(uri, data)
+        data = {'file_grouper': self.file_grouper.pk, 'template': 'default'}
+        response = self.client.post(uri, data)
         self.assertEquals(response.status_code, 200)
 
         plugin = CMSPlugin.objects.latest('pk')
@@ -35,8 +38,9 @@ class FilerFilePluginTestCase(BaseFilerVersioningTestCase):
             file_grouper=self.file_grouper,
         )
 
-        with self.login_user_context(self.superuser):
-            response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
+        response = self.client.get(
+            get_object_preview_url(self.placeholder.source, self.language)
+        )
         self.assertContains(response, self.file.url)
 
         draft_file = self.create_file_obj(
@@ -46,14 +50,49 @@ class FilerFilePluginTestCase(BaseFilerVersioningTestCase):
             publish=False,
         )
 
-        with self.login_user_context(self.superuser):
-            response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
+        response = self.client.get(
+            get_object_preview_url(self.placeholder.source, self.language)
+        )
         self.assertContains(response, draft_file.url)
+
+
+    def test_plugin_addition_with_multiple_content_versions_for_a_grouper(self):
+        """
+        The plugin should be able to select a file with multiple versions attached to a grouper.
+        """
+        self.client.force_login(self.superuser)
+        folder = Folder.objects.create(name='test folder')
+        file_grouper = FileGrouper.objects.create()
+        file_version_1 = self.create_file_obj(
+            original_filename='myfile.txt',
+            folder=folder,
+            grouper=file_grouper,
+            publish=True,
+        )
+        file_version_2 = self.create_file_obj(
+            original_filename='myfile.txt',
+            folder=folder,
+            grouper=file_grouper,
+            publish=False,
+        )
+        
+        uri = self.get_add_plugin_uri(
+            placeholder=self.placeholder,
+            plugin_type='FilePlugin',
+            language=self.language,
+        )
+        data = {'file_grouper': file_grouper.pk, 'template': 'default'}
+        response = self.client.post(uri, data)
+        plugin = CMSPlugin.objects.latest('pk')
+
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(plugin.get_bound_plugin().file_grouper.file.url, file_version_2.grouper.file.url)
 
 
 class FilerFolderPluginTestCase(BaseFilerVersioningTestCase):
 
     def test_plugin_rendering(self):
+        self.client.force_login(self.superuser)
         folder = Folder.objects.create(name='test folder 9')
         add_plugin(
             self.placeholder,
@@ -85,8 +124,9 @@ class FilerFolderPluginTestCase(BaseFilerVersioningTestCase):
             publish=False,
         )
 
-        with self.login_user_context(self.superuser):
-            response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
+        response = self.client.get(
+            get_object_preview_url(self.placeholder.source, self.language)
+        )
 
         self.assertContains(response, draft_file.url)
         self.assertContains(response, draft_file_2.url)

@@ -18,15 +18,23 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.6',
     'Framework :: Django',
     'Framework :: Django :: 1.11',
-    'Framework :: Django :: 2.0',
-    'Framework :: Django :: 2.1',
 ]
 
 INSTALL_REQUIREMENTS = [
-    'Django>=1.11,<2.2',
-    # 'django-filer',  # new version not released
-    # 'djangocms-versioning',  # not released
-    # 'django-cms>=4.0',  # not released
+    'Django>=1.11,<2.0',
+    'django-cms',
+    'djangocms-versioning',
+    'django-filer>=1.5.0'
+]
+
+TEST_REQUIREMENTS = [
+    'djangocms_helper',
+    'djangocms-picture>=2.3.0',
+    'djangocms-audio>=1.1.0',
+    'djangocms-file>=2.3.0',
+    'djangocms-video>=2.1.1',
+    'factory-boy',
+    'mock'
 ]
 
 setup(
@@ -37,6 +45,10 @@ setup(
     license='BSD',
     version=djangocms_versioning_filer.__version__,
     description=djangocms_versioning_filer.__doc__,
+    dependency_links=[
+        "http://github.com/divio/django-cms/tarball/release/4.0.x#egg=django-cms-4.0.0",
+        "http://github.com/divio/djangocms-versioning/tarball/master#egg=djangocms-versioning-0.0.23",
+    ],
     long_description=open('README.rst').read(),
     platforms=['OS Independent'],
     classifiers=CLASSIFIERS,
@@ -45,4 +57,5 @@ setup(
     include_package_data=True,
     zip_safe=False,
     test_suite='test_settings.run',
+    tests_require=TEST_REQUIREMENTS,
 )
