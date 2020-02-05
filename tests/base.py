@@ -14,9 +14,9 @@ from djangocms_versioning.models import Version
 from filer.models import File, Folder
 from filer.utils.loader import load_model
 
-from djangocms_versioning_filer.test_utils.helpers import create_image
 from djangocms_versioning_filer.helpers import create_file_version
 from djangocms_versioning_filer.models import FileGrouper
+from djangocms_versioning_filer.test_utils.helpers import create_image
 
 
 class BaseFilerVersioningTestCase(CMSTestCase):

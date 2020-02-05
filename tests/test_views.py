@@ -1,5 +1,5 @@
 import os
-from mock import patch, Mock, PropertyMock
+from mock import Mock, PropertyMock, patch
 from unittest import skipUnless
 from urllib.parse import parse_qs, urlparse
 
@@ -9,8 +9,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files import File as DjangoFile
 from django.urls import reverse
 
-from cms.utils.urlutils import add_url_parameters
 from cms.test_utils.testcases import CMSTestCase
+from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.constants import ARCHIVED, DRAFT, PUBLISHED
 from djangocms_versioning.helpers import nonversioned_manager
@@ -795,7 +795,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         self.assertDictEqual(response.json(), expected_json)
 
     @patch.object(Folder, 'has_add_children_permission', Mock(return_value=True))
-    def test_ajax_upload_clipboardadmin_user_with_perms_for_adding_children_can_access_with_existing_path_and_folder_id(self):
+    def test_ajax_upload_clipboardadmin_user_with_perms_for_adding_children_can_access_with_existing_path_and_folder_id(self):  # noqa
         user = self.get_superuser()
         folder = Folder.objects.create(name='folder')
         Folder.objects.create(name='subfolder')
@@ -819,7 +819,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
 
     # NOTE: Mocked to return True for check on parent and False on subfolder
     @patch.object(Folder, 'has_add_children_permission', side_effect=[True, False])
-    def test_ajax_upload_clipboardadmin_user_without_perms_for_adding_children_cannot_access_with_existing_path_and_folder_id(
+    def test_ajax_upload_clipboardadmin_user_without_perms_for_adding_children_cannot_access_with_existing_path_and_folder_id(  # noqa
         self, mocked_perms
     ):
         user = self.get_superuser()
@@ -840,7 +840,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         self.assertDictEqual(response.json(), expected_json)
 
     @patch.object(Folder, 'has_add_children_permission', Mock(return_value=True))
-    def test_ajax_upload_clipboardadmin_user_with_perms_for_adding_children_can_access_with_existing_nested_path_without_folder_id(self):
+    def test_ajax_upload_clipboardadmin_user_with_perms_for_adding_children_can_access_with_existing_nested_path_without_folder_id(self):  # noqa
         user = self.get_superuser()
         folder = Folder.objects.create(name='folder')
         subfolder = Folder.objects.create(name='subfolder', parent=folder)
@@ -864,7 +864,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
 
     # NOTE: Mocked to return True for check on parents and False on subsubfolder
     @patch.object(Folder, 'has_add_children_permission', side_effect=[True, True, False])
-    def test_ajax_upload_clipboardadmin_user_without_perms_for_adding_children_cannot_access_with_existing_nested_path_without_folder_id(
+    def test_ajax_upload_clipboardadmin_user_without_perms_for_adding_children_cannot_access_with_existing_nested_path_without_folder_id(  # noqa
         self, mocked_perms
     ):
         user = self.get_superuser()
@@ -885,7 +885,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         self.assertDictEqual(response.json(), expected_json)
 
     @patch.object(Folder, 'has_add_children_permission', Mock(return_value=True))
-    def test_ajax_upload_clipboardadmin_user_with_perms_for_adding_children_can_access_with_existing_nested_path_with_folder_id(self):
+    def test_ajax_upload_clipboardadmin_user_with_perms_for_adding_children_can_access_with_existing_nested_path_with_folder_id(self):  # noqa
         user = self.get_superuser()
         root_folder = Folder.objects.create(name='root')
         folder = Folder.objects.create(name='folder', parent=root_folder)
@@ -911,7 +911,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
 
     # NOTE: Mocked to return True for check on parents and False on subsubfolder
     @patch.object(Folder, 'has_add_children_permission', side_effect=[True, True, True, False])
-    def test_ajax_upload_clipboardadmin_user_without_perms_for_adding_children_cannot_access_with_existing_nested_path_with_folder_id(
+    def test_ajax_upload_clipboardadmin_user_without_perms_for_adding_children_cannot_access_with_existing_nested_path_with_folder_id(  # noqa
         self, mocked_perms
     ):
         user = self.get_superuser()
@@ -1167,7 +1167,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         self.assertDictEqual(response.json(), expected_json)
 
     @patch.object(Folder, 'can_have_subfolders', True)
-    def test_ajax_upload_clipboardadmin_existing_folder_in_path_that_can_have_subfolders_with_folder_id(self):
+    def test_ajax_upload_clipboardadmin_existing_folder_in_path_that_can_have_subfolders_with_folder_id(self):  # noqa
         user = self.get_superuser()
         folder = Folder.objects.create(name='folder')
         Folder.objects.create(name='subfolder', parent=folder)
@@ -1190,7 +1190,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         self.assertDictEqual(response.json(), expected_json)
 
     @patch.object(Folder, 'can_have_subfolders', new_callable=PropertyMock)
-    def test_ajax_upload_clipboardadmin_existing_folder_in_path_that_cant_have_subfolders_with_folder_id(
+    def test_ajax_upload_clipboardadmin_existing_folder_in_path_that_cant_have_subfolders_with_folder_id(  # noqa
         self, mocked_perms
     ):
         # Returns True for folder and False for subfolder
@@ -1564,7 +1564,7 @@ class TestAjaxUploadViewPermissions(CMSTestCase):
         self.assertDictEqual(response.json(), expected_json)
 
     @patch('filer.settings.FILER_ALLOW_REGULAR_USERS_TO_ADD_ROOT_FOLDERS', False)
-    def test_ajax_upload_clipboardadmin_disallow_if_folder_is_root_and_setting_false_with_existing_path_superuser(self):
+    def test_ajax_upload_clipboardadmin_disallow_if_folder_is_root_and_setting_false_with_existing_path_superuser(self):  # noqa
         user = self.get_superuser()
         url = reverse('admin:filer-ajax_upload')
         file_obj = self.create_file('test-file')
@@ -1678,8 +1678,7 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         file_obj = self.create_file('test-file')
 
         with self.login_user_context(self.superuser):
-            response = self.client.post(
-                url, {'path': 'folder', 'file': file_obj})
+            self.client.post(url, {'path': 'folder', 'file': file_obj})
 
         # We should have 1 folder after this POST call
         self.assertEqual(Folder.objects.all().count(), 1)
@@ -1703,8 +1702,7 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         file_obj = self.create_file('test-file')
 
         with self.login_user_context(self.superuser):
-            response = self.client.post(
-                url, {'path': 'subfolder', 'file': file_obj})
+            self.client.post(url, {'path': 'subfolder', 'file': file_obj})
 
         # We should have 2 folders after this POST call:
         # folder, subfolder
@@ -1730,8 +1728,7 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         file_obj = self.create_file('test-file')
 
         with self.login_user_context(self.superuser):
-            response = self.client.post(
-                url, {'path': 'subfolder/subsubfolder', 'file': file_obj})
+            self.client.post(url, {'path': 'subfolder/subsubfolder', 'file': file_obj})
 
         # We should have 3 folders after this POST call:
         # folder, subfolder and subsubfolder
@@ -1759,8 +1756,7 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         file_obj = self.create_file('test-file')
 
         with self.login_user_context(self.superuser):
-            response = self.client.post(
-                url, {'path': 'folder', 'file': file_obj})
+            self.client.post(url, {'path': 'folder', 'file': file_obj})
 
         # We should still have 1 folder after this POST call
         self.assertEqual(Folder.objects.all().count(), 1)
@@ -1785,8 +1781,7 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         file_obj = self.create_file('test-file')
 
         with self.login_user_context(self.superuser):
-            response = self.client.post(
-                url, {'path': 'subfolder', 'file': file_obj})
+            self.client.post(url, {'path': 'subfolder', 'file': file_obj})
 
         # We should still have 2 folders after this POST call:
         # folder, subfolder
@@ -1815,8 +1810,9 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         file_obj = self.create_file('test-file')
 
         with self.login_user_context(self.superuser):
-            response = self.client.post(
-                url, {'path': 'folder/subfolder/subsubfolder', 'file': file_obj})
+            self.client.post(
+                    url, {'path': 'folder/subfolder/subsubfolder', 'file': file_obj}
+                )
 
         # We should still have 3 folders after this POST call:
         # folder, subfolder and subsubfolder
@@ -1849,8 +1845,7 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         file_obj = self.create_file('test-file')
 
         with self.login_user_context(self.superuser):
-            response = self.client.post(
-                url, {'path': 'subfolder/subsubfolder', 'file': file_obj})
+            self.client.post(url, {'path': 'subfolder/subsubfolder', 'file': file_obj})
 
         # We should still have 3 folders after this POST call:
         # folder, subfolder and subsubfolder
@@ -1880,8 +1875,7 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         file_obj = self.create_file('test-file')
 
         with self.login_user_context(self.superuser):
-            response = self.client.post(
-                url, {'path': 'subfolder/subsubfolder', 'file': file_obj})
+            self.client.post(url, {'path': 'subfolder/subsubfolder', 'file': file_obj})
 
         # We should have 3 folders after this POST call:
         # folder, subfolder and subsubfolder
@@ -1908,8 +1902,7 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         file_obj = self.create_file('test-file')
 
         with self.login_user_context(self.superuser):
-            response = self.client.post(
-                url, {'path': 'folder/subfolder/subsubfolder', 'file': file_obj})
+            self.client.post(url, {'path': 'folder/subfolder/subsubfolder', 'file': file_obj})
 
         # We should have 3 folders after this POST call:
         # folder, subfolder and subsubfolder
