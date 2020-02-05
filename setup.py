@@ -47,7 +47,7 @@ setup(
     description=djangocms_versioning_filer.__doc__,
     dependency_links=[
         "http://github.com/divio/django-cms/tarball/release/4.0.x#egg=django-cms-4.0.0",
-        "http://github.com/divio/djangocms-versioning/tarball/master#egg=djangocms-versioning-0.0.23",
+        "http://github.com/divio/djangocms-versioning/tarball/master#egg=djangocms-versioning-0.0.24",
     ],
     long_description=open('README.rst').read(),
     platforms=['OS Independent'],
