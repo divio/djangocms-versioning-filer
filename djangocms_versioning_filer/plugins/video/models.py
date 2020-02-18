@@ -6,7 +6,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.models import CMSPlugin
 
 from djangocms_attributes_field.fields import AttributesField
-from djangocms_video.models import VideoTrack, get_extensions, get_templates
+from djangocms_video.models import VideoTrack, get_templates
 
 from djangocms_versioning_filer.fields import (
     FileGrouperField,
@@ -14,7 +14,12 @@ from djangocms_versioning_filer.fields import (
 )
 
 
-ALLOWED_EXTENSIONS = get_extensions()
+try:
+    from djangocms_video.models import ALLOWED_EXTENSIONS
+except ImportError:
+    # using get_extensions from 2.3.0
+    from djangocms_video.models import get_extensions
+    ALLOWED_EXTENSIONS = get_extensions()
 
 
 class VersionedVideoPlayer(CMSPlugin):

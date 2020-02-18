@@ -21,18 +21,19 @@ CLASSIFIERS = [
 ]
 
 INSTALL_REQUIREMENTS = [
-    'Django>=1.11,<2.0',
+    'Django>=1.11,<3.0',
     'django-cms',
+    'django-filer>=1.5.0',
     'djangocms-versioning',
-    'django-filer>=1.5.0'
 ]
 
 TEST_REQUIREMENTS = [
     'djangocms_helper',
-    'djangocms-picture>=2.3.0',
-    'djangocms-audio>=1.1.0',
-    'djangocms-file>=2.3.0',
-    'djangocms-video>=2.1.1',
+    'djangocms-moderation',
+    'djangocms-picture',
+    'djangocms-audio',
+    'djangocms-file',
+    'djangocms-video',
     'factory-boy',
     'mock'
 ]
@@ -46,8 +47,9 @@ setup(
     version=djangocms_versioning_filer.__version__,
     description=djangocms_versioning_filer.__doc__,
     dependency_links=[
-        "http://github.com/divio/django-cms/tarball/release/4.0.x#egg=django-cms-4.0.0",
-        "http://github.com/divio/djangocms-versioning/tarball/master#egg=djangocms-versioning-0.0.24",
+        "https://github.com/divio/django-cms/tarball/release/4.0.x#egg=django-cms-4.0.0",
+        "https://github.com/divio/djangocms-moderation/tarball/release/1.0.x#egg=djangocms-moderation-1.0.22",
+        "https://github.com/divio/djangocms-versioning/tarball/master#egg=djangocms-versioning-0.0.26",
     ],
     long_description=open('README.rst').read(),
     platforms=['OS Independent'],
