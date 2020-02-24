@@ -1,3 +1,25 @@
+"""
+Regarding the monkeypatching that happens in this file. There is a fair amount
+of code being pulled in from django-filer which is unrelated to the actual
+monkeypatching that needs to happen.
+
+The following is what has been changed.
+
+file_obj = File._original_manager.get(pk=value)
+obj = self.rel.model._original_manager.get(**{key: value})
+queryset = remove_published_where(queryset)
+qs = self.remote_field.model._original_manager.using(using).filter(
+    **{self.remote_field.field_name: value}
+)
+
+The code that is patched is from the following commit
+https://github.com/divio/django-filer/tree/655ead261d124cf5b943abdcf30c7921aa20374f
+
+To avoid pulling in so much code it would have been better to write
+small utility methods that gets the object for filer that then can be patched
+by versioning-filer.
+"""
+
 import logging
 
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
@@ -8,11 +30,10 @@ from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 
 import filer
+from djangocms_versioning.helpers import remove_published_where
 from filer import settings as filer_settings
 from filer.fields.file import AdminFileFormField
 from filer.models.filemodels import File
-
-from djangocms_versioning.helpers import remove_published_where
 
 
 logger = logging.getLogger(__name__)
