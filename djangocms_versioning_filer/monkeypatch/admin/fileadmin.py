@@ -39,10 +39,8 @@ def clean(func):
         if file_name and check_file_label_exists_in_folder(
             file_name, self.instance.folder, exclude_file_pks=[self.instance.pk]
         ):
-            self.add_error(
-                'name',
-                _('File with name "{}" already exists in "{}" folder').format(file_name, folder_name)
-            )
+            msg = _('File with name "{}" already exists in "{}" folder').format(file_name, folder_name)
+            self.add_error('name', msg)
         return cleaned_data
     return inner
 filer.admin.fileadmin.FileAdminChangeFrom.clean = clean(  # noqa: E305
