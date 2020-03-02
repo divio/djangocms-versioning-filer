@@ -1,8 +1,8 @@
-{% load i18n cms_tags %}
+{% load i18n cms_tags versioning_filer %}
 
 {% if not disabled %}
     {% with instance.source_file.extension as ext %}
-        <source src="{{ instance.source_file.url }}" type="video/{{ ext }}" {{ instance.attributes_str }}>
+        <source src="{% get_url instance.source_file %}" type="video/{{ ext }}" {{ instance.attributes_str }}>
     {% endwith %}
 {% endif %}
 

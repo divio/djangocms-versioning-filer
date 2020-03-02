@@ -1,5 +1,7 @@
+{% load versioning_filer %}
+
 {% if not disabled %}
-    <track kind="{{ instance.kind }}" src="{{ instance.src.url }}"
+    <track kind="{{ instance.kind }}" src="{% get_url instance.src %}"
         {% if instance.srclang %} srclang="{{ instance.srclang }}"{% endif %}
         {% if instance.label %} label="{{ instance.label }}"{% endif %}
         {% if instance.attributes %} {{ instance.attributes_str }}{% endif %}

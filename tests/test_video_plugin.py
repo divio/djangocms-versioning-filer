@@ -1,10 +1,11 @@
 from cms.api import add_plugin
 from cms.models import CMSPlugin
-from cms.toolbar.utils import get_object_preview_url
+from cms.toolbar.utils import get_object_edit_url
 
 from djangocms_versioning_filer.models import FileGrouper
+from djangocms_versioning_filer.templatetags.versioning_filer import get_url
 
-from .base import BaseFilerVersioningTestCase
+from .base import CONTEXT, BaseFilerVersioningTestCase
 
 
 class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
@@ -88,16 +89,17 @@ class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
             file_grouper=self.video_file_grouper,
         )
         video_file_grouper_2 = FileGrouper.objects.create()
-        video_track_file_obj = self.create_file_obj(
+        unpublished_video_track = self.create_file_obj(
             original_filename='sandstorm-subtitles.mp4',
             folder=self.folder,
             grouper=video_file_grouper_2,
             publish=False,
         )
+        unpublished_source = get_url(CONTEXT, unpublished_video_track)
 
-        response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
+        response = self.client.get(get_object_edit_url(self.placeholder.source, self.language))
         self.assertContains(response, self.video_file.url)
-        self.assertNotContains(response, video_track_file_obj.url)
+        self.assertNotContains(response, unpublished_source)
 
         draft_file = self.create_file_obj(
             original_filename='sandstorm.mp4',
@@ -105,6 +107,7 @@ class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
             grouper=self.video_file_grouper,
             publish=False,
         )
+        draft_url = get_url(CONTEXT, draft_file)
         add_plugin(
             self.placeholder,
             'VideoTrackPlugin',
@@ -113,6 +116,6 @@ class FilerVideoPluginTestCase(BaseFilerVersioningTestCase):
             file_grouper=video_file_grouper_2,
         )
 
-        response = self.client.get(get_object_preview_url(self.placeholder.source, self.language))
-        self.assertContains(response, draft_file.url)
-        self.assertContains(response, video_track_file_obj.url)
+        response = self.client.get(get_object_edit_url(self.placeholder.source, self.language))
+        self.assertContains(response, draft_url)
+        self.assertContains(response, unpublished_source)

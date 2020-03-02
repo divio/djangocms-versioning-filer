@@ -17,6 +17,19 @@ def unsorted_images_files(self):
     return get_files_distinct_grouper_queryset().filter(folder__isnull=True)
 filer.models.virtualitems.UnsortedImages.files = property(unsorted_images_files)   # noqa: E305
 
+
+def url(self):
+    """
+    to make the model behave like a file field
+    """
+    try:
+        r = self.grouper.file.file.url
+    except Exception:  # noqa
+        r = ''
+    return r
+
+
+filer.models.File.url = property(url)
 filer.models.File._meta.base_manager_name = '_original_manager'
 
 

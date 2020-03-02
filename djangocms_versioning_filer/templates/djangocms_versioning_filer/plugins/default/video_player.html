@@ -1,4 +1,4 @@
-{% load i18n cms_tags %}
+{% load i18n cms_tags versioning_filer %}
 
 {% if instance.embed_link %}
     {# show iframe if embed_link is provided #}
@@ -11,7 +11,7 @@
 {% else %}
     {# render <source> or <track> plugins #}
     <video controls {{ instance.attributes_str }}
-        {% if instance.poster %} poster="{{ instance.poster.url }}"{% endif %}>
+        {% if instance.poster %} poster="{% get_url instance.poster %}"{% endif %}>
         {% for plugin in instance.child_plugin_instances %}
             {% render_plugin plugin %}
         {% endfor %}

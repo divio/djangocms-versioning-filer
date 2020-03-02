@@ -1,10 +1,10 @@
-{% load i18n cms_tags %}
+{% load i18n cms_tags versioning_filer %}
 
 {% with instance.audio_file.extension as ext %}
     <audio controls
         {% if instance.text_title %} title="{{ instance.text_title }}"{% endif %}
         {% if instance.attributes %} {{ instance.attributes_str }}{% endif %}>
-        <source src="{{ instance.audio_file.url }}" type="audio/{% if ext == "mp3" %}mpeg{% else %}{{ ext }}{% endif %}">
+        <source src="{% get_url instance.audio_file %}" type="audio/{% if ext == "mp3" %}mpeg{% else %}{{ ext }}{% endif %}">
         {{ instance.text_description }}
         {% for plugin in instance.child_plugin_instances %}
             {% render_plugin plugin %}

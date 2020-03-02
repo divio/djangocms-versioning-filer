@@ -19,6 +19,18 @@ from djangocms_versioning_filer.models import FileGrouper
 from djangocms_versioning_filer.test_utils.helpers import create_image
 
 
+class MockToolbar:
+
+    @property
+    def edit_mode_active(self):
+        return True
+
+
+CONTEXT = {
+    'cms_toolbar': MockToolbar()
+}
+
+
 class BaseFilerVersioningTestCase(CMSTestCase):
 
     def setUp(self):

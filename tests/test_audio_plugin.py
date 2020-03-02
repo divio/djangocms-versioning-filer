@@ -1,10 +1,11 @@
 from cms.api import add_plugin
 from cms.models import CMSPlugin
-from cms.toolbar.utils import get_object_preview_url
+from cms.toolbar.utils import get_object_edit_url, get_object_preview_url
 
 from djangocms_versioning_filer.models import FileGrouper
+from djangocms_versioning_filer.templatetags.versioning_filer import get_url
 
-from .base import BaseFilerVersioningTestCase
+from .base import CONTEXT, BaseFilerVersioningTestCase
 
 
 class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
@@ -42,6 +43,11 @@ class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
         self.assertEquals(audioplayer.file_grouper.file.url, self.audio_file.url)
 
     def test_plugin_rendering(self):
+        """
+        Previews does not contain the source for drafts.
+        Edit urls contains the source for drafts.
+        """
+
         parent_plugin = add_plugin(
             self.placeholder,
             'AudioPlayerPlugin',
@@ -56,18 +62,19 @@ class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
             file_grouper=self.audio_file_grouper,
         )
         audio_file_grouper_2 = FileGrouper.objects.create()
-        audio_track_file_obj = self.create_file_obj(
+        unpublished_audio_track = self.create_file_obj(
             original_filename='sandstorm-subtitles.mp3',
             folder=self.folder,
             grouper=audio_file_grouper_2,
             publish=False,
         )
+        unpublished_audio_url = get_url(CONTEXT, unpublished_audio_track)
 
         response = self.client.get(
             get_object_preview_url(self.placeholder.source, self.language)
         )
         self.assertContains(response, self.audio_file.url)
-        self.assertNotContains(response, audio_track_file_obj.url)
+        self.assertNotContains(response, unpublished_audio_url)
 
         draft_file = self.create_file_obj(
             original_filename='sandstorm.ogg',
@@ -82,12 +89,20 @@ class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
             target=audio_file_plugin,
             file_grouper=audio_file_grouper_2,
         )
+        unpublished_audio_url = get_url(CONTEXT, unpublished_audio_track)
+        draft_url = get_url(CONTEXT, draft_file)
 
-        response = self.client.get(
-            get_object_preview_url(self.placeholder.source, self.language)
-        )
-        self.assertContains(response, draft_file.url)
-        self.assertContains(response, audio_track_file_obj.url)
+        preview_url = get_object_preview_url(self.placeholder.source, self.language)
+        response = self.client.get(preview_url)
+
+        self.assertNotContains(response, draft_url)
+        self.assertNotContains(response, unpublished_audio_url)
+
+        edit_url = get_object_edit_url(self.placeholder.source, self.language)
+        response = self.client.get(edit_url)
+
+        self.assertContains(response, draft_url)
+        self.assertContains(response, unpublished_audio_url)
 
     def test_audio_folder_plugin(self):
         audio_player_plugin = add_plugin(
@@ -130,7 +145,10 @@ class FilerAudioPluginTestCase(BaseFilerVersioningTestCase):
             get_object_preview_url(self.placeholder.source, self.language)
         )
 
-        self.assertContains(response, draft_file.url)
-        self.assertContains(response, draft_file_2.url)
+        draft_url = get_url(CONTEXT, draft_file)
+        draft_url2 = get_url(CONTEXT, draft_file_2)
+
+        self.assertContains(response, draft_url)
+        self.assertContains(response, draft_url2)
         self.assertNotContains(response, published_nonaudio_file.url)
         self.assertNotContains(response, self.audio_file.url)

@@ -18,8 +18,9 @@ from djangocms_versioning.models import Version
 from filer.models import File, Folder
 
 from djangocms_versioning_filer.models import FileGrouper
+from djangocms_versioning_filer.templatetags.versioning_filer import get_url
 
-from .base import BaseFilerVersioningTestCase
+from .base import CONTEXT, BaseFilerVersioningTestCase
 
 
 class FilerViewTests(BaseFilerVersioningTestCase):
@@ -245,9 +246,10 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             grouper=FileGrouper.objects.create(),
             publish=False,
         )
+
         with self.login_user_context(self.superuser):
             response = self.client.get(draft_file.canonical_url)
-        self.assertRedirects(response, draft_file.url)
+        self.assertRedirects(response, draft_file.file.url)
 
     def test_ajax_upload_clipboardadmin(self):
         file = self.create_file('test2.pdf')
@@ -619,12 +621,16 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertEqual(file2.url, '/media/f1/f2/test.xls')
         self.assertEqual(file3.url, '/media/f1/f3/test.xls')
         self.assertEqual(file4.url, '/media/f1/f3/f4/test.xls')
-        self.assertIn('filer_public', draft_file.url)
-        self.assertIn('test2.xls', draft_file.url)
-        self.assertIn('filer_public', unpublished_file.url)
-        self.assertIn('test3.xls', unpublished_file.url)
-        self.assertIn('filer_public', archived_file.url)
-        self.assertIn('test4.xls', archived_file.url)
+
+        draft_url = get_url(CONTEXT, draft_file)
+        unpublished_url = get_url(CONTEXT, unpublished_file)
+        archived_url = get_url(CONTEXT, archived_file)
+        self.assertIn('filer_public', draft_url)
+        self.assertIn('test2.xls', draft_url)
+        self.assertIn('filer_public', unpublished_url)
+        self.assertIn('test3.xls', unpublished_url)
+        self.assertIn('filer_public', archived_url)
+        self.assertIn('test4.xls', archived_url)
 
         with self.login_user_context(self.superuser):
             self.client.post(
@@ -634,21 +640,25 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         for f in files:
             with nonversioned_manager(File):
                 f.refresh_from_db()
+                f.grouper.file.refresh_from_db()
 
+        draft_url = get_url(CONTEXT, draft_file)
+        unpublished_url = get_url(CONTEXT, unpublished_file)
+        archived_url = get_url(CONTEXT, archived_file)
         self.assertEqual(file0.url, '/media/f00/test.xls')
         self.assertEqual(file1.url, '/media/f10/test.xls')
         self.assertEqual(file2.url, '/media/f10/f2/test.xls')
         self.assertEqual(file3.url, '/media/f10/f3/test.xls')
         self.assertEqual(file4.url, '/media/f10/f3/f4/test.xls')
-        self.assertIn('filer_public', draft_file.url)
-        self.assertIn('test2.xls', draft_file.url)
-        self.assertNotIn('f10', draft_file.url)
-        self.assertIn('filer_public', unpublished_file.url)
-        self.assertIn('test3.xls', unpublished_file.url)
-        self.assertNotIn('f10', unpublished_file.url)
-        self.assertIn('filer_public', archived_file.url)
-        self.assertIn('test4.xls', archived_file.url)
-        self.assertNotIn('f10', archived_file.url)
+        self.assertIn('filer_public', draft_url)
+        self.assertIn('test2.xls', draft_url)
+        self.assertNotIn('f10', draft_url)
+        self.assertIn('filer_public', unpublished_url)
+        self.assertIn('test3.xls', unpublished_url)
+        self.assertNotIn('f10', unpublished_url)
+        self.assertIn('filer_public', archived_url)
+        self.assertIn('test4.xls', archived_url)
+        self.assertNotIn('f10', archived_url)
 
         with self.login_user_context(self.superuser):
             self.client.post(
@@ -658,21 +668,25 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         for f in files:
             with nonversioned_manager(File):
                 f.refresh_from_db()
+                f.grouper.file.refresh_from_db()
 
+        draft_url = get_url(CONTEXT, draft_file)
+        unpublished_url = get_url(CONTEXT, unpublished_file)
+        archived_url = get_url(CONTEXT, archived_file)
         self.assertEqual(file0.url, '/media/f00/test.xls')
         self.assertEqual(file1.url, '/media/f10/test.xls')
         self.assertEqual(file2.url, '/media/f10/f2/test.xls')
         self.assertEqual(file3.url, '/media/f10/f30%20test/test.xls')
         self.assertEqual(file4.url, '/media/f10/f30%20test/f4/test.xls')
-        self.assertIn('filer_public', draft_file.url)
-        self.assertIn('test2.xls', draft_file.url)
-        self.assertNotIn('f10', draft_file.url)
-        self.assertIn('filer_public', unpublished_file.url)
-        self.assertIn('test3.xls', unpublished_file.url)
-        self.assertNotIn('f10', unpublished_file.url)
-        self.assertIn('filer_public', archived_file.url)
-        self.assertIn('test4.xls', archived_file.url)
-        self.assertNotIn('f10', archived_file.url)
+        self.assertIn('filer_public', draft_url)
+        self.assertIn('test2.xls', draft_url)
+        self.assertNotIn('f10', draft_url)
+        self.assertIn('filer_public', unpublished_url)
+        self.assertIn('test3.xls', unpublished_url)
+        self.assertNotIn('f10', unpublished_url)
+        self.assertIn('filer_public', archived_url)
+        self.assertIn('test4.xls', archived_url)
+        self.assertNotIn('f10', archived_url)
 
     @skipUnless(
         'djangocms_moderation' in settings.INSTALLED_APPS,

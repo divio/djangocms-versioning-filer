@@ -1,4 +1,6 @@
-<a href="{{ instance.file_src.url }}"
+{% load versioning_filer %}
+
+<a href="{% get_url instance.file_src %}"
     {% if instance.link_target %} target="{{ instance.link_target }}"{% endif %}
     {% if instance.link_title %} title="{{ instance.link_title }}"{% endif %}
     {{ instance.attributes_str }}>
