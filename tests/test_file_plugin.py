@@ -1,5 +1,3 @@
-from unittest import skip
-
 from cms.api import add_plugin
 from cms.models import CMSPlugin, PageContent
 from cms.toolbar.utils import get_object_edit_url, get_object_preview_url
@@ -114,6 +112,7 @@ class FilerFilePluginTestCase(BaseFilerVersioningTestCase):
 
         v2_draft_url = get_url(CONTEXT, v2.content)
         response = self.client.get(get_object_edit_url(self.placeholder.source))
+
         self.assertContains(response, v2_draft_url)
 
         # clean-up
@@ -189,7 +188,6 @@ class FilerFilePluginTestCase(BaseFilerVersioningTestCase):
 
 class FilerFolderPluginTestCase(BaseFilerVersioningTestCase):
 
-    @skip('broken. For some reason it picks up the original djangocms_file template')
     def test_plugin_rendering(self):
         """
         Preview url does not contain url

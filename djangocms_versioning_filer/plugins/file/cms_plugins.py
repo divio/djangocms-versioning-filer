@@ -2,7 +2,10 @@ from django.utils.translation import ugettext_lazy as _
 
 from cms.plugin_pool import plugin_pool
 
-from djangocms_file.cms_plugins import FilePlugin as BaseFilePlugin
+from djangocms_file.cms_plugins import (
+    FilePlugin as BaseFilePlugin,
+    FolderPlugin as BaseFolderPlugin,
+)
 
 from .models import VersionedFile
 
@@ -34,3 +37,12 @@ class FilePlugin(BaseFilePlugin):
 
 plugin_pool.unregister_plugin(BaseFilePlugin)
 plugin_pool.register_plugin(FilePlugin)
+
+
+class FolderPlugin(BaseFolderPlugin):
+    def get_render_template(self, context, instance, placeholder):
+        return 'djangocms_versioning_filer/plugins/{}/folder.html'.format(instance.template)
+
+
+plugin_pool.unregister_plugin(BaseFolderPlugin)
+plugin_pool.register_plugin(FolderPlugin)
