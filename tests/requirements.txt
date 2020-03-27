@@ -1,12 +1,11 @@
-https://github.com/divio/django-cms/archive/release/4.0.x.zip
 coverage
 djangocms_helper
 flake8
 isort
-djangocms_file
-djangocms_picture
-djangocms_audio
-djangocms_video
-https://github.com/divio/djangocms-versioning/archive/master.zip
-https://github.com/FidelityInternational/django-filer/archive/develop.zip
+djangocms-picture
+djangocms-audio
+djangocms-file
+djangocms-video
+# both of these exist in setup.py as test dependencies but needed to avoid CI failure.
 https://github.com/divio/djangocms-moderation/archive/release/1.0.x.zip
+https://github.com/divio/djangocms-versioning/archive/master.zip

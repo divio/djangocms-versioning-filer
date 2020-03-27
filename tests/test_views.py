@@ -629,26 +629,26 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         with self.login_user_context(self.superuser):
             self.client.post(
                 reverse('admin:filer_folder_change', args=[folder1.id]),
-                data={'name': 'f10'},
+                data={'name': 'fol10'},
             )
         for f in files:
             with nonversioned_manager(File):
                 f.refresh_from_db()
 
         self.assertEqual(file0.url, '/media/f00/test.xls')
-        self.assertEqual(file1.url, '/media/f10/test.xls')
-        self.assertEqual(file2.url, '/media/f10/f2/test.xls')
-        self.assertEqual(file3.url, '/media/f10/f3/test.xls')
-        self.assertEqual(file4.url, '/media/f10/f3/f4/test.xls')
+        self.assertEqual(file1.url, '/media/fol10/test.xls')
+        self.assertEqual(file2.url, '/media/fol10/f2/test.xls')
+        self.assertEqual(file3.url, '/media/fol10/f3/test.xls')
+        self.assertEqual(file4.url, '/media/fol10/f3/f4/test.xls')
         self.assertIn('filer_public', draft_file.url)
         self.assertIn('test2.xls', draft_file.url)
-        self.assertNotIn('f10', draft_file.url)
+        self.assertNotIn('fol10', draft_file.url)
         self.assertIn('filer_public', unpublished_file.url)
         self.assertIn('test3.xls', unpublished_file.url)
-        self.assertNotIn('f10', unpublished_file.url)
+        self.assertNotIn('fol10', unpublished_file.url)
         self.assertIn('filer_public', archived_file.url)
         self.assertIn('test4.xls', archived_file.url)
-        self.assertNotIn('f10', archived_file.url)
+        self.assertNotIn('fol10', archived_file.url)
 
         with self.login_user_context(self.superuser):
             self.client.post(
@@ -660,19 +660,19 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                 f.refresh_from_db()
 
         self.assertEqual(file0.url, '/media/f00/test.xls')
-        self.assertEqual(file1.url, '/media/f10/test.xls')
-        self.assertEqual(file2.url, '/media/f10/f2/test.xls')
-        self.assertEqual(file3.url, '/media/f10/f30%20test/test.xls')
-        self.assertEqual(file4.url, '/media/f10/f30%20test/f4/test.xls')
+        self.assertEqual(file1.url, '/media/fol10/test.xls')
+        self.assertEqual(file2.url, '/media/fol10/f2/test.xls')
+        self.assertEqual(file3.url, '/media/fol10/f30%20test/test.xls')
+        self.assertEqual(file4.url, '/media/fol10/f30%20test/f4/test.xls')
         self.assertIn('filer_public', draft_file.url)
         self.assertIn('test2.xls', draft_file.url)
-        self.assertNotIn('f10', draft_file.url)
+        self.assertNotIn('fol10', draft_file.url)
         self.assertIn('filer_public', unpublished_file.url)
         self.assertIn('test3.xls', unpublished_file.url)
-        self.assertNotIn('f10', unpublished_file.url)
+        self.assertNotIn('fol10', unpublished_file.url)
         self.assertIn('filer_public', archived_file.url)
         self.assertIn('test4.xls', archived_file.url)
-        self.assertNotIn('f10', archived_file.url)
+        self.assertNotIn('fol10', archived_file.url)
 
     @skipUnless(
         'djangocms_moderation' in settings.INSTALLED_APPS,

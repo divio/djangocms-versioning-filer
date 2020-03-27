@@ -6,7 +6,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.models import CMSPlugin
 
 from djangocms_attributes_field.fields import AttributesField
-from djangocms_audio.models import AudioFolder, AudioTrack, get_extensions
+from djangocms_audio.models import AudioFolder, AudioTrack
 
 from djangocms_versioning_filer.fields import FileGrouperField
 from djangocms_versioning_filer.models import (
@@ -14,7 +14,12 @@ from djangocms_versioning_filer.models import (
 )
 
 
-ALLOWED_EXTENSIONS = get_extensions()
+try:
+    from djangocms_audio.models import ALLOWED_EXTENSIONS
+except ImportError:
+    # using get_extensions from version 1.3.0
+    from djangocms_audio.models import get_extensions
+    ALLOWED_EXTENSIONS = get_extensions()
 
 
 class VersionedAudioFile(CMSPlugin):
