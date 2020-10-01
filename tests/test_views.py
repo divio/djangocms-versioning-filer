@@ -743,7 +743,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         """
         folder = Folder.objects.create(name='f0')
         draft_grouper = FileGrouper.objects.create()
-        new_file_name ='image1'
+        new_file_name = 'image1'
         image_file = self.create_image_obj(
             original_filename='image.jpg',
             publish=False,
