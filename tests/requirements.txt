@@ -2,9 +2,10 @@ coverage
 djangocms_helper
 flake8
 isort
-djangocms-picture
+django-filer<2.0.0
+djangocms-picture<3.0.0
 djangocms-audio
-djangocms-file
+djangocms-file<3.0.0
 djangocms-video
 django-classy-tags<2.0.0
 django-sekizai<2.0.0

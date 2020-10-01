@@ -737,6 +737,36 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         ).values_list('id', flat=True)
         self.assertEqual(set(proper_ids), set(version_ids))
 
+    def test_image_file_name_change(self):
+        """
+        Update the name attribute for image and check the updated name in folder listing
+        """
+        folder = Folder.objects.create(name='f0')
+        draft_grouper = FileGrouper.objects.create()
+        new_file_name ='image1'
+        image_file = self.create_image_obj(
+            original_filename='image.jpg',
+            publish=False,
+            grouper=draft_grouper,
+            folder=folder
+        )
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                reverse('admin:filer_image_change', args=[image_file.id]),
+                data={'name': new_file_name},
+            )
+        folder_dir_list_url = reverse('admin:filer-directory_listing', kwargs={'folder_id': folder.pk})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(folder_dir_list_url, response.url)
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(response.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, new_file_name)
+
 
 # NOTE: Returning 200 when permissions don't match is a bit strange,
 # one would expect a 403 or 400, but this is what the frontend

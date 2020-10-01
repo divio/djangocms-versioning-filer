@@ -296,7 +296,7 @@ filer.admin.folderadmin.FolderAdmin.directory_listing = directory_listing  # noq
 def save_model(func):
     def inner(self, request, obj, form, change):
         func(self, request, obj, form, change)
-        if change and 'name' in form.changed_data:
+        if change and 'name' in form.changed_data and isinstance(obj, Folder):
             published_files = File.objects.filter(
                 folder__in=obj.get_descendants(include_self=True)
             )
