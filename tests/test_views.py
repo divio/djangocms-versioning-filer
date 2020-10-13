@@ -397,6 +397,20 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         error_msg = 'Cannot archive existing test1.jpg file version'
         self.assertEqual(response.json()['error'], error_msg)
 
+    def test_ajax_upload_clipboardadmin_xss_vulnerability(self):
+        """
+        If we add malicious data to an ajax upload request ensure it is stripped in response.
+        """
+        file = self.create_file('test2.pdf')
+
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
+                data={'file': file, 'script': '<script>alert("Attack!")</script>'},
+            )
+
+        self.assertNotContains(response, '<script>alert("Attack")</script>')
+
     def test_folderadmin_directory_listing(self):
         folder = Folder.objects.create(name='test folder 9')
         file_grouper_1 = FileGrouper.objects.create()
