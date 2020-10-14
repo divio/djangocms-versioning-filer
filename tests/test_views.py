@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.admin import helpers
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File as DjangoFile
-from django.urls import reverse
+from django.urls import reverse, NoReverseMatch
 
 from cms.test_utils.testcases import CMSTestCase
 from cms.utils.urlutils import add_url_parameters
@@ -18,6 +18,7 @@ from djangocms_versioning.models import Version
 from filer.models import File, Folder
 
 from djangocms_versioning_filer.models import FileGrouper
+from djangocms_versioning_filer.monkeypatch.admin.clipboardadmin import ajax_upload
 
 from .base import BaseFilerVersioningTestCase
 
@@ -401,15 +402,26 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         """
         If we add malicious data to an ajax upload request ensure it is stripped in response.
         """
+        with self.login_user_context(self.superuser):
+            response = self.client.post(
+                reverse('admin:filer-ajax_upload'),
+                data={'path': '<script>alert("attack!")</script>'}
+            )
+
+        self.assertFalse('<script>alert("attack!")</script>' in response.request.values())
+        self.assertEqual(response.status_code, 500)
+
         file = self.create_file('test2.pdf')
 
         with self.login_user_context(self.superuser):
             response = self.client.post(
-                reverse('admin:filer-ajax_upload', kwargs={'folder_id': self.folder.id}),
-                data={'file': file, 'script': '<script>alert("Attack!")</script>'},
-            )
+                reverse('admin:filer-ajax_upload'),
+                data={'path': '<script>alert("attack!")</script>', 'file': file}
+        )
 
-        self.assertNotContains(response, '<script>alert("Attack")</script>')
+        self.assertNotContains(response, '<script>alert("attack!")</script>')
+        self.assertEqual(response.status_code, 200)
+
 
     def test_folderadmin_directory_listing(self):
         folder = Folder.objects.create(name='test folder 9')
