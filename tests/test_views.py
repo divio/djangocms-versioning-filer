@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.admin import helpers
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File as DjangoFile
-from django.urls import reverse, NoReverseMatch
+from django.urls import reverse
 
 from cms.test_utils.testcases import CMSTestCase
 from cms.utils.urlutils import add_url_parameters
@@ -18,7 +18,6 @@ from djangocms_versioning.models import Version
 from filer.models import File, Folder
 
 from djangocms_versioning_filer.models import FileGrouper
-from djangocms_versioning_filer.monkeypatch.admin.clipboardadmin import ajax_upload
 
 from .base import BaseFilerVersioningTestCase
 
