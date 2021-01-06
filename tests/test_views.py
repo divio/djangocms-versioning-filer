@@ -239,23 +239,22 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                 publish=False,
             )
 
-            expected_canonical_url = '/filer/{}{}/{}/'.format(
-                settings.FILER_CANONICAL_URL,
-                file_obj.grouper.canonical_time,
-                int(file_obj.grouper.canonical_file_id)
-            )
-            self.assertEqual(file_obj.canonical_url, expected_canonical_url)
             self.assertIn('/media/filer_public/', file_obj.url)
             self.assertIn('test-test.doc', file_obj.url)
 
-            version = file_obj.versions.first()
+            version = Version.objects.get_for_content(file_obj)
+            self.assertEqual(version.state, DRAFT)
+
             version.publish(self.superuser)
+            self.assertEqual(version.state, PUBLISHED)
 
-            with nonversioned_manager(File):
-                file_obj.refresh_from_db()
-
+            expected_canonical_url = '/filer/{}{}/{}/'.format(
+                settings.FILER_CANONICAL_URL,
+                grouper.canonical_time,
+                grouper.canonical_file_id
+            )
             # get canonical url for the published file from grouper
-            self.assertEqual(grouper.file.canonical_url, expected_canonical_url)
+            self.assertEqual(version.content.canonical_url, expected_canonical_url)
             published_version_static_path = '/media/{}/{}'.format(grouper.file.folder, file_obj.original_filename)
             self.assertEqual(published_version_static_path, grouper.file.url)
             response = self.client.get(grouper.file.canonical_url)
