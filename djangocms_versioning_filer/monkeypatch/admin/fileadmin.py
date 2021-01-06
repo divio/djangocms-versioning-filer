@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext as _
 
 import filer
+from filer.models import File
 
 from ...helpers import check_file_label_exists_in_folder
 
@@ -9,6 +10,11 @@ def save_model(func):
     """Override the FileAdmin save_model method"""
     def inner(self, request, obj, form, change):
         func(self, request, obj, form, change)
+        if isinstance(obj, File):
+            if obj.id and obj.grouper and not obj.grouper.canonical_file_id:
+                grouper = obj.grouper
+                grouper.canonical_file_id = obj.id
+                grouper.save()
         try:
             from djangocms_internalsearch.helpers import emit_content_change
         except ImportError:
