@@ -224,38 +224,41 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertContains(response, 'Folder with this name already exists.')
 
     def test_canonical_view(self):
+        """
+        Canonical url creation when file_obj and grouper are created
+        check canonical_url is same for the published version of file_obj.
+        Canonical_url will always link to published file url
+        """
         with self.login_user_context(self.superuser):
-            # testing published file
-            self.file.save()
+            grouper = FileGrouper.objects.create()
+            file_obj = self.create_file_obj(
+                original_filename='test-test.doc',
+                folder=self.file.folder,
+                grouper=grouper,
+                publish=False,
+            )
+
             expected_canonical_url = '/filer/{}{}/{}/'.format(
                 settings.FILER_CANONICAL_URL,
-                self.file.grouper.canonical_time,
-                int(self.file.grouper.canonical_file_id)
+                file_obj.grouper.canonical_time,
+                int(file_obj.grouper.canonical_file_id)
             )
-            self.assertEqual(expected_canonical_url, self.file.canonical_url)
-            self.assertEqual(self.file.id, int(self.file.grouper.canonical_file_id))
-            response = self.client.get(self.file.canonical_url)
-        self.assertRedirects(response, self.file.url)
+            self.assertEqual(file_obj.canonical_url, expected_canonical_url)
+            self.assertIn('/media/filer_public/', file_obj.url)
+            self.assertIn('test-test.doc', file_obj.url)
 
-        draft_file_in_the_same_grouper = self.create_file_obj(
-            original_filename='test-1.pdf',
-            folder=self.folder,
-            grouper=self.file_grouper,
-            publish=False,
-        )
-        with self.login_user_context(self.superuser):
-            response = self.client.get(draft_file_in_the_same_grouper.canonical_url)
-        self.assertRedirects(response, draft_file_in_the_same_grouper.url)
+            version = file_obj.versions.first()
+            version.publish(self.superuser)
 
-        draft_file = self.create_file_obj(
-            original_filename='test-1.pdf',
-            folder=Folder.objects.create(name='folder test 55'),
-            grouper=FileGrouper.objects.create(),
-            publish=False,
-        )
-        with self.login_user_context(self.superuser):
-            response = self.client.get(draft_file.canonical_url)
-        self.assertRedirects(response, draft_file.url)
+            with nonversioned_manager(File):
+                file_obj.refresh_from_db()
+
+            # get canonical url for the published file from grouper
+            self.assertEqual(grouper.file.canonical_url, expected_canonical_url)
+            published_version_static_path = '/media/{}/{}'.format(grouper.file.folder, file_obj.original_filename)
+            self.assertEqual(published_version_static_path, grouper.file.url)
+            response = self.client.get(grouper.file.canonical_url)
+        self.assertRedirects(response, grouper.file.url)
 
     def test_ajax_upload_clipboardadmin(self):
         file = self.create_file('test2.pdf')
