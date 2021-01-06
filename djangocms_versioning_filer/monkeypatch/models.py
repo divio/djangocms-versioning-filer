@@ -2,9 +2,9 @@ from django.urls import NoReverseMatch, reverse
 from django.utils.translation import ugettext_lazy as _
 
 import filer
-from filer.models import File
 from djangocms_versioning.exceptions import ConditionFailed
 from djangocms_versioning.models import Version
+from filer.models import File
 
 from ..helpers import check_file_exists_in_folder
 from ..models import get_files_distinct_grouper_queryset
