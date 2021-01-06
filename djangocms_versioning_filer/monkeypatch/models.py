@@ -63,7 +63,6 @@ def save(func):
             grouper = self.grouper
             grouper.canonical_file_id = self.id
             grouper.save()
-        save.alters_data = True
     return inner
 filer.models.File.save = save(
     filer.models.File.save

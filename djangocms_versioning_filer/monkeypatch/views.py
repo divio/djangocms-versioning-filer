@@ -1,9 +1,10 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 
-from djangocms_versioning_filer.models import FileGrouper
 from filer import views as filer_views
 from filer.models import File
+
+from djangocms_versioning_filer.models import FileGrouper
 
 
 def canonical(request, uploaded_at, file_id):
