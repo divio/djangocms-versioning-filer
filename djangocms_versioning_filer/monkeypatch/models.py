@@ -48,7 +48,7 @@ def is_file_content_valid_for_revert(version, user):
         )
 
 
-def save(func):
+def model_save(func):
     def inner(self, *args, **kwargs):
         func(self, *args, **kwargs)
         if self.__class__ == File:
@@ -68,7 +68,7 @@ def save(func):
     return inner
 
 
-filer.models.File.save = save(
+filer.models.File.save = model_save(
     filer.models.File.save
 )
 
