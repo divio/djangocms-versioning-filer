@@ -227,7 +227,13 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         with self.login_user_context(self.superuser):
             # testing published file
             self.file.save()
-            # self.assertEqual(self.file.id, self.file.grouper.canonical_file_id)
+            expected_canonical_url = '/filer/{}{}/{}/'.format(
+                settings.FILER_CANONICAL_URL,
+                self.file.grouper.canonical_time,
+                int(self.file.grouper.canonical_file_id)
+            )
+            self.assertEqual(expected_canonical_url, self.file.canonical_url)
+            self.assertEqual(self.file.id, int(self.file.grouper.canonical_file_id))
             response = self.client.get(self.file.canonical_url)
         self.assertRedirects(response, self.file.url)
 

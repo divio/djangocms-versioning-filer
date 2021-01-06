@@ -2,6 +2,7 @@ from django.urls import NoReverseMatch, reverse
 from django.utils.translation import ugettext_lazy as _
 
 import filer
+from filer.models import File
 from djangocms_versioning.exceptions import ConditionFailed
 from djangocms_versioning.models import Version
 
@@ -43,6 +44,29 @@ def is_file_content_valid_for_revert(version, user):
                 content.label, content.folder,
             )
         )
+
+
+def save(func):
+    def inner(self, *args, **kwargs):
+        func(self, *args, **kwargs)
+        if self.__class__ == File:
+            # what should we do now?
+            # maybe this has a subclass, but is being saved as a File instance
+            # anyway. do we need to go check all possible subclasses?
+            pass
+        elif issubclass(self.__class__, File):
+            self._file_type_plugin_name = self.__class__.__name__
+        if self._old_is_public != self.is_public and self.pk:
+            self._move_file()
+            self._old_is_public = self.is_public
+        if self.id and self.grouper and not self.grouper.canonical_file_id:
+            grouper = self.grouper
+            grouper.canonical_file_id = self.id
+            grouper.save()
+    return inner
+filer.models.File.save = save(
+    filer.models.File.save
+)
 
 
 def is_file_content_valid_for_discard(version, user):
