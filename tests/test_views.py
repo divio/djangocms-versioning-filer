@@ -225,9 +225,10 @@ class FilerViewTests(BaseFilerVersioningTestCase):
 
     def test_canonical_view(self):
         """
-        Canonical url creation when file_obj and grouper are created
+        1.Canonical url creation when file_obj and grouper are created
         check canonical_url is same for the published version of file_obj.
-        Canonical_url will always link to published file url
+        2.canonical url is same in draft and published version of the file object
+        Canonical_url will always link to published file url.
         """
         with self.login_user_context(self.superuser):
             grouper = FileGrouper.objects.create()
@@ -259,6 +260,16 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             self.assertEqual(published_version_static_path, grouper.file.url)
             response = self.client.get(grouper.file.canonical_url)
         self.assertRedirects(response, grouper.file.url)
+
+        new_draft_version = version.copy(self.superuser)
+
+        new_draft_file_obj = new_draft_version.content
+        new_draft_file_obj.refresh_from_db()
+        # check the new draft version canonical is same as published version canonical
+        self.assertEqual(new_draft_file_obj.canonical_url, grouper.file.canonical_url)
+        self.assertIn('/media/filer_public/', new_draft_file_obj.url)
+        # clean-up
+        new_draft_version.delete()
 
     def test_ajax_upload_clipboardadmin(self):
         file = self.create_file('test2.pdf')
