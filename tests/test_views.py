@@ -226,6 +226,8 @@ class FilerViewTests(BaseFilerVersioningTestCase):
     def test_canonical_view(self):
         with self.login_user_context(self.superuser):
             # testing published file
+            self.file.save()
+            # self.assertEqual(self.file.id, self.file.grouper.canonical_file_id)
             response = self.client.get(self.file.canonical_url)
         self.assertRedirects(response, self.file.url)
 
