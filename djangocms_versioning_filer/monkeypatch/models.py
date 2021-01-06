@@ -21,6 +21,8 @@ def canonical_url(self):
         except NoReverseMatch:
             pass  # No canonical url, return empty string
     return url
+
+
 filer.models.filemodels.File.canonical_url = property(canonical_url)
 
 
@@ -64,6 +66,8 @@ def save(func):
             grouper.canonical_file_id = self.id
             grouper.save()
     return inner
+
+
 filer.models.File.save = save(
     filer.models.File.save
 )
