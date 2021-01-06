@@ -5,6 +5,22 @@ import filer
 from ...helpers import check_file_label_exists_in_folder
 
 
+def save_model(func):
+    """Override the FileAdmin save_model method"""
+    def inner(self, request, obj, form, change):
+        func(self, request, obj, form, change)
+        try:
+            from djangocms_internalsearch.helpers import emit_content_change
+        except ImportError:
+            return
+
+        emit_content_change(obj, sender=self.model)
+    return inner
+filer.admin.fileadmin.FileAdmin.save_model = save_model(  # noqa: E305
+    filer.admin.fileadmin.FileAdmin.save_model
+)
+
+
 def clean(func):
     """
     Override the ChangeFilenameFormMixin clean method
