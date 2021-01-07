@@ -263,7 +263,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         new_draft_version = version.copy(self.superuser)
 
         new_draft_file_obj = new_draft_version.content
-        new_draft_file_obj.refresh_from_db()
+
         # check the new draft version canonical is same as published version canonical
         self.assertEqual(new_draft_file_obj.canonical_url, grouper.file.canonical_url)
         self.assertIn('/media/filer_public/', new_draft_file_obj.url)
