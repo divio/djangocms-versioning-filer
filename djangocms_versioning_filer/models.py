@@ -1,5 +1,9 @@
+from datetime import datetime
+
+from django.conf import settings
 from django.db import models
 from django.db.models import Func
+from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
@@ -7,6 +11,10 @@ from filer.models import File
 
 
 class FileGrouper(models.Model):
+
+    canonical_created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    canonical_file_id = models.CharField(null=True, max_length=255)
+
     class Meta:
         verbose_name = _("filer grouper")
         verbose_name_plural = _("filer groupers")
@@ -17,6 +25,13 @@ class FileGrouper(models.Model):
     @cached_property
     def file(self):
         return self.files.first()
+
+    @property
+    def canonical_time(self):
+        if settings.USE_TZ:
+            return int((self.canonical_created_at - datetime(1970, 1, 1, 1, tzinfo=timezone.utc)).total_seconds())
+        else:
+            return int((self.canonical_created_at - datetime(1970, 1, 1, 1)).total_seconds())
 
     @cached_property
     def name(self):

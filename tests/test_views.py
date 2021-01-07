@@ -224,30 +224,51 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertContains(response, 'Folder with this name already exists.')
 
     def test_canonical_view(self):
+        """
+        1.Canonical url creation when file_obj and grouper are created
+        check canonical_url is same for the published version of file_obj.
+        2.canonical url is same in draft and published version of the file object
+        Canonical_url will always link to published file url.
+        """
         with self.login_user_context(self.superuser):
-            # testing published file
-            response = self.client.get(self.file.canonical_url)
-        self.assertRedirects(response, self.file.url)
+            grouper = FileGrouper.objects.create()
+            file_obj = self.create_file_obj(
+                original_filename='test-test.doc',
+                folder=self.file.folder,
+                grouper=grouper,
+                publish=False,
+            )
 
-        draft_file_in_the_same_grouper = self.create_file_obj(
-            original_filename='test-1.pdf',
-            folder=self.folder,
-            grouper=self.file_grouper,
-            publish=False,
-        )
-        with self.login_user_context(self.superuser):
-            response = self.client.get(draft_file_in_the_same_grouper.canonical_url)
-        self.assertRedirects(response, draft_file_in_the_same_grouper.url)
+            self.assertIn('/media/filer_public/', file_obj.url)
+            self.assertIn('test-test.doc', file_obj.url)
 
-        draft_file = self.create_file_obj(
-            original_filename='test-1.pdf',
-            folder=Folder.objects.create(name='folder test 55'),
-            grouper=FileGrouper.objects.create(),
-            publish=False,
-        )
-        with self.login_user_context(self.superuser):
-            response = self.client.get(draft_file.canonical_url)
-        self.assertRedirects(response, draft_file.url)
+            version = Version.objects.get_for_content(file_obj)
+            self.assertEqual(version.state, DRAFT)
+
+            version.publish(self.superuser)
+            self.assertEqual(version.state, PUBLISHED)
+
+            expected_canonical_url = '/filer/{}{}/{}/'.format(
+                settings.FILER_CANONICAL_URL,
+                grouper.canonical_time,
+                grouper.canonical_file_id
+            )
+            # get canonical url for the published file from grouper
+            self.assertEqual(version.content.canonical_url, expected_canonical_url)
+            published_version_static_path = '/media/{}/{}'.format(grouper.file.folder, file_obj.original_filename)
+            self.assertEqual(published_version_static_path, grouper.file.url)
+            response = self.client.get(grouper.file.canonical_url)
+        self.assertRedirects(response, grouper.file.url)
+
+        new_draft_version = version.copy(self.superuser)
+
+        new_draft_file_obj = new_draft_version.content
+
+        # check the new draft version canonical is same as published version canonical
+        self.assertEqual(new_draft_file_obj.canonical_url, grouper.file.canonical_url)
+        self.assertIn('/media/filer_public/', new_draft_file_obj.url)
+        # clean-up
+        new_draft_version.delete()
 
     def test_ajax_upload_clipboardadmin(self):
         file = self.create_file('test2.pdf')

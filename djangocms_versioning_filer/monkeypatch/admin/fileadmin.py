@@ -9,7 +9,6 @@ def save_model(func):
     """Override the FileAdmin save_model method"""
     def inner(self, request, obj, form, change):
         func(self, request, obj, form, change)
-
         try:
             from djangocms_internalsearch.helpers import emit_content_change
         except ImportError:
