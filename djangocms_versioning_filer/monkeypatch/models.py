@@ -51,7 +51,7 @@ def is_file_content_valid_for_revert(version, user):
 def model_save(func):
     def inner(self, *args, **kwargs):
         func(self, *args, **kwargs)
-        grouper = getattr(self, "grouper", false)
+        grouper = getattr(self, "grouper", False)
         if self.id and grouper and not self.grouper.canonical_file_id:
             grouper = self.grouper
             grouper.canonical_file_id = self.id
