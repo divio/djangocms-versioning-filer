@@ -1,7 +1,6 @@
 from django.utils.translation import ugettext as _
 
 import filer
-from filer.models import File
 
 from ...helpers import check_file_label_exists_in_folder
 
