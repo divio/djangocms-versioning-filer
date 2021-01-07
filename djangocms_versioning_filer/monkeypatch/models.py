@@ -47,7 +47,7 @@ def is_file_content_valid_for_revert(version, user):
         )
 
 
-def model_save(func):
+def save(func):
     def inner(self, *args, **kwargs):
         func(self, *args, **kwargs)
         grouper = getattr(self, "grouper", False)
@@ -58,7 +58,7 @@ def model_save(func):
     return inner
 
 
-filer.models.File.save = model_save(
+filer.models.File.save = save(
     filer.models.File.save
 )
 
