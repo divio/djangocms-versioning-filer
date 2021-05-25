@@ -17,10 +17,7 @@ def public(request, file_path):
     """
     Redirect to the registered storage
     """
-    # return redirect("{}{}".format(
-    #     filer_settings.FILER_PUBLICMEDIA_STORAGE.base_url,
-    #     file_path
-    # ))
-    return redirect("/media/filer_public/{}".format(
+    return redirect("{}{}".format(
+        filer_settings.FILER_PUBLICMEDIA_STORAGE.base_url,
         file_path
     ))

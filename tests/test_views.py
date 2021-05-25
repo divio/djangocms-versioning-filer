@@ -1989,7 +1989,7 @@ class FilerCustomPublicViewTests(BaseFilerVersioningTestCase):
             "filer_public",
             filename,
         )
-        expected_file_url = '/media/filer_public/{}'.format(
+        expected_file_url = '/media/{}'.format(
             filename,
         )
 
@@ -2002,6 +2002,7 @@ class FilerCustomPublicViewTests(BaseFilerVersioningTestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, expected_file_url)
+        self.assertEqual(response.url, file_obj.url)
+        self.assertNotEqual(request_file_url, expected_file_url)
 
-        self.assertIn('/media/filer_public/', file_obj.url)
         # self.assertRedirects(response, expected_file_url)
