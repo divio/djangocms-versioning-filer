@@ -1970,3 +1970,41 @@ class TestAjaxUploadViewFolderOperations(CMSTestCase):
         files = File._base_manager.all()
         self.assertEqual(files.count(), 1)
         self.assertEqual(files.get().folder, subsubfolder)
+
+
+# TODO: Move to test utils and update other tests
+def _create_file(original_filename, content='content'):
+    filename = os.path.join(
+        settings.FILE_UPLOAD_TEMP_DIR, original_filename)
+    with open(filename, 'w') as f:
+        f.write(content)
+    return DjangoFile(open(filename, 'rb'), name=original_filename)
+
+
+class FilerCustomPublicViewTests(BaseFilerVersioningTestCase):
+
+    def test_custom_public_view_redirection(self):
+        filename = "myfakefile.txt"
+        request_file_url = '/{}/{}'.format(
+            "filer_public",
+            filename,
+        )
+        expected_file_url = '/media/{}'.format(
+            filename,
+        )
+
+        file_obj = self.create_file_obj(
+            original_filename=filename,
+        )
+
+        with self.login_user_context(self.superuser):
+            response = self.client.get(request_file_url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, expected_file_url)
+        self.assertEqual(response.url, file_obj.url)
+        self.assertNotEqual(request_file_url, expected_file_url)
+        # Ensure the file would create the same relative url that we requested
+        self.assertEqual(file_obj.grouper.file_relative_url, request_file_url)
+
+        # self.assertRedirects(response, expected_file_url)

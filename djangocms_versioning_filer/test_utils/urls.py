@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^jsi18n/(?P<packages>\S+?)/$', javascript_catalog),  # NOQA
     url(r'^', include('filer.server.urls')),
     url(r'^filer/', include('filer.urls')),
+    url(r'^', include('djangocms_versioning_filer.urls')),
 ]
 try:
     i18n_urls = [

@@ -9,6 +9,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from filer.models import File
 
+from .constants import PUBLIC_RELATIVE_PATH
+
 
 class FileGrouper(models.Model):
 
@@ -25,6 +27,15 @@ class FileGrouper(models.Model):
     @cached_property
     def file(self):
         return self.files.first()
+
+    @property
+    def file_relative_url(self):
+        """
+        Remove the base url to make the file url relative to the current site
+        """
+        url = self.file.file.url
+        base_url = self.file.file.storage.base_url
+        return url.replace(base_url, PUBLIC_RELATIVE_PATH)
 
     @property
     def canonical_time(self):
