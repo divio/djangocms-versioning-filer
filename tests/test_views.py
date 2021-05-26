@@ -1985,7 +1985,7 @@ class FilerCustomPublicViewTests(BaseFilerVersioningTestCase):
 
     def test_custom_public_view_redirection(self):
         filename = "myfakefile.txt"
-        request_file_url = '/versioning_filer/{}/{}'.format(
+        request_file_url = '/{}/{}'.format(
             "filer_public",
             filename,
         )
@@ -2004,5 +2004,7 @@ class FilerCustomPublicViewTests(BaseFilerVersioningTestCase):
         self.assertEqual(response.url, expected_file_url)
         self.assertEqual(response.url, file_obj.url)
         self.assertNotEqual(request_file_url, expected_file_url)
+        # Ensure the file would create the same relative url that we requested
+        self.assertEqual(file_obj.grouper.file_relative_url, request_file_url)
 
         # self.assertRedirects(response, expected_file_url)
