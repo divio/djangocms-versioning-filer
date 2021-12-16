@@ -10,6 +10,7 @@ if ENABLE_MODERATION:
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HELPER_SETTINGS = {
+    'SECRET_KEY': 'versioningfilertestsuitekey',
     'ROOT_URLCONF': 'djangocms_versioning_filer.test_utils.urls',
     'TIME_ZONE': 'Europe/Zurich',
     'INSTALLED_APPS': [

@@ -21,10 +21,9 @@ CLASSIFIERS = [
 ]
 
 INSTALL_REQUIREMENTS = [
-    'Django>=1.11,<3.0',
+    'Django>=1.11,<3.3',
     'django-cms',
     'django-filer>=1.5.0',
-    'djangocms-versioning',
 ]
 
 
