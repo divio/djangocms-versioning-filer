@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.functional import cached_property
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import gettext, gettext_lazy as _
 
 from cms.models import CMSPlugin
 
@@ -116,14 +116,14 @@ class VersionedVideoSource(CMSPlugin):
     def clean(self):
         if self.source_file and self.source_file.extension not in ALLOWED_EXTENSIONS:
             raise ValidationError(
-                ugettext('Incorrect file type: {extension}.')
+                gettext('Incorrect file type: {extension}.')
                 .format(extension=self.source_file.extension)
             )
 
     def get_short_description(self):
         if self.source_file and self.source_file.label:
             return self.source_file.label
-        return ugettext('<file is missing>')
+        return gettext('<file is missing>')
 
     def copy_relations(self, oldinstance):
         # Because we have a ForeignKey, it's required to copy over

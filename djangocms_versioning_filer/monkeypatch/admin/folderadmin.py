@@ -7,7 +7,7 @@ from django.db import models
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.http import urlquote, urlunquote
-from django.utils.translation import ugettext as _, ungettext
+from django.utils.translation import gettext as _, ngettext
 
 import filer
 from djangocms_versioning.constants import DRAFT
@@ -203,7 +203,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
     else:
         action_form = None
 
-    selection_note_all = ungettext(
+    selection_note_all = ngettext(
         '%(total_count)s selected',
         'All %(total_count)s selected',
         paginator.count
