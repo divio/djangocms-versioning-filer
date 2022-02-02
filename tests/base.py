@@ -105,7 +105,8 @@ class BaseFilerVersioningTestCase(CMSTestCase):
 
         for filer_class in filer.settings.FILER_FILE_MODELS:
             FileSubClass = load_model(filer_class)
-            if FileSubClass.matches_file_type(original_filename, file, request=None):
+            # FIXME: Mime Type
+            if FileSubClass.matches_file_type(original_filename, file, "application/octet-stream"):
                 break
 
         file_obj = FileSubClass.objects.create(

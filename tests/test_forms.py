@@ -15,9 +15,9 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         new_file = self.create_image('image.jpg')
 
         form = ImageAdminForm(
-            data={'is_public': file_obj.is_public},
-            files={'file': new_file},
             instance=file_obj,
+            data={'is_public': file_obj.is_public, 'mime_type': file_obj.mime_type},
+            files={'file': new_file},
         )
 
         self.assertTrue(form.is_valid())
@@ -31,6 +31,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         new_file = self.create_file('new.jpg')
         form = ImageAdminForm(
             instance=file_obj,
+            data={'mime_type': file_obj.mime_type},
             files={'file': new_file},
         )
 
@@ -45,7 +46,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         new_file = self.create_file('file.txt')
         form = FileAdminChangeFrom(
             instance=file_obj,
-            data={'is_public': file_obj.is_public},
+            data={'is_public': file_obj.is_public, 'mime_type': "image/jpeg"},
             files={'file': new_file},
         )
 
@@ -60,6 +61,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
         new_file = self.create_file('new.txt')
         form = FileAdminChangeFrom(
             instance=file_obj,
+            data={'mime_type': file_obj.mime_type},
             files={'file': new_file},
         )
 
@@ -78,7 +80,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
 
         form = ImageAdminForm(
             instance=deepcopy(file_obj),
-            data={'name': ''},
+            data={'name': '', 'mime_type': file_obj.mime_type},
         )
         self.assertFalse(form.is_valid())
         self.assertDictEqual(
@@ -88,13 +90,13 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
 
         form = ImageAdminForm(
             instance=deepcopy(file_obj),
-            data={'name': 'test.jpg'},
+            data={'name': 'test.jpg', 'mime_type': file_obj.mime_type},
         )
         self.assertTrue(form.is_valid())
 
         form = ImageAdminForm(
             instance=deepcopy(file_obj),
-            data={'name': 'image.jpg'},
+            data={'name': 'image.jpg', 'mime_type': file_obj.mime_type},
         )
         self.assertFalse(form.is_valid())
         self.assertDictEqual(
@@ -104,7 +106,7 @@ class FilerFileAdminFormTests(BaseFilerVersioningTestCase):
 
         form = ImageAdminForm(
             instance=deepcopy(file_obj),
-            data={'changed_filename': 'image.jpg'},
+            data={'changed_filename': 'image.jpg', 'mime_type': file_obj.mime_type},
         )
         self.assertFalse(form.is_valid())
         self.assertDictEqual(
