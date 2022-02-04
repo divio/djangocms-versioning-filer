@@ -37,6 +37,10 @@ class FilerCopyFileMethodTests(BaseFilerVersioningTestCase):
     def test_copy_file_via_version_copy(self):
         version = Version.objects.get_for_content(self.image)
         new_version = version.copy(self.superuser)
+
         self.assertEquals(version.state, PUBLISHED)
         self.assertEquals(new_version.state, DRAFT)
         self.assertEquals(new_version.content_type_id, ContentType.objects.get_for_model(File).pk)
+
+        # Clean up versions attached, fails the base teardown if left
+        new_version.delete()
