@@ -90,7 +90,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': dst_folder.id,
-                    'suffix': '',
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: [
                         'folder-{}'.format(self.folder_inside.id),
                         'file-{}'.format(self.file.id),
@@ -109,6 +109,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
 
     def test_copy_file_to_different_folder(self):
         dst_folder = Folder.objects.create()
+
         with self.login_user_context(self.superuser):
             response = self.client.post(
                 reverse('admin:filer-directory_listing', kwargs={'folder_id': self.folder.id}),
@@ -116,7 +117,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': dst_folder.id,
-                    'suffix': '',
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: 'file-{}'.format(self.file.id),
                 }
             )
@@ -137,7 +138,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': dst_folder.id,
-                    'suffix': '',
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: 'folder-{}'.format(self.folder_inside.id),
                 }
             )
@@ -774,7 +775,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
 
         with self.login_user_context(self.superuser):
             response = self.client.post(
-                reverse('admin:filer_image_change', args=[image_file.id]),
+                image_file.get_admin_change_url(),
                 data={'name': new_file_name},
             )
         folder_dir_list_url = reverse('admin:filer-directory_listing', kwargs={'folder_id': folder.pk})

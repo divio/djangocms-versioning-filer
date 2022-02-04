@@ -57,6 +57,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             folder=self.folder,
             grouper=self.file_grouper,
             publish=True,
+            mime_type="application/pdf",
         )
 
         self.image_grouper = FileGrouper.objects.create()
@@ -65,6 +66,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             folder=self.folder,
             grouper=self.image_grouper,
             publish=True,
+            mime_type="image/jpeg",
         )
 
     def tearDown(self):
