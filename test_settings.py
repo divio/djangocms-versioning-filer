@@ -90,6 +90,7 @@ HELPER_SETTINGS = {
     ),
     'FILE_UPLOAD_TEMP_DIR': mkdtemp(),
     'FILER_CANONICAL_URL': 'test-path/',
+    'DEFAULT_AUTO_FIELD': 'django.db.models.BigAutoField',
 }
 
 
