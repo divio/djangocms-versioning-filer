@@ -66,7 +66,6 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             folder=self.folder,
             grouper=self.image_grouper,
             publish=True,
-            mime_type="image/jpeg",
         )
 
     def tearDown(self):
@@ -128,9 +127,10 @@ class BaseFilerVersioningTestCase(CMSTestCase):
 
         return file_obj
 
-    def create_image_obj(self, original_filename, **kwargs):
+    def create_image_obj(self, original_filename, mime_type="image/jpeg", **kwargs):
         return self.create_file_obj(
             original_filename,
             file=self.create_image(original_filename),
+            mime_type=mime_type,
             **kwargs,
         )
