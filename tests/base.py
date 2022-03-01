@@ -94,6 +94,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
         content="data",
         is_public=True,
         grouper=None,
+        mime_type="application/octet-stream",
         **kwargs
     ):
         if not kwargs.get('created_by'):
@@ -107,8 +108,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
 
         for filer_class in filer.settings.FILER_FILE_MODELS:
             FileSubClass = load_model(filer_class)
-            # FIXME: Mime Type
-            if FileSubClass.matches_file_type(original_filename, file, "application/octet-stream"):
+            if FileSubClass.matches_file_type(original_filename, file, mime_type):
                 break
 
         file_obj = FileSubClass.objects.create(
@@ -117,6 +117,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             file=file,
             folder=folder,
             grouper=grouper,
+            mime_type=mime_type,
             **kwargs
         )
         version = create_file_version(file_obj, kwargs['owner'])

@@ -41,6 +41,3 @@ class FilerCopyFileMethodTests(BaseFilerVersioningTestCase):
         self.assertEquals(version.state, PUBLISHED)
         self.assertEquals(new_version.state, DRAFT)
         self.assertEquals(new_version.content_type_id, ContentType.objects.get_for_model(File).pk)
-
-        # Clean up versions attached, fails the base teardown if left
-        new_version.delete()
