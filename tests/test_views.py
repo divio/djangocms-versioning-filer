@@ -392,6 +392,8 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         'Test only relevant when djangocms_moderation enabled',
     )
     def test_ajax_upload_clipboardadmin_same_name_as_existing_file_in_moderation(self):
+        from djangocms_moderation.models import ModerationCollection, Workflow
+
         image = self.create_image_obj(
             original_filename='test1.jpg',
             folder=self.folder,
@@ -402,7 +404,6 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         with nonversioned_manager(File):
             self.assertEqual(File.objects.count(), 3)
 
-        from djangocms_moderation.models import Workflow, ModerationCollection
         wf = Workflow.objects.create(name='Workflow 1', is_default=True)
         collection = ModerationCollection.objects.create(
             author=self.superuser, name='Collection 1', workflow=wf,
