@@ -1,5 +1,6 @@
 coverage
 django-app-helper
+django-filer
 djangocms-audio
 djangocms-video
 factory-boy
