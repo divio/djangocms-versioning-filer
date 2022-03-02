@@ -327,7 +327,7 @@ def get_actions(func):
 
         if is_moderation_enabled():
             from djangocms_moderation.admin_actions import (
-                add_items_to_collection
+                add_items_to_collection,
             )
 
             actions['add_items_to_collection'] = (
