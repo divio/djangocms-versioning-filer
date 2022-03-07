@@ -4,9 +4,9 @@ import warnings
 from django import forms
 from django.contrib.admin.sites import site
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 
@@ -78,7 +78,7 @@ class AdminFileGrouperWidget(ForeignKeyRawIdWidget):
     def obj_for_value(self, value):
         try:
             key = self.rel.get_related_field().name
-            obj = self.rel.to._default_manager.get(**{key: value})
+            obj = self.rel.model._default_manager.get(**{key: value})
         except:  # noqa
             obj = None
         return obj
@@ -113,6 +113,8 @@ class AdminFileGrouperFormField(forms.ModelChoiceField):
         return {}
 
     def to_python(self, value):
+        # Filter out any repeated values for the grouper
+        self.queryset = self.queryset.distinct()
         obj = super().to_python(value)
         if not obj:
             return obj
@@ -141,10 +143,12 @@ class FileGrouperField(models.ForeignKey):
     def formfield(self, **kwargs):
         # This is a fairly standard way to set up some defaults
         # while letting the caller override them.
+        # rel was changed into remote_field in django 2.x
+        remote_field = self.rel if hasattr(self, 'rel') else self.remote_field
         defaults = {
             'form_class': self.default_form_class,
-            'rel': self.rel,
-            'to_field_name': 'files',
+            'rel': remote_field,
+            'to_field_name': 'files__grouper_id',
         }
         defaults.update(kwargs)
         return super().formfield(**defaults)

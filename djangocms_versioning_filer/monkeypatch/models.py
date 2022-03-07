@@ -1,3 +1,4 @@
+from django.urls import NoReverseMatch, reverse
 from django.utils.translation import ugettext_lazy as _
 
 import filer
@@ -6,6 +7,22 @@ from djangocms_versioning.models import Version
 
 from ..helpers import check_file_exists_in_folder
 from ..models import get_files_distinct_grouper_queryset
+
+
+def canonical_url(self):
+    url = ''
+    if self.file and self.is_public:
+        try:
+            url = reverse('canonical', kwargs={
+                'uploaded_at': self.grouper.canonical_time,
+                'file_id': self.grouper.canonical_file_id
+            })
+        except NoReverseMatch:
+            pass  # No canonical url, return empty string
+    return url
+
+
+filer.models.filemodels.File.canonical_url = property(canonical_url)
 
 
 def images_with_missing_data_files(self):
@@ -28,6 +45,22 @@ def is_file_content_valid_for_revert(version, user):
                 content.label, content.folder,
             )
         )
+
+
+def save(func):
+    def inner(self, *args, **kwargs):
+        func(self, *args, **kwargs)
+        grouper = getattr(self, "grouper", False)
+        if self.id and grouper and not self.grouper.canonical_file_id:
+            grouper = self.grouper
+            grouper.canonical_file_id = self.id
+            grouper.save()
+    return inner
+
+
+filer.models.File.save = save(
+    filer.models.File.save
+)
 
 
 def is_file_content_valid_for_discard(version, user):

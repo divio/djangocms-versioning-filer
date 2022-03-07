@@ -3,7 +3,6 @@ import re
 from django.contrib.admin import helpers
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -36,6 +35,13 @@ from ...helpers import (
     move_file,
 )
 from ...models import FileGrouper, get_files_distinct_grouper_queryset
+
+
+try:
+    # urlresolvers was moved to url in django 2.0
+    from django.core.urlresolvers import reverse
+except ImportError:
+    from django.urls import reverse
 
 
 Image = load_model(filer.settings.FILER_IMAGE_MODEL)
@@ -291,7 +297,7 @@ filer.admin.folderadmin.FolderAdmin.directory_listing = directory_listing  # noq
 def save_model(func):
     def inner(self, request, obj, form, change):
         func(self, request, obj, form, change)
-        if change and 'name' in form.changed_data:
+        if change and 'name' in form.changed_data and isinstance(obj, Folder):
             published_files = File.objects.filter(
                 folder__in=obj.get_descendants(include_self=True)
             )
