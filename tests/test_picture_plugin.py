@@ -30,12 +30,12 @@ class FilerPicturePluginTestCase(BaseFilerVersioningTestCase):
     def test_plugin_form_create(self):
         form = VersionedPictureForm(
             data={
-                'file_grouper': self.image.grouper,
+                'file_grouper': self.image.grouper.pk,
                 'template': 'default',
                 'use_responsive_image': 'yes'
             },
         )
-        self.assertTrue(form.is_valid(), form.errors)
+        self.assertTrue(form.is_valid())
         plugin = form.save()
         self.assertEqual(plugin.file_grouper, self.image_grouper)
         self.assertEqual(plugin.picture, self.image)

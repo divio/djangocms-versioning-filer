@@ -10,6 +10,7 @@ if ENABLE_MODERATION:
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HELPER_SETTINGS = {
+    'SECRET_KEY': 'versioningfilertestsuitekey',
     'ROOT_URLCONF': 'djangocms_versioning_filer.test_utils.urls',
     'TIME_ZONE': 'Europe/Zurich',
     'INSTALLED_APPS': [
@@ -89,11 +90,12 @@ HELPER_SETTINGS = {
     ),
     'FILE_UPLOAD_TEMP_DIR': mkdtemp(),
     'FILER_CANONICAL_URL': 'test-path/',
+    'DEFAULT_AUTO_FIELD': 'django.db.models.AutoField',
 }
 
 
 def run():
-    from djangocms_helper import runner
+    from app_helper import runner
     runner.cms('djangocms_versioning_filer', extra_args=[])
 
 

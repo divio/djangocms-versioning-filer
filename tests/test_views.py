@@ -90,7 +90,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': dst_folder.id,
-                    'suffix': '',
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: [
                         'folder-{}'.format(self.folder_inside.id),
                         'file-{}'.format(self.file.id),
@@ -109,6 +109,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
 
     def test_copy_file_to_different_folder(self):
         dst_folder = Folder.objects.create()
+
         with self.login_user_context(self.superuser):
             response = self.client.post(
                 reverse('admin:filer-directory_listing', kwargs={'folder_id': self.folder.id}),
@@ -116,7 +117,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': dst_folder.id,
-                    'suffix': '',
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: 'file-{}'.format(self.file.id),
                 }
             )
@@ -137,7 +138,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': dst_folder.id,
-                    'suffix': '',
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: 'folder-{}'.format(self.folder_inside.id),
                 }
             )
@@ -155,6 +156,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': self.folder.id,
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: [
                         'file-{}'.format(self.file.id),
                         'folder-{}'.format(self.folder_inside.id),
@@ -172,6 +174,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': 999,
+                    'suffix': "test",
                     helpers.ACTION_CHECKBOX_NAME: [
                         'file-{}'.format(self.file.id),
                         'folder-{}'.format(self.folder_inside.id),
@@ -389,6 +392,8 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         'Test only relevant when djangocms_moderation enabled',
     )
     def test_ajax_upload_clipboardadmin_same_name_as_existing_file_in_moderation(self):
+        from djangocms_moderation.models import ModerationCollection, Workflow
+
         image = self.create_image_obj(
             original_filename='test1.jpg',
             folder=self.folder,
@@ -399,7 +404,6 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         with nonversioned_manager(File):
             self.assertEqual(File.objects.count(), 3)
 
-        from djangocms_moderation.models import Workflow, ModerationCollection
         wf = Workflow.objects.create(name='Workflow 1', is_default=True)
         collection = ModerationCollection.objects.create(
             author=self.superuser, name='Collection 1', workflow=wf,
@@ -774,7 +778,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
 
         with self.login_user_context(self.superuser):
             response = self.client.post(
-                reverse('admin:filer_image_change', args=[image_file.id]),
+                image_file.get_admin_change_url(),
                 data={'name': new_file_name},
             )
         folder_dir_list_url = reverse('admin:filer-directory_listing', kwargs={'folder_id': folder.pk})

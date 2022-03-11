@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.functional import cached_property
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import gettext, gettext_lazy as _
 
 from cms.models import CMSPlugin
 
@@ -85,7 +85,7 @@ class VersionedFile(CMSPlugin):
             return self.file_name
         if self.file_src and self.file_src.label:
             return self.file_src.label
-        return ugettext('<file is missing>')
+        return gettext('<file is missing>')
 
     def copy_relations(self, oldinstance):
         # Because we have a ForeignKey, it's required to copy over

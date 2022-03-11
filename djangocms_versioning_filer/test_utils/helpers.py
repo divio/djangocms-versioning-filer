@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Module taken from filer repo tests.helpers
 As that can no longer be imported the path of least resistance was to copy it over
 """

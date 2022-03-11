@@ -57,6 +57,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             folder=self.folder,
             grouper=self.file_grouper,
             publish=True,
+            mime_type="application/pdf",
         )
 
         self.image_grouper = FileGrouper.objects.create()
@@ -92,6 +93,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
         content="data",
         is_public=True,
         grouper=None,
+        mime_type="application/octet-stream",
         **kwargs
     ):
         if not kwargs.get('created_by'):
@@ -105,7 +107,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
 
         for filer_class in filer.settings.FILER_FILE_MODELS:
             FileSubClass = load_model(filer_class)
-            if FileSubClass.matches_file_type(original_filename, file, request=None):
+            if FileSubClass.matches_file_type(original_filename, file, mime_type):
                 break
 
         file_obj = FileSubClass.objects.create(
@@ -114,6 +116,7 @@ class BaseFilerVersioningTestCase(CMSTestCase):
             file=file,
             folder=folder,
             grouper=grouper,
+            mime_type=mime_type,
             **kwargs
         )
         version = create_file_version(file_obj, kwargs['owner'])
@@ -124,9 +127,10 @@ class BaseFilerVersioningTestCase(CMSTestCase):
 
         return file_obj
 
-    def create_image_obj(self, original_filename, **kwargs):
+    def create_image_obj(self, original_filename, mime_type="image/jpeg", **kwargs):
         return self.create_file_obj(
             original_filename,
             file=self.create_image(original_filename),
+            mime_type=mime_type,
             **kwargs,
         )

@@ -73,16 +73,16 @@ def ajax_upload(request, folder_id=None):
     try:
         if len(request.FILES) == 1:
             # dont check if request is ajax or not, just grab the file
-            upload, filename, is_raw = handle_request_files_upload(request)
+            upload, filename, is_raw, mime_type = handle_request_files_upload(request)
         else:
             # else process the request as usual
-            upload, filename, is_raw = handle_upload(request)
+            upload, filename, is_raw, mime_type = handle_upload(request)
 
         # find the file type
         for filer_class in filer_settings.FILER_FILE_MODELS:
             FileSubClass = load_model(filer_class)
             # TODO: What if there are more than one that qualify?
-            if FileSubClass.matches_file_type(filename, upload, request):
+            if FileSubClass.matches_file_type(filename, upload, mime_type):
                 FileForm = modelform_factory(
                     model=FileSubClass,
                     fields=('original_filename', 'owner', 'file')
@@ -117,6 +117,7 @@ def ajax_upload(request, folder_id=None):
                         error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
                         return JsonResponse({'error': error_msg})
             file_obj.folder = current_folder
+            file_obj.mime_type = mime_type
 
             same_name_file_qs = get_files_distinct_grouper_queryset().annotate(
                 _name=NullIfEmptyStr('name'),
