@@ -143,11 +143,9 @@ class FileGrouperField(models.ForeignKey):
     def formfield(self, **kwargs):
         # This is a fairly standard way to set up some defaults
         # while letting the caller override them.
-        # rel was changed into remote_field in django 2.x
-        remote_field = self.rel if hasattr(self, 'rel') else self.remote_field
         defaults = {
             'form_class': self.default_form_class,
-            'rel': remote_field,
+            'rel': self.remote_field,
             'to_field_name': 'files__grouper_id',
         }
         defaults.update(kwargs)

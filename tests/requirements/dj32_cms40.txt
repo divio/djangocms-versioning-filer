@@ -1,0 +1,7 @@
+-r ./requirements_base.txt
+
+Django>=3.2,<4.0
+django-classy-tags
+django-sekizai
+djangocms-file
+djangocms-picture
