@@ -252,6 +252,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         'can_make_folder': request.user.is_superuser or (
             folder.is_root and filer.settings.FILER_ALLOW_REGULAR_USERS_TO_ADD_ROOT_FOLDERS
         ) or permissions.get("has_add_children_permission"),
+        'file_constraints': filer.settings.FILER_FILE_CONSTRAINTS,
     })
     return render(request, self.directory_listing_template, context)
 
