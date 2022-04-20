@@ -1,6 +1,7 @@
 =========
 Changelog
 =========
+* fix: Missing icon images in latest filer 2.x where the icons are now SVG
 
 Unreleased
 ==========
