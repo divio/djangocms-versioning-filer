@@ -1,3 +1,6 @@
+import import_string
+
+from django.core.exceptions import ValidationError
 from django.db.models import Value
 from django.db.models.functions import Coalesce
 from django.forms.models import modelform_factory
@@ -206,3 +209,21 @@ def ajax_upload(request, folder_id=None):
         # TODO: Test
         return JsonResponse({'error': str(e)}, status=500)
 filer.admin.clipboardadmin.ajax_upload = ajax_upload  # noqa: E305
+
+
+@csrf_exempt
+def file_constraints_check(request, folder_id=None):
+    """
+    Call all file constraints define in settings and return json response
+    """
+    file_constraint_checks = filer_settings.FILER_FILE_CONSTRAINTS
+    for path in file_constraint_checks:
+        func = import_string(path)
+        try:
+            func(request, folder_id)
+        except ValidationError as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    return JsonResponse({'success': True})
