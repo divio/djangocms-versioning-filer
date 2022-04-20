@@ -8,8 +8,8 @@
   $(function() {
     let createBurgerMenu = function createBurgerMenu(row) {
 
-        let actions = $(row).children('.action-button');
-        if (!actions.length) {
+        let actions = $(row).children('.column-action');
+        if (!actions.length || !$(actions[0]).children('.action-button').length) {
           /* skip any rows without actions to avoid errors */
           return;
         }
@@ -35,7 +35,7 @@
         ul.setAttribute('class', 'cms-actions-dropdown-menu-inner');
 
         /* get the existing actions and move them into the options container */
-        $(actions).each(function (index, item) {
+        $(actions[0]).children('.action-button').each(function (index, item) {
 
           let li = document.createElement('li');
           /* create an anchor from the item */
@@ -47,7 +47,7 @@
             li_anchor.classList.add('cms-form-get-method'); // Ensure the fake-form selector is propagated to the new anchor
           }
           /* move the icon image */
-          li_anchor.appendChild($(item).children('img')[0]);
+          li_anchor.appendChild($(item).children('span')[0]);
 
           /* create the button text and construct the button */
           let span = document.createElement('span');
@@ -60,12 +60,12 @@
           ul.appendChild(li);
 
           /* destroy original replaced buttons */
-          actions.removeChild(item);
+          actions[0].removeChild(item);
         });
 
         /* add the options to the drop-down */
         optionsContainer.appendChild(ul);
-        actions.appendChild(anchor);
+        actions[0].appendChild(anchor);
         document.body.appendChild(optionsContainer);
 
         /* listen for burger menu clicks */
@@ -106,9 +106,10 @@
       $('.cms-versioning-action-btn').addClass('closed');
     };
 
-    $('.column-action').each(function (index, item) {
+    $('#result_list').find('tr').each(function (index, item) {
       createBurgerMenu(item);
     });
+
   });
 
 })((typeof django !== 'undefined' && django.jQuery) || (typeof CMS !== 'undefined' && CMS.$) || false);
