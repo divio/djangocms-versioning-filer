@@ -19,7 +19,7 @@
         icon.setAttribute('class', "fa fa-bars");
 
         let anchor = document.createElement('a');
-        anchor.setAttribute('class', 'btn cms-versioning-action-btn closed');
+        anchor.setAttribute('class', 'action-button cms-versioning-action-btn closed');
         anchor.setAttribute('title', 'Actions');
         anchor.appendChild(icon);
 
@@ -35,12 +35,7 @@
         ul.setAttribute('class', 'cms-actions-dropdown-menu-inner');
 
         /* get the existing actions and move them into the options container */
-        $(actions[0]).children('.cms-versioning-action-btn').each(function (index, item) {
-
-          /* exclude some buttons */
-          if (item.title === "Preview" || item.title === "Edit") {
-            return;
-          }
+        $(actions).each(function (index, item) {
 
           let li = document.createElement('li');
           /* create an anchor from the item */
@@ -65,12 +60,12 @@
           ul.appendChild(li);
 
           /* destroy original replaced buttons */
-          actions[0].removeChild(item);
+          actions.removeChild(item);
         });
 
         /* add the options to the drop-down */
         optionsContainer.appendChild(ul);
-        actions[0].appendChild(anchor);
+        actions.appendChild(anchor);
         document.body.appendChild(optionsContainer);
 
         /* listen for burger menu clicks */
