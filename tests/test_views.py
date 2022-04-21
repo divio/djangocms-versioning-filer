@@ -90,7 +90,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': dst_folder.id,
-                    'suffix': '',
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: [
                         'folder-{}'.format(self.folder_inside.id),
                         'file-{}'.format(self.file.id),
@@ -116,7 +116,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': dst_folder.id,
-                    'suffix': '',
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: 'file-{}'.format(self.file.id),
                 }
             )
@@ -137,7 +137,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': dst_folder.id,
-                    'suffix': '',
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: 'folder-{}'.format(self.folder_inside.id),
                 }
             )
@@ -155,6 +155,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': self.folder.id,
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: [
                         'file-{}'.format(self.file.id),
                         'folder-{}'.format(self.folder_inside.id),
@@ -172,6 +173,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
                     'action': 'copy_files_and_folders',
                     'post': 'yes',
                     'destination': 999,
+                    'suffix': 'test',
                     helpers.ACTION_CHECKBOX_NAME: [
                         'file-{}'.format(self.file.id),
                         'folder-{}'.format(self.folder_inside.id),
