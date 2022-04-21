@@ -4,12 +4,12 @@
     background-color: #e1e1e1 !important;
 }
 
-.btn.cms-filer-action-btn.inactive img {
+.btn.cms-filer-action-btn.inactive span {
     opacity: 0.5;
 }
 
 /* set size and spacing between for the action icons */
-a.btn.cms-filer-action-btn img {
+a.btn.cms-filer-action-btn span {
     width: 20px;
     height: 20px;
     margin-right: 4px;
@@ -103,24 +103,17 @@ a.cms-actions-dropdown-menu-item-anchor {
 a.cms-actions-dropdown-menu-item-anchor,
 a.cms-actions-dropdown-menu-item-anchor:visited,
 a.cms-actions-dropdown-menu-item-anchor:link,
-a.cms-actions-dropdown-menu-item-anchor:link:visited
-{
+a.cms-actions-dropdown-menu-item-anchor:link:visited {
     color: #666 !important;
 }
 a.cms-actions-dropdown-menu-item-anchor:hover,
 a.cms-actions-dropdown-menu-item-anchor:active,
 a.cms-actions-dropdown-menu-item-anchor:link:hover,
-a.cms-actions-dropdown-menu-item-anchor:link:active
-{
+a.cms-actions-dropdown-menu-item-anchor:link:active {
     color: #fff !important;
     background: #0bf;
 }
 
-/* set the size of the option icon */
-a.cms-actions-dropdown-menu-item-anchor img {
-    width: 20px;
-    height: 20px;
-}
 /* align the option text with it's icon */
 a.cms-actions-dropdown-menu-item-anchor span {
     line-height: 1rem;
