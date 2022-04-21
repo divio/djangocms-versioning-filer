@@ -1,6 +1,6 @@
 coverage
 django-app-helper
-django-filer
+django-filer<2.2  # 2.2 Introduces breaking changes
 djangocms-audio
 djangocms-video
 factory-boy

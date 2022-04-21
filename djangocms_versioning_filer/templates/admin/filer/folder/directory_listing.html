@@ -4,11 +4,20 @@
 {% block extrahead %}
     {{ block.super }}
 
+    <script src="{% static 'djangocms_versioning_filer/js/admin_filer_list_actions.js' %}"></script>
+
     {% if action_form and actions_on_top or actions_on_bottom %}
         <script type="text/javascript">
             (function($) {
                 $(document).ready(function($) {
-                    $('tr input.action-select').actions();
+                  /* Rebind the django form actions after all filer scripts have loaded */
+                  const actionsEls = document.querySelectorAll('tr input.action-select');
+
+                  // django 2.2 support, django 3.2 uses window.Actions and may no longer be required
+                  // https://github.com/django/django/commit/30e59705fc3e3e9e8370b965af794ad6173bf92b
+                  if (typeof actionsEls.actions !== "undefined" && actionsEls.length > 0) {
+                    actionsEls.actions();
+                  }
                 });
             })(django.jQuery);
         </script>
@@ -34,6 +43,8 @@
             }
         </style>
     {% endif %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'djangocms_versioning_filer/css/admin_filer_list_actions.css' %}">
 {% endblock %}
 
 {% block breadcrumbs %}
