@@ -77,6 +77,7 @@ def check_file_exists_in_folder(file_obj):
         file_obj.label, file_obj.folder, exclude_file_pks=exclude_file_pks,
     )
 
+
 def filename_exists(request, folder_id=None):
     from filer.models import Folder, File
 

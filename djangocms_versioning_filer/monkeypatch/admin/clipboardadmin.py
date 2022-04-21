@@ -1,5 +1,3 @@
-import import_string
-
 from django.core.exceptions import ValidationError
 from django.db.models import Value
 from django.db.models.functions import Coalesce
@@ -18,6 +16,8 @@ from filer.utils.files import (
     handle_upload,
 )
 from filer.utils.loader import load_model
+
+import import_string
 
 from ...helpers import create_file_version
 from ...models import (
