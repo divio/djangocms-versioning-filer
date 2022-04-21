@@ -94,22 +94,22 @@ jobs:
   isort:
     <<: *py35default
 
-  py35-dj111-sqlite-cms40-moderation:
+  py35-dj111-sqlite-moderation:
     <<: *py35default
-  py36-dj111-sqlite-cms40-default:
+  py36-dj111-sqlite-default:
     <<: *py36default
-  py37-dj111-sqlite-cms40-moderation:
+  py37-dj111-sqlite-moderation:
     <<: *py37default
 
-  py35-dj22-sqlite-cms40-default:
+  py35-dj22-sqlite-default:
     <<: *py35default
-  py35-dj22-sqlite-cms40-moderation:
+  py35-dj22-sqlite-moderation:
     <<: *py35default
-  py36-dj22-sqlite-cms40-default:
+  py36-dj22-sqlite-default:
     <<: *py36default
-  py36-dj22-sqlite-cms40-moderation:
+  py36-dj22-sqlite-moderation:
     <<: *py36default
-  py37-dj22-sqlite-cms40-moderation:
+  py37-dj22-sqlite-moderation:
     <<: *py37default
 
 #######################
@@ -127,28 +127,28 @@ workflows:
       - isort:
           requires:
             - py35_base
-      - py35-dj111-sqlite-cms40-moderation:
+      - py35-dj111-sqlite-moderation:
           requires:
             - py35_base
-      - py36-dj111-sqlite-cms40-default:
+      - py36-dj111-sqlite-default:
           requires:
             - py36_base
-      - py37-dj111-sqlite-cms40-moderation:
+      - py37-dj111-sqlite-moderation:
           requires:
             - py37_base
 
-      - py35-dj22-sqlite-cms40-moderation:
+      - py35-dj22-sqlite-moderation:
           requires:
             - py35_base
-      - py35-dj22-sqlite-cms40-default:
+      - py35-dj22-sqlite-default:
           requires:
             - py35_base
-      - py36-dj22-sqlite-cms40-default:
+      - py36-dj22-sqlite-default:
           requires:
             - py36_base
-      - py36-dj22-sqlite-cms40-moderation:
+      - py36-dj22-sqlite-moderation:
           requires:
             - py36_base
-      - py37-dj22-sqlite-cms40-moderation:
+      - py37-dj22-sqlite-moderation:
           requires:
             - py37_base
