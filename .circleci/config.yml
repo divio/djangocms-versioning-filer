@@ -101,26 +101,6 @@ jobs:
   py37-dj111-sqlite-cms40-moderation:
     <<: *py37default
 
-  py35-dj20-sqlite-cms40-default:
-    <<: *py35default
-  py35-dj20-sqlite-cms40-moderation:
-    <<: *py35default
-  py36-dj20-sqlite-cms40-default:
-    <<: *py36default
-  py37-dj20-sqlite-cms40-moderation:
-    <<: *py37default
-
-  py35-dj21-sqlite-cms40-default:
-    <<: *py35default
-  py35-dj21-sqlite-cms40-moderation:
-    <<: *py35default
-  py36-dj21-sqlite-cms40-default:
-    <<: *py36default
-  py36-dj21-sqlite-cms40-moderation:
-    <<: *py36default
-  py37-dj21-sqlite-cms40-moderation:
-    <<: *py37default
-
   py35-dj22-sqlite-cms40-default:
     <<: *py35default
   py35-dj22-sqlite-cms40-moderation:
@@ -154,35 +134,6 @@ workflows:
           requires:
             - py36_base
       - py37-dj111-sqlite-cms40-moderation:
-          requires:
-            - py37_base
-
-      - py35-dj20-sqlite-cms40-default:
-          requires:
-            - py35_base
-      - py35-dj20-sqlite-cms40-moderation:
-          requires:
-            - py35_base
-      - py36-dj20-sqlite-cms40-default:
-          requires:
-            - py36_base
-      - py37-dj20-sqlite-cms40-moderation:
-          requires:
-            - py37_base
-
-      - py35-dj21-sqlite-cms40-moderation:
-          requires:
-            - py35_base
-      - py35-dj21-sqlite-cms40-default:
-          requires:
-            - py35_base
-      - py36-dj21-sqlite-cms40-default:
-          requires:
-            - py36_base
-      - py36-dj21-sqlite-cms40-moderation:
-          requires:
-            - py36_base
-      - py37-dj21-sqlite-cms40-moderation:
           requires:
             - py37_base
 
