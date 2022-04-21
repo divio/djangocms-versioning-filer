@@ -3,6 +3,7 @@ from django.db.models import Value
 from django.db.models.functions import Coalesce
 from django.forms.models import modelform_factory
 from django.http import JsonResponse
+from django.utils.module_loading import import_string
 from django.views.decorators.csrf import csrf_exempt
 
 import filer
@@ -17,14 +18,13 @@ from filer.utils.files import (
 )
 from filer.utils.loader import load_model
 
-import import_string
-
 from ...helpers import create_file_version
 from ...models import (
     FileGrouper,
     NullIfEmptyStr,
     get_files_distinct_grouper_queryset,
 )
+from ...settings import FILER_FILE_CONSTRAINTS
 
 
 @csrf_exempt
@@ -216,7 +216,7 @@ def file_constraints_check(request, folder_id=None):
     """
     Call all file constraints define in settings and return json response
     """
-    file_constraint_checks = filer_settings.FILER_FILE_CONSTRAINTS
+    file_constraint_checks = FILER_FILE_CONSTRAINTS
     for path in file_constraint_checks:
         func = import_string(path)
         try:
