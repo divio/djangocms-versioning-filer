@@ -1,4 +1,3 @@
-from django.conf.urls import url
 from django.core.exceptions import ValidationError
 from django.db.models import Value
 from django.db.models.functions import Coalesce
@@ -27,17 +26,6 @@ from ...models import (
     get_files_distinct_grouper_queryset,
 )
 from ...settings import FILER_FILE_CONSTRAINTS
-
-
-def get_urls(self):
-    return [
-        url(r'^operations/upload/check/(?P<folder_id>[0-9]+)/$',
-            file_constraints_check,
-            name='filer-check_file_constraints'),
-        url(r'^operations/upload/check/no_folder/$',
-            file_constraints_check,
-           name='filer-check_file_constraints'),
-   ] + super(ClipboardAdmin, self).get_urls()
 
 
 @csrf_exempt
