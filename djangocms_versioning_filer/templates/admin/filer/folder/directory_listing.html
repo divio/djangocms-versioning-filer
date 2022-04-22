@@ -1,5 +1,5 @@
 {% extends "admin/filer/base_site.html" %}
-{% load i18n staticfiles filer_admin_tags %}
+{% load i18n static filer_admin_tags %}
 
 {% block extrahead %}
     {{ block.super }}
@@ -212,6 +212,9 @@
                                     <a href="#" id="id_upload_button" title="{% trans 'Upload Files' %}"
                                        class="navigator-button navigator-button-upload js-upload-button"
                                        data-url="{% url 'admin:filer-ajax_upload' folder_id=folder.id %}"
+                                       {% if file_constraints %}
+                                       data-accept="{% url 'admin:filer-check_file_constraints' folder_id=folder.id  %}"
+                                       {%  endif %}
                                        data-max-uploader-connections="{{ uploader_connections }}">
                                         {% trans "Upload Files" %}
                                     </a>

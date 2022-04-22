@@ -1,13 +1,17 @@
+from django.conf.urls import url
+from django.core.exceptions import ValidationError
 from django.db.models import Value
 from django.db.models.functions import Coalesce
 from django.forms.models import modelform_factory
 from django.http import JsonResponse
+from django.utils.module_loading import import_string
 from django.views.decorators.csrf import csrf_exempt
 
 import filer
 from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.models import Version
 from filer import settings as filer_settings
+from filer.admin.clipboardadmin import ClipboardAdmin
 from filer.models import Folder, Image
 from filer.utils.files import (
     UploadException,
@@ -22,6 +26,18 @@ from ...models import (
     NullIfEmptyStr,
     get_files_distinct_grouper_queryset,
 )
+from ...settings import FILER_FILE_CONSTRAINTS
+
+
+def get_urls(self):
+    return [
+        url(r'^operations/upload/check/(?P<folder_id>[0-9]+)/$',
+            file_constraints_check,
+            name='filer-check_file_constraints'),
+        url(r'^operations/upload/check/no_folder/$',
+            file_constraints_check,
+           name='filer-check_file_constraints'),
+   ] + super(ClipboardAdmin, self).get_urls()
 
 
 @csrf_exempt
@@ -73,16 +89,16 @@ def ajax_upload(request, folder_id=None):
     try:
         if len(request.FILES) == 1:
             # dont check if request is ajax or not, just grab the file
-            upload, filename, is_raw = handle_request_files_upload(request)
+            upload, filename, is_raw, mime_type = handle_request_files_upload(request)
         else:
             # else process the request as usual
-            upload, filename, is_raw = handle_upload(request)
+            upload, filename, is_raw, mime_type = handle_upload(request)
 
         # find the file type
         for filer_class in filer_settings.FILER_FILE_MODELS:
             FileSubClass = load_model(filer_class)
             # TODO: What if there are more than one that qualify?
-            if FileSubClass.matches_file_type(filename, upload, request):
+            if FileSubClass.matches_file_type(filename, upload, mime_type):
                 FileForm = modelform_factory(
                     model=FileSubClass,
                     fields=('original_filename', 'owner', 'file')
@@ -117,6 +133,7 @@ def ajax_upload(request, folder_id=None):
                         error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
                         return JsonResponse({'error': error_msg})
             file_obj.folder = current_folder
+            file_obj.mime_type = mime_type
 
             same_name_file_qs = get_files_distinct_grouper_queryset().annotate(
                 _name=NullIfEmptyStr('name'),
@@ -206,3 +223,21 @@ def ajax_upload(request, folder_id=None):
         # TODO: Test
         return JsonResponse({'error': str(e)}, status=500)
 filer.admin.clipboardadmin.ajax_upload = ajax_upload  # noqa: E305
+
+
+@csrf_exempt
+def file_constraints_check(request, folder_id=None):
+    """
+    Call all file constraints define in settings and return json response
+    """
+    file_constraint_checks = FILER_FILE_CONSTRAINTS
+    for path in file_constraint_checks:
+        func = import_string(path)
+        try:
+            func(request, folder_id)
+        except ValidationError as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    return JsonResponse({'success': True})
