@@ -1,0 +1,19 @@
+coverage
+django-admin-sortable2<1.0
+django-classy-tags<2.0.0
+django-filer<2.0.0
+djangocms_helper
+djangocms-audio
+djangocms-file<3.0.0
+djangocms-picture<3.0.0
+djangocms-video
+django-sekizai<2.0.0
+factory-boy
+flake8
+isort
+mock
+tox
+
+# Unreleased django-cms 4.0 compatible packages
+https://github.com/django-cms/django-cms/tarball/release/4.0.x#egg=django-cms
+https://github.com/Aiky30/djangocms-moderation/tarball/release/1.0.x#egg=djangocms-moderation
