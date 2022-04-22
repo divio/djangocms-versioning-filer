@@ -21,10 +21,11 @@ class FileNameExistsTests(BaseFilerVersioningTestCase):
                         kwargs={'folder_id': self.folder.id})
                 + '?filename={}'.format('test.txt'),
             )
-            self.assertIn('success', json.loads(response.content))
-            self.assertEqual(False, json.loads(response.content)['success'])
-            self.assertIn('error', json.loads(response.content))
-            self.assertIn('File name already exists', json.loads(response.content)['error'])
+            response = json.loads(response.content.decode('utf-8'))
+            self.assertIn('success', response)
+            self.assertEqual(False, response['success'])
+            self.assertIn('error', response)
+            self.assertIn('File name already exists', response['error'])
 
     def test_filename_not_exists(self):
         with self.login_user_context(self.superuser):
@@ -34,6 +35,7 @@ class FileNameExistsTests(BaseFilerVersioningTestCase):
                 + '?filename={}'.format('test.txt'),
 
             )
-            self.assertIn('success', json.loads(response.content))
-            self.assertEqual(True, json.loads(response.content)['success'])
-            self.assertNotIn('error', json.loads(response.content))
+            response = json.loads(response.content.decode('utf-8'))
+            self.assertIn('success', response)
+            self.assertEqual(True, response['success'])
+            self.assertNotIn('error', response)
