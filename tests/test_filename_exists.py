@@ -20,7 +20,6 @@ class FileNameExistsTests(BaseFilerVersioningTestCase):
                 reverse('admin:filer-check_file_constraints',
                         kwargs={'folder_id': self.folder.id})
                 + '?filename={}'.format('test.txt'),
-
             )
             self.assertIn('success', json.loads(response.content))
             self.assertEqual(False, json.loads(response.content)['success'])
