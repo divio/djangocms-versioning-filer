@@ -4,6 +4,9 @@ Changelog
 
 Unreleased
 ==========
+
+1.0.0 (2022-04-25)
+==================
 * feat: Added file list item actions burger menu
 * fix: Missing icon images in latest filer 2.x where the icons are now SVG
 * Python 3.8, 3.9 support added
