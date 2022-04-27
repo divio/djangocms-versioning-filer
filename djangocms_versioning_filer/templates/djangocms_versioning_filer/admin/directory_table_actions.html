@@ -1,7 +1,7 @@
 {% load i18n djangocms_versioning_filer_tags %}
 
 <a href="{{ file.canonical_url }}"
-    title="{% blocktrans with file.label as item_label %}Canonical url{% endblocktrans %}" class="action-button" target="_blank"><span class="fa fa-link"></span></a>
+    title="{% blocktrans with file.label as item_label %}Link{% endblocktrans %}" class="action-button" target="_blank"><span class="fa fa-link"></span></a>
 <a href="{{ file.url }}" target="_blank"
     title="{% blocktrans with file.label as item_label %}Download{% endblocktrans %}" class="action-button"><span class="fa fa-download"></span></a>
 
