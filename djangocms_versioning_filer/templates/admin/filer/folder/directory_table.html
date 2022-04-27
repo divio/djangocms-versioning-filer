@@ -163,11 +163,11 @@
                             </td>
                             <td class="column-action">
                                 <a href="{{ file.canonical_url }}"
-                                    title="{% blocktrans with file.label as item_label %}Canonical url '{{ item_label }}'{% endblocktrans %}" class="action-button" target="_blank"><span class="fa fa-link"></span></a>
+                                    title="{% blocktrans with file.label as item_label %}Canonical url{% endblocktrans %}" class="action-button" target="_blank"><span class="fa fa-link"></span></a>
                                 <a href="{{ file.url }}" target="_blank"
-                                    title="{% blocktrans with file.label as item_label %}Download '{{ item_label }}'{% endblocktrans %}" class="action-button"><span class="fa fa-download"></span></a>
+                                    title="{% blocktrans with file.label as item_label %}Download{% endblocktrans %}" class="action-button"><span class="fa fa-download"></span></a>
                                 <a href="{{ file.grouper.get_absolute_url }}"
-                                    title="{% blocktrans with file.label as item_label %}Manage '{{ item_label }}' versions{% endblocktrans %}" class="action-button"><span class="fa fa-pencil"></span></a>
+                                    title="{% blocktrans with file.label as item_label %}Manage versions{% endblocktrans %}" class="action-button"><span class="fa fa-list-ol"></span></a>
                             </td>
                         </tr>
                     {% endwith %}
