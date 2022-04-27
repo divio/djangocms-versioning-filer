@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* feat: Customisable folder list admin file action buttons
 
 1.0.0 (2022-04-25)
 ==================
