@@ -9,6 +9,20 @@ if (django.jQuery) {
     djQuery = django.jQuery;
 }
 
+// Custom dialog modal used for file validation
+MicroModal.init({
+  onShow: modal => console.info(`${modal.id} is shown`), // [1]
+  onClose: modal => console.info(`${modal.id} is hidden`), // [2]
+  openTrigger: 'data-custom-open', // [3]
+  closeTrigger: 'data-custom-close', // [4]
+  openClass: 'is-open', // [5]
+  disableScroll: true, // [6]
+  disableFocus: false, // [7]
+  awaitOpenAnimation: false, // [8]
+  awaitCloseAnimation: false, // [9]
+  debugMode: true // [10]
+});
+
 /* globals Dropzone, Cl, django */
 (function ($) {
     $(function () {
@@ -74,11 +88,10 @@ if (django.jQuery) {
                 contentType: false,
                 success : function(result) {
                     if(result.success !== true) {
-                        var confirm = window.confirm(file.name + ": " + result.error);
-
-                        if(confirm === false) {
-                            shouldUpload = false;
-                        }
+                        let resultError = result.error.replace("['", "").replace("']", "")
+                        document.getElementById("modal-1-title").innerHTML = resultError;
+                        document.getElementById("model-file-name").innerHTML = file.name;
+                        let confirm = MicroModal.show('modal-1');
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -119,6 +132,7 @@ if (django.jQuery) {
                     clickable: false,
                     addRemoveLinks: false,
                     parallelUploads: dropzone.data(dataUploaderConnections) || 3,
+                    autoProcessQueue: false,
                     accept: function (file, done) {
                         var uploadInfoClone;
                         var dropzoneChecksUrl = dropzone.data('accept');
