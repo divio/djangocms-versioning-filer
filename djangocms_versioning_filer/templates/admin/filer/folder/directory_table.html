@@ -150,7 +150,7 @@
                                 <span class="tiny"> ({{ file.size|filesize:"auto1000long" }}{% ifequal file.file_type "Image" %}, {{ file.width }}x{{ file.height }} px{% endifequal %})</span>
                             </td>
                             <td class="column-action">
-                                {% include djangocms_versioning_filer/admin/directory_table_actions.html %}
+                                {% include "djangocms_versioning_filer/admin/directory_table_actions.html" %}
                             </td>
                         </tr>
                     {% endwith %}
