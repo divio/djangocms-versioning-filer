@@ -11,7 +11,6 @@ if (django.jQuery) {
 
 // Custom dialog modal used for file validation
 MicroModal.init({
-  onClose: modal => console.info(`${modal.id} is hidden`), // [2]
   openTrigger: 'data-custom-open', // [3]
   closeTrigger: 'data-custom-close', // [4]
   openClass: 'is-open', // [5]
