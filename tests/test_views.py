@@ -606,6 +606,22 @@ class FilerViewTests(BaseFilerVersioningTestCase):
         self.assertNotContains(response, published_file.label)
         self.assertNotContains(response, draft_file_3.label)
 
+    def test_folderadmin_directory_listing_actions_default(self):
+        """
+        A files actions can be amended by the cms_config setting:
+         djangocms_versioning_filer_file_changelist_actions
+        Ensure that any configured items are shown in the file list item actions.
+        """
+        with self.login_user_context(self.superuser):
+            response = self.client.get(
+                reverse('admin:filer-directory_listing', kwargs={'folder_id': self.folder.id}),
+            )
+
+        self.assertContains(response, "Link")
+        self.assertContains(response, "Download")
+        # Manage versions is added via the configuration
+        self.assertContains(response, "Manage versions")
+
     def test_folder_name_change_rebuild_urls_for_published_files(self):
         folder0 = Folder.objects.create(name='f0')
         folder1 = Folder.objects.create(name='f1')
