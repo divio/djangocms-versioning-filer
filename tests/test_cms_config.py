@@ -29,7 +29,6 @@ class CMSConfigExtensionTestCase(CMSTestCase, TestCase):
         extension = FilerVersioningExtension()
         cms_config = Mock(
             djangocms_versioning_filer_enabled=True,
-            djangocms_versioning_enabled=False,
             djangocms_versioning_filer_file_changelist_actions=expected_config_value,
             app_config=Mock(label="testing_versioning_filer_config"),
         )
