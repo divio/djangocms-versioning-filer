@@ -89,7 +89,7 @@ MicroModal.init({
                         let resultError = result.error.replace("['", "").replace("']", "")
                         document.getElementById("filer-checks-modal-title").innerHTML = resultError;
                         document.getElementById("filer-file-name").innerHTML = file.name;
-                        let confirm = MicroModal.show('filer-checks-modal');
+                        MicroModal.show('filer-checks-modal');
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -148,10 +148,35 @@ MicroModal.init({
                         }
 
                         if(fileProceed === false) {
-                            return done('duplicate');
-                        }
-                        else if(getElementByFile(file, dropzoneUrl).length) {
-                            done('duplicate');
+                            // Upload if the process button is clicked
+                            var submitButton = document.querySelector("#proceed")
+
+                            submitButton.addEventListener("click", function() {
+                                uploadInfoClone = uploadInfo.clone();
+                                uploadInfoClone.find(uploadFileNameSelector).text(file.name);
+                                uploadInfoClone.find(uploadProgressSelector).width(0);
+                                uploadInfoClone
+                                    .attr(
+                                        'id',
+                                        'file-' +
+                                            encodeURIComponent(file.name) +
+                                            file.size +
+                                            file.lastModified +
+                                            dropzoneUrl
+                                    )
+                                    .appendTo(uploadInfoContainer);
+
+                                submitNum++;
+                                maxSubmitNum++;
+                                updateUploadNumber();
+                                done();
+                            });
+
+                            // Cancel upload if the process button is clicked
+                            var cancelButton = document.querySelector("#cancel")
+                            cancelButton.addEventListener("click", function() {
+                                done('duplicate');
+                            });
                         }
                         else {
                             uploadInfoClone = uploadInfo.clone();
