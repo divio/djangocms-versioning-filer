@@ -2,6 +2,7 @@
 {% load i18n static filer_admin_tags %}
 
 {% block extrahead %}
+    <script src="{% static 'filer/js/addons/micromodal.min.js' %}"></script>
     {{ block.super }}
 
     <script src="{% static 'djangocms_versioning_filer/js/admin_filer_list_actions.js' %}"></script>
@@ -29,6 +30,7 @@
 
 
 {% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="{% static 'filer/css/micromodal.css' %}">
     {{ block.super }}
 
     {{ media.css }}
