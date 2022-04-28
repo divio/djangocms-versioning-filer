@@ -121,7 +121,6 @@ def ajax_upload(request, folder_id=None):
                         error_msg = filer.admin.clipboardadmin.NO_PERMISSIONS_FOR_FOLDER
                         return JsonResponse({'error': error_msg})
             file_obj.folder = current_folder
-            # file_obj.mime_type = mime_type
 
             same_name_file_qs = get_files_distinct_grouper_queryset().annotate(
                 _name=NullIfEmptyStr('name'),
