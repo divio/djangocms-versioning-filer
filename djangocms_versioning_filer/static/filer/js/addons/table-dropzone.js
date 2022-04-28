@@ -130,7 +130,7 @@ MicroModal.init({
                     clickable: false,
                     addRemoveLinks: false,
                     parallelUploads: dropzone.data(dataUploaderConnections) || 3,
-                    autoProcessQueue: false,
+                    autoProcessQueue: true,
                     accept: function (file, done) {
                         var uploadInfoClone;
                         var dropzoneChecksUrl = dropzone.data('accept');
