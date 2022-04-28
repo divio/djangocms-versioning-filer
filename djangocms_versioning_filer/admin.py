@@ -21,10 +21,10 @@ class VersioningFilerAdminMixin(VersioningAdminMixin):
 
     def get_urls(self):
         return [
-               url(r'^operations/upload/check/(?P<folder_id>[0-9]+)/$',
-                   file_constraints_check,
-                   name='filer-check_file_constraints'),
-               url(r'^operations/upload/check/no_folder/$',
-                   file_constraints_check,
-                   name='filer-check_file_constraints'),
-           ] + super().get_urls()
+           url(r'^operations/upload/check/(?P<folder_id>[0-9]+)/$',
+               file_constraints_check,
+               name='filer-check_file_constraints'),
+           url(r'^operations/upload/check/no_folder/$',
+               file_constraints_check,
+               name='filer-check_file_constraints'),
+        ] + super().get_urls()

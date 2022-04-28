@@ -87,9 +87,9 @@ MicroModal.init({
                 success : function(result) {
                     if(result.success !== true) {
                         let resultError = result.error.replace("['", "").replace("']", "")
-                        document.getElementById("modal-1-title").innerHTML = resultError;
-                        document.getElementById("model-file-name").innerHTML = file.name;
-                        let confirm = MicroModal.show('modal-1');
+                        document.getElementById("filer-checks-modal-title").innerHTML = resultError;
+                        document.getElementById("filer-file-name").innerHTML = file.name;
+                        let confirm = MicroModal.show('filer-checks-modal');
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {

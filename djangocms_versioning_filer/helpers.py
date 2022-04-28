@@ -92,11 +92,9 @@ def filename_exists(request, folder_id=None):
 
     if folder:
         if len(request.FILES) == 1:
-            # dont check if request is ajax or not, just grab the file
             upload = list(request.FILES.values())[0]
             filename = upload.name
         else:
-            # else process the request as usual
             filename = request.GET.get('qqfile', False) or request.GET.get('filename', False) or ''
         if File._original_manager.filter(
             original_filename=filename,
