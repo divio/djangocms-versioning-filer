@@ -13,7 +13,7 @@ if (django.jQuery) {
 MicroModal.init({
   openTrigger: 'data-custom-open',
   closeTrigger: 'data-custom-close',
-  openClass: 'is-open', // [5]
+  openClass: 'is-open',
   disableScroll: true, // [6]
   disableFocus: false, // [7]
   awaitOpenAnimation: false, // [8]
