@@ -11,7 +11,7 @@ if (django.jQuery) {
 
 // Custom dialog modal used for file validation
 MicroModal.init({
-  openTrigger: 'data-custom-open', // [3]
+  openTrigger: 'data-custom-open',
   closeTrigger: 'data-custom-close', // [4]
   openClass: 'is-open', // [5]
   disableScroll: true, // [6]
