@@ -14,11 +14,11 @@ MicroModal.init({
   openTrigger: 'data-custom-open',
   closeTrigger: 'data-custom-close',
   openClass: 'is-open',
-  disableScroll: true, // [6]
-  disableFocus: false, // [7]
-  awaitOpenAnimation: false, // [8]
-  awaitCloseAnimation: false, // [9]
-  debugMode: true // [10]
+  disableScroll: true,
+  disableFocus: false,
+  awaitOpenAnimation: false,
+  awaitCloseAnimation: false,
+  debugMode: true
 });
 
 /* globals Dropzone, Cl, django */
