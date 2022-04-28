@@ -1,9 +1,42 @@
+from unittest import TestCase
+from unittest.mock import Mock
+
+from cms import app_registration
+from cms.test_utils.testcases import CMSTestCase
+
 from djangocms_versioning.helpers import nonversioned_manager
 from filer.models import File, Folder
 
+from djangocms_versioning_filer.cms_config import FilerVersioningExtension
 from djangocms_versioning_filer.models import FileGrouper
 
 from .base import BaseFilerVersioningTestCase
+
+
+class CMSConfigExtensionTestCase(CMSTestCase, TestCase):
+    def setUp(self):
+        app_registration.get_cms_extension_apps.cache_clear()
+        app_registration.get_cms_config_apps.cache_clear()
+
+    def test_file_changelist_configuration_can_be_set(self):
+        """
+        Ensure that the configuration for the list file_changelist_actions can be set
+        by the cms_config setting: djangocms_versioning_filer_file_changelist_actions
+        """
+        expected_config_value = [
+            "some_value"
+        ]
+        extension = FilerVersioningExtension()
+        cms_config = Mock(
+            djangocms_versioning_filer_enabled=True,
+            djangocms_versioning_enabled=False,
+            djangocms_versioning_filer_file_changelist_actions=expected_config_value,
+            app_config=Mock(label="testing_versioning_filer_config"),
+        )
+
+        extension.configure_app(cms_config)
+
+        self.assertEqual(extension.file_changelist_actions, expected_config_value)
 
 
 class VersioningConfigTestCase(BaseFilerVersioningTestCase):
