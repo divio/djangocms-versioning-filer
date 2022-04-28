@@ -1,7 +1,9 @@
 import copy
 
+from django.conf.urls import url
 from djangocms_versioning.admin import VersioningAdminMixin
 from djangocms_versioning.models import Version
+from .monkeypatch.admin.clipboardadmin import file_constraints_check
 
 
 class VersioningFilerAdminMixin(VersioningAdminMixin):
@@ -16,3 +18,13 @@ class VersioningFilerAdminMixin(VersioningAdminMixin):
                     f for f in fieldset[1]['fields'] if f != 'changed_filename'
                 )
         return fieldsets
+
+    def get_urls(self):
+        return [
+           url(r'^operations/upload/check/(?P<folder_id>[0-9]+)/$',
+               file_constraints_check,
+               name='filer-check_file_constraints'),
+           url(r'^operations/upload/check/no_folder/$',
+               file_constraints_check,
+               name='filer-check_file_constraints'),
+        ] + super().get_urls()
