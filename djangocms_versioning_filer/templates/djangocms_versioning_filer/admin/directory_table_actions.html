@@ -1,0 +1,11 @@
+{% load i18n djangocms_versioning_filer_tags %}
+
+<a href="{{ file.canonical_url }}"
+    title="{% blocktrans %}Link{% endblocktrans %}" class="action-button" target="_blank"><span class="fa fa-link"></span></a>
+<a href="{{ file.url }}" target="_blank"
+    title="{% blocktrans %}Download{% endblocktrans %}" class="action-button"><span class="fa fa-download"></span></a>
+
+{% get_versioning_filer_admin_actions as admin_actions  %}
+{% for template_name in admin_actions  %}
+    {% include template_name %}
+{% endfor %}

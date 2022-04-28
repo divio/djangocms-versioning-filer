@@ -3,7 +3,7 @@ from functools import lru_cache
 from django.apps import apps
 from django.conf import settings
 
-from cms.app_base import CMSAppConfig
+from cms.app_base import CMSAppConfig, CMSAppExtension
 
 import filer.settings
 from djangocms_versioning.datastructures import (
@@ -70,11 +70,30 @@ def file_versionable():
     return versioning_extension.versionables_by_content[File]
 
 
+class FilerVersioningExtension(CMSAppExtension):
+    def __init__(self):
+        self.file_changelist_actions = []
+
+    def handle_file_changelist_actions(self, file_changelist_actions):
+        self.file_changelist_actions.extend(file_changelist_actions)
+
+    def configure_app(self, cms_config):
+        if hasattr(cms_config, "djangocms_versioning_filer_file_changelist_actions"):
+            self.handle_file_changelist_actions(cms_config.djangocms_versioning_filer_file_changelist_actions)
+
+
 class FilerVersioningCMSConfig(CMSAppConfig):
+    # Versioning config
     djangocms_versioning_enabled = True
     versioning = list(versioning_filer_models_config())
+    # Moderation config
     djangocms_moderation_enabled = getattr(settings, 'MODERATION_FILER_ENABLED', True)
     moderated_models = [apps.get_model(model_name) for model_name in filer.settings.FILER_FILE_MODELS]
+    # Versioning filer (self) config
+    djangocms_versioning_filer_enabled = True
+    djangocms_versioning_filer_file_changelist_actions = [
+        "djangocms_versioning_filer/admin/action_buttons/manage_versions.html"
+    ]
 
     # Internalsearch configuration
     if FilerContentConfig:
