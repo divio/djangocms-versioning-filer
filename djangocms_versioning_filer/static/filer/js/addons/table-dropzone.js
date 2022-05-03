@@ -72,29 +72,44 @@ MicroModal.init({
                 url
             ));
         };
-        var runChecks = function (file, checksUrl) {
-            var formData = new FormData();
-            var shouldUpload = true;
-            formData.append('file', file);
+        function boldFilename(elem) {
+          elem.innerHTML = elem.textContent.replace(/\w+ (\w+) (\w+)/, function(s,c,x) {
+            return s.replace(x, '<b>'+x+'</b>');
+          });
+      }
 
-            $.ajax({
-                url: checksUrl,
-                async: false,
-                type : 'POST',
-                data : formData,
-                processData: false,
-                contentType: false,
-                success : function(result) {
-                    if(result.success !== true) {
-                        let resultError = result.error.replace("['", "").replace("']", "")
-                        document.getElementById("filer-checks-modal-title").innerHTML = resultError;
-                        document.getElementById("filer-file-name").innerHTML = file.name;
-                        MicroModal.show('filer-checks-modal');
+        var runChecks = function (file, checksUrl) {
+            let shouldUpload = true;
+
+                let formData = new FormData();
+                formData.append('file', file);
+                $.ajax({
+                    url: checksUrl,
+                    async: false,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        if (result.success !== true) {
+                            let resultError = result.error.replace("['", "").replace("']", "")
+                            let newP = document.createElement("p");
+                            newP.className = 'message';
+                            let textNode = document.createTextNode(resultError);
+                            newP.appendChild(textNode);
+                            document.getElementById("filer-file-name").appendChild(newP);
+                            // Adding bold styling to the filename
+                            let toBold = document.getElementsByClassName('message');
+                            for (let i = 0; i < toBold.length; ++i) {
+                                boldFilename(toBold[i]);
+                            }
+                            MicroModal.show('filer-checks-modal');
+                            shouldUpload = false;
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log("error " + errorThrown);
                     }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.log("error " + errorThrown);
-                }
             });
             return shouldUpload;
         };
@@ -142,15 +157,8 @@ MicroModal.init({
                         uploadWelcome.addClass(hiddenClass);
                         cancelUpload.removeClass(hiddenClass);
 
-                        var fileProceed = true;
-                        if (checksUrl !== "undefined") {
-                            fileProceed = runChecks(file, checksUrl);
-                        }
-
-                        if(fileProceed === false) {
-                            // Upload if the process button is clicked
-                            var submitButton = document.querySelector("#proceed")
-
+                        function showDialog() {
+                            const submitButton = document.querySelector("#proceed")
                             submitButton.addEventListener("click", function() {
                                 dropzoneInstance.options.autoProcessQueue = true;
                                 dropzoneInstance.processQueue();
@@ -180,7 +188,8 @@ MicroModal.init({
                                 done('duplicate');
                             });
                         }
-                        else {
+
+                        function justUpload(){
                             dropzoneInstance.options.autoProcessQueue = true;
                             dropzoneInstance.processQueue();
                             uploadInfoClone = uploadInfo.clone();
@@ -203,6 +212,25 @@ MicroModal.init({
                             updateUploadNumber();
                             done();
                         }
+
+                        let fileProceed = true;
+                        let prom = new Promise(function(res, rej) {
+                            if (checksUrl !== "undefined") {
+                                fileProceed = runChecks(file, checksUrl);
+                            }
+                            if (fileProceed === true){
+                                // Just upload the file
+                                res()
+                            }
+                            else{
+                                // Show the dialog as the file already exists
+                                rej()
+                            }
+                        })
+                        prom.then(
+                          function(value) {justUpload(value);},
+                          function(error) {showDialog(error);}
+                        );
 
                         dropzones.removeClass('reset-hover');
                         infoMessage.removeClass(hiddenClass);
