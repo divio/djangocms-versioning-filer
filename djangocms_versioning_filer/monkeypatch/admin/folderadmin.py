@@ -7,7 +7,7 @@ from django.db import models
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.http import urlquote, urlunquote
-from django.utils.translation import ugettext as _, ungettext
+from django.utils.translation import gettext as _, ngettext
 
 import filer
 from djangocms_versioning.constants import DRAFT
@@ -35,6 +35,8 @@ from ...helpers import (
     move_file,
 )
 from ...models import FileGrouper, get_files_distinct_grouper_queryset
+
+from ...settings import FILER_FILE_CONSTRAINTS
 
 
 try:
@@ -203,7 +205,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
     else:
         action_form = None
 
-    selection_note_all = ungettext(
+    selection_note_all = ngettext(
         '%(total_count)s selected',
         'All %(total_count)s selected',
         paginator.count
@@ -252,6 +254,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         'can_make_folder': request.user.is_superuser or (
             folder.is_root and filer.settings.FILER_ALLOW_REGULAR_USERS_TO_ADD_ROOT_FOLDERS
         ) or permissions.get("has_add_children_permission"),
+        'file_constraints': FILER_FILE_CONSTRAINTS,
     })
     return render(request, self.directory_listing_template, context)
 
@@ -312,6 +315,7 @@ filer.admin.folderadmin.FolderAdmin.save_model = save_model(  # noqa: E305
 
 def filer_add_items_to_collection(self, request, files_qs, folders_qs):
     from djangocms_moderation.admin_actions import add_items_to_collection
+
     for folder in folders_qs:
         files_qs |= get_files_distinct_grouper_queryset().filter(
             folder__in=folder.get_descendants(include_self=True),
@@ -325,7 +329,10 @@ def get_actions(func):
         actions = func(self, request)
 
         if is_moderation_enabled():
-            from djangocms_moderation.admin_actions import add_items_to_collection
+            from djangocms_moderation.admin_actions import (
+                add_items_to_collection,
+            )
+
             actions['add_items_to_collection'] = (
                 filer_add_items_to_collection,
                 'add_items_to_collection',

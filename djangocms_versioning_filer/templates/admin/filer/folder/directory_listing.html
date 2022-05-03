@@ -1,14 +1,24 @@
 {% extends "admin/filer/base_site.html" %}
-{% load i18n staticfiles filer_admin_tags %}
+{% load i18n static filer_admin_tags %}
 
 {% block extrahead %}
+    <script src="{% static 'filer/js/addons/micromodal.min.js' %}"></script>
     {{ block.super }}
+
+    <script src="{% static 'djangocms_versioning_filer/js/admin_filer_list_actions.js' %}"></script>
 
     {% if action_form and actions_on_top or actions_on_bottom %}
         <script type="text/javascript">
             (function($) {
                 $(document).ready(function($) {
-                    $('tr input.action-select').actions();
+                  /* Rebind the django form actions after all filer scripts have loaded */
+                  const actionsEls = document.querySelectorAll('tr input.action-select');
+
+                  // django 2.2 support, django 3.2 uses window.Actions and may no longer be required
+                  // https://github.com/django/django/commit/30e59705fc3e3e9e8370b965af794ad6173bf92b
+                  if (typeof actionsEls.actions !== "undefined" && actionsEls.length > 0) {
+                    actionsEls.actions();
+                  }
                 });
             })(django.jQuery);
         </script>
@@ -20,6 +30,7 @@
 
 
 {% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="{% static 'filer/css/micromodal.css' %}">
     {{ block.super }}
 
     {{ media.css }}
@@ -34,6 +45,8 @@
             }
         </style>
     {% endif %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'djangocms_versioning_filer/css/admin_filer_list_actions.css' %}">
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -212,6 +225,9 @@
                                     <a href="#" id="id_upload_button" title="{% trans 'Upload Files' %}"
                                        class="navigator-button navigator-button-upload js-upload-button"
                                        data-url="{% url 'admin:filer-ajax_upload' folder_id=folder.id %}"
+                                       {% if file_constraints %}
+                                       data-accept="{% url 'admin:filer-check_file_constraints' folder_id=folder.id  %}"
+                                       {%  endif %}
                                        data-max-uploader-connections="{{ uploader_connections }}">
                                         {% trans "Upload Files" %}
                                     </a>
@@ -252,6 +268,26 @@
                     {% filer_actions %}
                 {% endif %}
             </form>
+        </div>
+    </div>
+
+    <!-- Custom dialog modal used for file validation -->
+    <div class="modal micromodal-slide" id="filer-checks-modal" aria-hidden="true">
+        <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+          <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="filer-checks-modal-title" aria-describedby="filer-checks-modal-content">
+            <div role="document">
+              <header class="modal__header">
+                <h3 class="modal__title" id="filer-checks-modal-title"></h3>
+              </header>
+              <main class="modal__content" id="filer-checks-modal-content">
+                <p id="filer-file-name"></p>
+              </main>
+              <footer class="modal__footer">
+                <button class="modal__btn modal__btn-primary" id="proceed">Proceed</button>
+                <button class="modal__btn" id="cancel" data-micromodal-close aria-label="Close this dialog window">Cancel</button>
+              </footer>
+            </div>
+          </div>
         </div>
     </div>
 {% endblock %}

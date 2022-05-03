@@ -2,7 +2,9 @@ import collections
 import os
 
 from django.apps import apps
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.utils.translation import ugettext as _
 
 import filer
 from djangocms_versioning.models import Version
@@ -74,3 +76,29 @@ def check_file_exists_in_folder(file_obj):
     return check_file_label_exists_in_folder(
         file_obj.label, file_obj.folder, exclude_file_pks=exclude_file_pks,
     )
+
+
+def filename_exists(request, folder_id=None):
+    from filer.models import Folder, File
+
+    FILE_EXISTS = _('File name already exists')
+
+    try:
+        # Get folder
+        folder = Folder.objects.get(pk=folder_id)
+    except Folder.DoesNotExist:
+        # if folder not exists then not proceeding further check and return
+        return
+
+    if folder:
+        if len(request.FILES) == 1:
+            upload = list(request.FILES.values())[0]
+            filename = upload.name
+        else:
+            filename = request.GET.get('qqfile', False) or request.GET.get('filename', False) or ''
+        if File._original_manager.filter(
+            original_filename=filename,
+            folder_id=folder_id
+        ):
+            raise ValidationError(FILE_EXISTS)
+    return
