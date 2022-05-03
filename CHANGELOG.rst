@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* fix: Checks dialog wait for confirmation before upload
 
 0.2.0 (2022-04-28)
 ==================

@@ -130,7 +130,7 @@ MicroModal.init({
                     clickable: false,
                     addRemoveLinks: false,
                     parallelUploads: dropzone.data(dataUploaderConnections) || 3,
-                    autoProcessQueue: true,
+                    autoProcessQueue: false,
                     accept: function (file, done) {
                         var uploadInfoClone;
                         var dropzoneChecksUrl = dropzone.data('accept');
@@ -152,6 +152,8 @@ MicroModal.init({
                             var submitButton = document.querySelector("#proceed")
 
                             submitButton.addEventListener("click", function() {
+                                dropzoneInstance.options.autoProcessQueue = true;
+                                dropzoneInstance.processQueue();
                                 uploadInfoClone = uploadInfo.clone();
                                 uploadInfoClone.find(uploadFileNameSelector).text(file.name);
                                 uploadInfoClone.find(uploadProgressSelector).width(0);
@@ -179,6 +181,8 @@ MicroModal.init({
                             });
                         }
                         else {
+                            dropzoneInstance.options.autoProcessQueue = true;
+                            dropzoneInstance.processQueue();
                             uploadInfoClone = uploadInfo.clone();
 
                             uploadInfoClone.find(uploadFileNameSelector).text(file.name);
