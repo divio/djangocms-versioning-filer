@@ -73,8 +73,8 @@ MicroModal.init({
             ));
         };
         function boldFilename(elem) {
-            elem.innerHTML = elem.textContent.replace(/\w+ (\w+) (\w+)/, function(s,c,x) {
-                return s.replace(x, '<b>'+x+'</b>');
+            elem.innerHTML = elem.textContent.replace(/\*{2}([^*]+)\*{2}/g, function(s,c,x) {
+                return s.replace(c, '<b>'+c+'</b>').replace("**", "").replace("**", "");
             });
         }
 
