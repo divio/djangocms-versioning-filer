@@ -72,12 +72,11 @@ MicroModal.init({
                 url
             ));
         };
-        function boldFilename(elem) {
-            elem.innerHTML = elem.textContent.replace(/\*{2}([^*]+)\*{2}/g, function(s,c,x) {
-                return s.replace(c, '<b>'+c+'</b>').replace("**", "").replace("**", "");
+        var boldFilename = function (elem) {
+            elem.innerHTML = elem.textContent.replace(/\*{2}([^*]+)\*{2}/g, function(s,c) {
+                return c.replace(c, '<b>'+c+'</b>');
             });
         }
-
         var runChecks = function (file, checksUrl) {
             var formData = new FormData();
             var shouldUpload = true;
