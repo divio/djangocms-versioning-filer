@@ -25,7 +25,7 @@ class FileNameExistsTests(BaseFilerVersioningTestCase):
             self.assertIn('success', response)
             self.assertEqual(False, response['success'])
             self.assertIn('error', response)
-            self.assertIn('The file test.txt already exists, do you want to overwrite this?', response['error'])
+            self.assertIn('The file **test.txt** already exists, do you want to overwrite this?', response['error'])
 
     def test_filename_not_exists(self):
         with self.login_user_context(self.superuser):
