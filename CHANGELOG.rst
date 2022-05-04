@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* feat: Dialog shows variable filename in checks message
 
 0.2.0 (2022-04-28)
 ==================

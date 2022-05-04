@@ -72,6 +72,12 @@ MicroModal.init({
                 url
             ));
         };
+        function boldFilename(elem) {
+            elem.innerHTML = elem.textContent.replace(/\w+ (\w+) (\w+)/, function(s,c,x) {
+                return s.replace(x, '<b>'+x+'</b>');
+            });
+        }
+
         var runChecks = function (file, checksUrl) {
             var formData = new FormData();
             var shouldUpload = true;
@@ -89,6 +95,11 @@ MicroModal.init({
                         let resultError = result.error.replace("['", "").replace("']", "")
                         document.getElementById("filer-checks-modal-title").innerHTML = resultError;
                         document.getElementById("filer-file-name").innerHTML = file.name;
+                        // Adding bold styling to the filename
+                        let toBold = document.getElementsByClassName('message');
+                        for (let i = 0; i < toBold.length; ++i) {
+                            boldFilename(toBold[i]);
+                        }
                         MicroModal.show('filer-checks-modal');
                     }
                 },

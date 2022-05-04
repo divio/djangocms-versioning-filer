@@ -81,8 +81,6 @@ def check_file_exists_in_folder(file_obj):
 def filename_exists(request, folder_id=None):
     from filer.models import Folder, File
 
-    FILE_EXISTS = _('File name already exists')
-
     try:
         # Get folder
         folder = Folder.objects.get(pk=folder_id)
@@ -100,5 +98,7 @@ def filename_exists(request, folder_id=None):
             original_filename=filename,
             folder_id=folder_id
         ):
+            FILE_EXISTS = (_('The file %s already exists, do you want to overwrite this?') % filename)
+
             raise ValidationError(FILE_EXISTS)
     return
