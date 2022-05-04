@@ -93,8 +93,11 @@ MicroModal.init({
                 success : function(result) {
                     if(result.success !== true) {
                         let resultError = result.error.replace("['", "").replace("']", "")
-                        document.getElementById("filer-checks-modal-title").innerHTML = resultError;
-                        document.getElementById("filer-file-name").innerHTML = file.name;
+                        let newP = document.createElement("p");
+                        newP.className = 'message';
+                        let textNode = document.createTextNode(resultError);
+                        newP.appendChild(textNode);
+                        document.getElementById("filer-file-name").appendChild(newP);
                         // Adding bold styling to the filename
                         let toBold = document.getElementsByClassName('message');
                         for (let i = 0; i < toBold.length; ++i) {
