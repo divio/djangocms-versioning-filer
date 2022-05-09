@@ -81,8 +81,6 @@ def check_file_exists_in_folder(file_obj):
 def filename_exists(request, folder_id=None):
     from filer.models import Folder, File
 
-    FILE_EXISTS = _('File name already exists')
-
     try:
         # Get folder
         folder = Folder.objects.get(pk=folder_id)
@@ -95,10 +93,16 @@ def filename_exists(request, folder_id=None):
             upload = list(request.FILES.values())[0]
             filename = upload.name
         else:
-            filename = request.GET.get('qqfile', False) or request.GET.get('filename', False) or ''
+            # TODO: Workaround for testing. Need to see why file upload through the GUI uses POST and unittest use GET
+            try:
+                filename = request.POST['file']
+            except:
+                filename = request.GET.get('qqfile', False) or request.GET.get('filename', False) or ''
         if File._original_manager.filter(
             original_filename=filename,
             folder_id=folder_id
         ):
+            FILE_EXISTS = (_('The file %s already exists, do you want to overwrite this?') % filename)
+
             raise ValidationError(FILE_EXISTS)
     return
