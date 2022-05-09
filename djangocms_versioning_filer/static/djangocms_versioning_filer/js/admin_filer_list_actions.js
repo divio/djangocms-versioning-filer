@@ -43,6 +43,12 @@
         li_anchor.setAttribute('class', 'cms-actions-dropdown-menu-item-anchor');
         li_anchor.setAttribute('href', $(item).attr('href'));
 
+        // Copy the target attribute if it is set
+        const itemTarget = $(item).attr('target');
+        if (itemTarget !== undefined) {
+          li_anchor.setAttribute('target', itemTarget);
+        }
+
         if ($(item).hasClass('cms-form-get-method')) {
           li_anchor.classList.add('cms-form-get-method'); // Ensure the fake-form selector is propagated to the new anchor
         }

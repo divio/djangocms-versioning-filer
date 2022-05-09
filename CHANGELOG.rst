@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* port-fix: File download burger menu link does not open in a new tab as per previous behavior
 * feat: Added file constraint checks
 
 0.1.0 (2022-04-25)
