@@ -9,7 +9,6 @@ Unreleased
 0.2.0 (2022-04-28)
 ==================
 * backport-feat: Customisable folder list admin file action buttons
->>>>>>> release/0.0.x
 * feat: Added file constraint checks
 
 0.1.0 (2022-04-25)
