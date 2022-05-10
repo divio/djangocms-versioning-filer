@@ -4,9 +4,7 @@ Changelog
 
 Unreleased
 ==========
-<<<<<<< pick/release-0.0.x-f84c372df1a9b2df090baf1c1edf29ab6f032ec1
 * backport-fix: File download burger menu link does not open in a new tab as per previous behavior
-=======
 
 0.2.0 (2022-04-28)
 ==================
