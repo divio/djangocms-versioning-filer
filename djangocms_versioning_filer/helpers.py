@@ -93,11 +93,7 @@ def filename_exists(request, folder_id=None):
             upload = list(request.FILES.values())[0]
             filename = upload.name
         else:
-            # TODO: Workaround for testing. Need to see why file upload through the GUI uses POST and unittest use GET
-            try:
-                filename = request.POST['file']
-            except KeyError:
-                filename = request.GET.get('qqfile', False) or request.GET.get('filename', False) or ''
+            filename = request.POST.get('file')
         if File._original_manager.filter(
             original_filename=filename,
             folder_id=folder_id

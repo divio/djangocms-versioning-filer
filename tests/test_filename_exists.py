@@ -18,8 +18,10 @@ class FileNameExistsTests(BaseFilerVersioningTestCase):
         with self.login_user_context(self.superuser):
             response = self.client.post(
                 reverse('admin:filer-check_file_constraints',
-                        kwargs={'folder_id': self.folder.id})
-                + '?filename={}'.format('test.txt'),
+                        kwargs={'folder_id': self.folder.id}),
+                data={
+                    'file': 'test.txt',
+                }
             )
             response = json.loads(response.content.decode('utf-8'))
             self.assertIn('success', response)
