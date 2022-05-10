@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* backport-fix: File download burger menu link does not open in a new tab as per previous behavior
 
 0.2.0 (2022-04-28)
 ==================
