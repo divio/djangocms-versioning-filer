@@ -98,7 +98,7 @@ def filename_exists(request, folder_id=None):
             original_filename=filename,
             folder_id=folder_id
         ):
-            FILE_EXISTS = (_('The file %s already exists, do you want to overwrite this?') % filename)
+            file_exists_message = _('The file %(filename)s already exists, do you want to overwrite this?') % { 'filename': filename }
 
             raise ValidationError(FILE_EXISTS)
     return
