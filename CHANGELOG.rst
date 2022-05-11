@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* fix: Removed unused template code
 
 0.3.1 (2022-05-11)
 ==================
