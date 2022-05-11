@@ -127,7 +127,7 @@ if (django.jQuery) {
                         uploadWelcome.addClass(hiddenClass);
                         cancelUpload.removeClass(hiddenClass);
 
-                        let fileProceed = true;
+                        var fileProceed = true;
                         if (checksUrl !== "undefined") {
                             fileProceed = runChecks(file, checksUrl);
                         }
