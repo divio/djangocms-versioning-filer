@@ -89,10 +89,12 @@ def filename_exists(request, folder_id=None):
         return
 
     if folder:
+        # request.FILES will be populated when files are dropped into the dropzone instance
         if len(request.FILES) == 1:
             upload = list(request.FILES.values())[0]
             filename = upload.name
         else:
+            # request.POST will contain the uploaded filename when the file upload method is used
             filename = request.POST.get('file')
         if File._original_manager.filter(
             original_filename=filename,
