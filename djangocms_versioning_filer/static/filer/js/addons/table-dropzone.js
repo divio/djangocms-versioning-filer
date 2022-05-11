@@ -9,18 +9,6 @@ if (django.jQuery) {
     djQuery = django.jQuery;
 }
 
-// Custom dialog modal used for file validation
-MicroModal.init({
-  openTrigger: 'data-custom-open',
-  closeTrigger: 'data-custom-close',
-  openClass: 'is-open',
-  disableScroll: true,
-  disableFocus: false,
-  awaitOpenAnimation: false,
-  awaitCloseAnimation: false,
-  debugMode: true
-});
-
 /* globals Dropzone, Cl, django */
 (function ($) {
     $(function () {
@@ -87,9 +75,7 @@ MicroModal.init({
                 success : function(result) {
                     if(result.success !== true) {
                         let resultError = result.error.replace("['", "").replace("']", "")
-                        document.getElementById("filer-checks-modal-title").innerHTML = resultError;
-                        document.getElementById("filer-file-name").innerHTML = file.name;
-                        MicroModal.show('filer-checks-modal');
+                        shouldUpload = confirm(resultError)
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
@@ -130,7 +116,6 @@ MicroModal.init({
                     clickable: false,
                     addRemoveLinks: false,
                     parallelUploads: dropzone.data(dataUploaderConnections) || 3,
-                    autoProcessQueue: true,
                     accept: function (file, done) {
                         var uploadInfoClone;
                         var dropzoneChecksUrl = dropzone.data('accept');
@@ -147,40 +132,8 @@ MicroModal.init({
                             fileProceed = runChecks(file, checksUrl);
                         }
 
-                        if(fileProceed === false) {
-                            // Upload if the process button is clicked
-                            var submitButton = document.querySelector("#proceed")
-
-                            submitButton.addEventListener("click", function() {
-                                uploadInfoClone = uploadInfo.clone();
-                                uploadInfoClone.find(uploadFileNameSelector).text(file.name);
-                                uploadInfoClone.find(uploadProgressSelector).width(0);
-                                uploadInfoClone
-                                    .attr(
-                                        'id',
-                                        'file-' +
-                                            encodeURIComponent(file.name) +
-                                            file.size +
-                                            file.lastModified +
-                                            dropzoneUrl
-                                    )
-                                    .appendTo(uploadInfoContainer);
-
-                                submitNum++;
-                                maxSubmitNum++;
-                                updateUploadNumber();
-                                done();
-                            });
-
-                            // Cancel upload if the process button is clicked
-                            var cancelButton = document.querySelector("#cancel")
-                            cancelButton.addEventListener("click", function() {
-                                done('duplicate');
-                            });
-                        }
-                        else {
+                        if(fileProceed !== false) {
                             uploadInfoClone = uploadInfo.clone();
-
                             uploadInfoClone.find(uploadFileNameSelector).text(file.name);
                             uploadInfoClone.find(uploadProgressSelector).width(0);
                             uploadInfoClone
@@ -198,6 +151,8 @@ MicroModal.init({
                             maxSubmitNum++;
                             updateUploadNumber();
                             done();
+                        }else{
+                            done("Duplicate file name")
                         }
 
                         dropzones.removeClass('reset-hover');

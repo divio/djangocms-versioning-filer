@@ -18,14 +18,16 @@ class FileNameExistsTests(BaseFilerVersioningTestCase):
         with self.login_user_context(self.superuser):
             response = self.client.post(
                 reverse('admin:filer-check_file_constraints',
-                        kwargs={'folder_id': self.folder.id})
-                + '?filename={}'.format('test.txt'),
+                        kwargs={'folder_id': self.folder.id}),
+                data={
+                    'file': 'test.txt',
+                }
             )
             response = json.loads(response.content.decode('utf-8'))
             self.assertIn('success', response)
             self.assertEqual(False, response['success'])
             self.assertIn('error', response)
-            self.assertIn('File name already exists', response['error'])
+            self.assertIn('The file test.txt already exists, do you want to overwrite this?', response['error'])
 
     def test_filename_not_exists(self):
         with self.login_user_context(self.superuser):

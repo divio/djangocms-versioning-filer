@@ -81,8 +81,6 @@ def check_file_exists_in_folder(file_obj):
 def filename_exists(request, folder_id=None):
     from filer.models import Folder, File
 
-    FILE_EXISTS = _('File name already exists')
-
     try:
         # Get folder
         folder = Folder.objects.get(pk=folder_id)
@@ -91,14 +89,18 @@ def filename_exists(request, folder_id=None):
         return
 
     if folder:
+        # request.FILES will be populated when files are dropped into the dropzone instance
         if len(request.FILES) == 1:
             upload = list(request.FILES.values())[0]
             filename = upload.name
         else:
-            filename = request.GET.get('qqfile', False) or request.GET.get('filename', False) or ''
+            # request.POST will contain the uploaded filename when the file upload method is used
+            filename = request.POST.get('file')
         if File._original_manager.filter(
             original_filename=filename,
             folder_id=folder_id
         ):
-            raise ValidationError(FILE_EXISTS)
+            file_exists_message = _('The file %(filename)s already exists, do you want to overwrite this?') % { 'filename': filename }
+
+            raise ValidationError(file_exists_message)
     return
