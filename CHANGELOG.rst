@@ -4,6 +4,9 @@ Changelog
 
 Unreleased
 ==========
+
+1.1.0 (2022-10-14)
+==========
 * feat: Enable sorting by headers on the monkey patched directory_listing admin view
 * feat: Replace CircleCi with GitHub Actions for linting and tests
 * fix: File download burger menu link does not open in a new tab as per previous behavior
