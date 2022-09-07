@@ -100,7 +100,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertIn(self.file, self.folder.files)
-        self.assertTrue(self.folder.contains_folder(self.folder_inside))
+        self.assertTrue(self.folder.contains_folder(self.folder_inside.name))
         moved_file = Version._base_manager.last()
         moved_file.publish(self.superuser)
         dst_folder.refresh_from_db()
@@ -258,7 +258,7 @@ class FilerViewTests(BaseFilerVersioningTestCase):
             )
             # get canonical url for the published file from grouper
             self.assertEqual(version.content.canonical_url, expected_canonical_url)
-            published_version_static_path = '/media/{}/{}'.format(grouper.file.folder, file_obj.original_filename)
+            published_version_static_path = '/media/{}/{}'.format(grouper.file.folder.name, file_obj.original_filename)
             self.assertEqual(published_version_static_path, grouper.file.url)
             response = self.client.get(grouper.file.canonical_url)
         self.assertRedirects(response, grouper.file.url)

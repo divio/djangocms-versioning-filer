@@ -91,6 +91,7 @@ HELPER_SETTINGS = {
     'FILE_UPLOAD_TEMP_DIR': mkdtemp(),
     'FILER_CANONICAL_URL': 'test-path/',
     'DEFAULT_AUTO_FIELD': 'django.db.models.AutoField',
+    'CMS_CONFIRM_VERSION4': True,
 }
 
 
