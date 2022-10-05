@@ -30,6 +30,6 @@ class SortableHeadersChangeList(ChangeList):
     list_display = ["action_checkbox", "name", "owner", "modified_at"]
     sortable_by = ["name", "owner", "modified_at"]
 
-    def __init__(self, request):
+    def __init__(self, request):  # noqa
         self.params = dict(request.GET.items())
         self.lookup_opts = self.model._meta
