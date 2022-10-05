@@ -30,6 +30,7 @@ from filer.models import (
 )
 from filer.utils.loader import load_model
 
+from ...admin import SortableHeadersChangeList
 from ...helpers import (
     create_file_version,
     get_published_file_path,
@@ -252,7 +253,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
     # TODO consider extracting
     self.list_display = ["name", "owner", "modified_at"]
     self.sortable_by = ["name", "owner", "modified_at"]
-    cl = self.get_changelist_instance(request)
+    cl = SortableHeadersChangeList(request, self)
     sortable_headers = [header for header in result_headers(cl) if header["sortable"]]
 
     num_sorted_fields = 0
@@ -297,6 +298,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         ) or permissions.get("has_add_children_permission"),
         'sortable_headers': sortable_headers,
         'num_sorted_fields': num_sorted_fields,
+        'order_by': ".".join(order_by)
     })
     return render(request, self.directory_listing_template, context)
 
