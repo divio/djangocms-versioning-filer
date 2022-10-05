@@ -1,5 +1,3 @@
-import re
-
 from django.contrib.admin import helpers
 from django.contrib.admin.templatetags.admin_list import result_headers
 from django.core.exceptions import PermissionDenied
