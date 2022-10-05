@@ -1,9 +1,11 @@
 import re
 
 from django.contrib.admin import helpers
+from django.contrib.admin.templatetags.admin_list import result_headers
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import models
+from django.db.models.functions import Lower
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.http import urlquote, urlunquote
@@ -45,6 +47,38 @@ except ImportError:
 
 
 Image = load_model(filer.settings.FILER_IMAGE_MODEL)
+
+
+FILE_MAPPING = {
+    "1": Lower("original_filename"),
+    "2": "owner__username",
+    "3": "modified_at",
+    "-1": Lower("original_filename").desc(),
+    "-2": "-owner__username",
+    "-3": "-modified_at",
+}
+
+FOLDER_MAPPING = {
+    "1": Lower("name"),
+    "2": "owner__username",
+    "3": "modified_at",
+    "-1": Lower("name").desc(),
+    "-2": "-owner__username",
+    "-3": "-modified_at",
+}
+
+
+def order_qs(queryset, order_by, mapping):
+    order_by = [mapping.get(num) for num in order_by]
+    # remove empty values
+    order_by = [field for field in order_by if field]
+    if not order_by:
+        return queryset
+    return queryset.order_by(*order_by).distinct()
+
+
+def validate_order_by(order_by):
+    return [key for key in order_by.split('.') if key in FOLDER_MAPPING or key in FILE_MAPPING]
 
 
 def directory_listing(self, request, folder_id=None, viewtype=None):
@@ -118,13 +152,10 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         show_result_count = False
 
     folder_qs = folder_qs.order_by('name')
-    order_by = request.GET.get('order_by', None)
-    if order_by is not None:
-        order_by = order_by.split(',')
-        order_by = [field for field in order_by
-                    if re.sub(r'^-', '', field) in self.order_by_file_fields]
-        if len(order_by) > 0:
-            file_qs = file_qs.order_by(*order_by)
+    order_by = validate_order_by(request.GET.get('o', ""))
+    if order_by:
+        file_qs = order_qs(file_qs, order_by, FILE_MAPPING)
+        folder_qs = order_qs(folder_qs, order_by, FOLDER_MAPPING)
 
     folder_children = []
     folder_files = []
@@ -217,6 +248,18 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
     except EmptyPage:
         paginated_items = paginator.page(paginator.num_pages)
 
+    # build sortable headers
+    # TODO consider extracting
+    self.list_display = ["name", "owner", "modified_at"]
+    self.sortable_by = ["name", "owner", "modified_at"]
+    cl = self.get_changelist_instance(request)
+    sortable_headers = [header for header in result_headers(cl) if header["sortable"]]
+
+    num_sorted_fields = 0
+    for h in sortable_headers:
+        if h['sortable'] and h['sorted']:
+            num_sorted_fields += 1
+
     context = self.admin_site.each_context(request)
     context.update({
         'folder': folder,
@@ -252,6 +295,8 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         'can_make_folder': request.user.is_superuser or (
             folder.is_root and filer.settings.FILER_ALLOW_REGULAR_USERS_TO_ADD_ROOT_FOLDERS
         ) or permissions.get("has_add_children_permission"),
+        'sortable_headers': sortable_headers,
+        'num_sorted_fields': num_sorted_fields,
     })
     return render(request, self.directory_listing_template, context)
 
@@ -340,3 +385,5 @@ def get_actions(func):
 filer.admin.folderadmin.FolderAdmin.get_actions = get_actions(  # noqa: E305
     filer.admin.folderadmin.FolderAdmin.get_actions
 )
+# filer.admin.folderadmin.FolderAdmin.list_display = ["name", "owner", "modified_at"]
+# filer.admin.folderadmin.FolderAdmin.sortable_by = ["name", "owner", "modified_at"]
