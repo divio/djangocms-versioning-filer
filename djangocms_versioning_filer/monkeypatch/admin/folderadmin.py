@@ -82,6 +82,11 @@ def validate_order_by(order_by):
     return [key for key in order_by.split('.') if key in FOLDER_MAPPING or key in FILE_MAPPING]
 
 
+def get_sortable_headers(request):
+    cl = SortableHeadersChangeList(request)
+    return [header for header in result_headers(cl) if header["sortable"]]
+
+
 def directory_listing(self, request, folder_id=None, viewtype=None):
     clipboard = tools.get_user_clipboard(request.user)
     if viewtype == 'images_with_missing_data':
@@ -250,16 +255,8 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         paginated_items = paginator.page(paginator.num_pages)
 
     # build sortable headers
-    # TODO consider extracting
-    self.list_display = ["name", "owner", "modified_at"]
-    self.sortable_by = ["name", "owner", "modified_at"]
-    cl = SortableHeadersChangeList(request, self)
-    sortable_headers = [header for header in result_headers(cl) if header["sortable"]]
-
-    num_sorted_fields = 0
-    for h in sortable_headers:
-        if h['sortable'] and h['sorted']:
-            num_sorted_fields += 1
+    sortable_headers = get_sortable_headers(request)
+    num_sorted_fields = len([header for header in sortable_headers if header["sorted"]])
 
     context = self.admin_site.each_context(request)
     context.update({
