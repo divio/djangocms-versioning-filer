@@ -1,7 +1,11 @@
 import copy
+from collections import OrderedDict
+
+from django.contrib.admin.views.main import ChangeList
 
 from djangocms_versioning.admin import VersioningAdminMixin
 from djangocms_versioning.models import Version
+from filer.models import Folder
 
 
 class VersioningFilerAdminMixin(VersioningAdminMixin):
@@ -16,3 +20,15 @@ class VersioningFilerAdminMixin(VersioningAdminMixin):
                     f for f in fieldset[1]['fields'] if f != 'changed_filename'
                 )
         return fieldsets
+
+
+class SortableHeadersChangeList(ChangeList):
+
+    model = Folder
+    sortable_by = ["name", "owner", "modified_at"]
+    list_display = ["action_checkbox", "name", "owner", "modified_at"]
+
+    def __init__(self, request, model_admin):
+        self.params = dict(request.GET.items())
+        self.model_admin = model_admin
+        self.lookup_opts = self.model._meta
