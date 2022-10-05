@@ -10,9 +10,7 @@
                     {% endif %}
                 </th>
                 <th class="column-icon">&nbsp;</th>
-                <th class="column-name">{% trans "Name" %}</th>
-                <th class="column-owner">{% trans "Owner" %}</th>
-                <th class="column-modified_date">{% trans "Modified date" %}</th>
+                {% include "admin/filer/folder/_sortable_headers.html" with sortable_headers=sortable_headers %}
                 <th class="column-size">{% trans "Size" %}</th>
                 <th class="column-action">{% trans "Action" %}</th>
             </tr>
