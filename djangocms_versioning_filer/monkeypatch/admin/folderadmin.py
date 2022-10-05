@@ -384,5 +384,3 @@ def get_actions(func):
 filer.admin.folderadmin.FolderAdmin.get_actions = get_actions(  # noqa: E305
     filer.admin.folderadmin.FolderAdmin.get_actions
 )
-# filer.admin.folderadmin.FolderAdmin.list_display = ["name", "owner", "modified_at"]
-# filer.admin.folderadmin.FolderAdmin.sortable_by = ["name", "owner", "modified_at"]
