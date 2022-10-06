@@ -48,10 +48,10 @@ except ImportError:
 Image = load_model(filer.settings.FILER_IMAGE_MODEL)
 
 
-def order_qs(queryset, order_by):
+def ordering_mapping(model):
     """
-    Order the queryset of File or Folder objects. Of no ordering is specified, defaults to ordering the queryset by the
-    name column.
+    Return a mapping dictionary for the given model. The keys represent the column numbers from the admin
+    directory_listing view, and the values map to the fields that the queryset should be ordered against.
     """
     mapping = {
         "1": [Lower("name"), Lower("original_filename")],
@@ -61,12 +61,31 @@ def order_qs(queryset, order_by):
         "-2": ["-owner__username"],
         "-3": ["-modified_at"],
     }
-    if queryset.model is Folder:
+    if model is Folder:
         mapping["1"].pop()
         mapping["-1"].pop()
 
+    return mapping
+
+
+def validate_order_by(order_by_str, mapping):
+    """
+    Splits a string of ordering heys, and returns a list of keys of those that are in the given mapping dictionary
+    """
+    return [key for key in order_by_str.split(".") if key in mapping]
+
+
+def order_qs(queryset, order_by_str):
+    """
+    Order the queryset of File or Folder objects. If no ordering is specified, defaults to ordering the queryset by the
+    name column mapping value.
+
+    param queryset: A QuerySet of File or Folder objects
+    order_by: A strings representing the column numbers to order the queryset by
+    """
+    mapping = ordering_mapping(queryset.model)
     # only use valid column numbers
-    order_by = [key for key in order_by.split(".") if key in mapping]
+    order_by = validate_order_by(order_by_str, mapping)
     # get the field name for the column numbers
     order_by = [mapping.get(num) for num in order_by]
     # flatten the list
@@ -149,9 +168,9 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
             file_qs = folder.files.all()
         show_result_count = False
 
-    order_by = request.GET.get('o', "")
-    file_qs = order_qs(file_qs, order_by)
-    folder_qs = order_qs(folder_qs, order_by)
+    order_by_str = request.GET.get('o', "")
+    file_qs = order_qs(file_qs, order_by_str)
+    folder_qs = order_qs(folder_qs, order_by_str)
 
     folder_children = []
     folder_files = []
@@ -283,7 +302,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         ) or permissions.get("has_add_children_permission"),
         'sortable_headers': sortable_headers,
         'num_sorted_fields': num_sorted_fields,
-        'order_by': order_by
+        'order_by': order_by_str,
     })
     return render(request, self.directory_listing_template, context)
 
