@@ -79,11 +79,6 @@ def order_qs(queryset, order_by):
     return queryset.order_by(*order_by).distinct()
 
 
-def get_sortable_headers(request):
-    cl = SortableHeadersChangeList(request)
-    return [header for header in result_headers(cl) if header["sortable"]]
-
-
 def directory_listing(self, request, folder_id=None, viewtype=None):
     clipboard = tools.get_user_clipboard(request.user)
     if viewtype == 'images_with_missing_data':
@@ -247,7 +242,8 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         paginated_items = paginator.page(paginator.num_pages)
 
     # build sortable headers
-    sortable_headers = get_sortable_headers(request)
+    cl = SortableHeadersChangeList(request)
+    sortable_headers = [header for header in result_headers(cl) if header["sortable"]]
     num_sorted_fields = len([header for header in sortable_headers if header["sorted"]])
 
     context = self.admin_site.each_context(request)
