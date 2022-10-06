@@ -48,43 +48,35 @@ except ImportError:
 Image = load_model(filer.settings.FILER_IMAGE_MODEL)
 
 
-FILE_MAPPING = {
-    "1": [Lower("name"), Lower("original_filename")],
-    "2": ["owner__username"],
-    "3": ["modified_at"],
-    "-1": [Lower("name").desc(), Lower("original_filename").desc()],
-    "-2": ["-owner__username"],
-    "-3": ["-modified_at"],
-}
-
-FOLDER_MAPPING = {
-    "1": [Lower("name")],
-    "2": ["owner__username"],
-    "3": ["modified_at"],
-    "-1": [Lower("name").desc()],
-    "-2": ["-owner__username"],
-    "-3": ["-modified_at"],
-}
-
-
-def order_qs(queryset, order_by, mapping):
+def order_qs(queryset, order_by):
     """
     Order the queryset of File or Folder objects. Of no ordering is specified, defaults to ordering the queryset by the
     name column.
     """
+    mapping = {
+        "1": [Lower("name"), Lower("original_filename")],
+        "2": ["owner__username"],
+        "3": ["modified_at"],
+        "-1": [Lower("name").desc(), Lower("original_filename").desc()],
+        "-2": ["-owner__username"],
+        "-3": ["-modified_at"],
+    }
+    if queryset.model is Folder:
+        mapping["1"].pop()
+        mapping["-1"].pop()
+
+    # only use valid column numbers
+    order_by = [key for key in order_by.split(".") if key in mapping]
+    # get the field name for the column numbers
     order_by = [mapping.get(num) for num in order_by]
-    # flatten list
+    # flatten the list
     order_by = [item for sublist in order_by for item in sublist]
-    # remove empty values
+    # remove any empty values - might not be needed?
     order_by = [field for field in order_by if field]
     if not order_by:
         # default to the name column
         order_by = mapping.get("1")
     return queryset.order_by(*order_by).distinct()
-
-
-def validate_order_by(order_by):
-    return [key for key in order_by.split('.') if key in FOLDER_MAPPING or key in FILE_MAPPING]
 
 
 def get_sortable_headers(request):
@@ -162,9 +154,9 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
             file_qs = folder.files.all()
         show_result_count = False
 
-    order_by = validate_order_by(request.GET.get('o', ""))
-    file_qs = order_qs(file_qs, order_by, FILE_MAPPING)
-    folder_qs = order_qs(folder_qs, order_by, FOLDER_MAPPING)
+    order_by = request.GET.get('o', "")
+    file_qs = order_qs(file_qs, order_by)
+    folder_qs = order_qs(folder_qs, order_by)
 
     folder_children = []
     folder_files = []
@@ -295,7 +287,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         ) or permissions.get("has_add_children_permission"),
         'sortable_headers': sortable_headers,
         'num_sorted_fields': num_sorted_fields,
-        'order_by': ".".join(order_by)
+        'order_by': order_by
     })
     return render(request, self.directory_listing_template, context)
 
