@@ -49,30 +49,37 @@ Image = load_model(filer.settings.FILER_IMAGE_MODEL)
 
 
 FILE_MAPPING = {
-    "1": Lower("original_filename"),
-    "2": "owner__username",
-    "3": "modified_at",
-    "-1": Lower("original_filename").desc(),
-    "-2": "-owner__username",
-    "-3": "-modified_at",
+    "1": [Lower("name"), Lower("original_filename")],
+    "2": ["owner__username"],
+    "3": ["modified_at"],
+    "-1": [Lower("name").desc(), Lower("original_filename").desc()],
+    "-2": ["-owner__username"],
+    "-3": ["-modified_at"],
 }
 
 FOLDER_MAPPING = {
-    "1": Lower("name"),
-    "2": "owner__username",
-    "3": "modified_at",
-    "-1": Lower("name").desc(),
-    "-2": "-owner__username",
-    "-3": "-modified_at",
+    "1": [Lower("name")],
+    "2": ["owner__username"],
+    "3": ["modified_at"],
+    "-1": [Lower("name").desc()],
+    "-2": ["-owner__username"],
+    "-3": ["-modified_at"],
 }
 
 
 def order_qs(queryset, order_by, mapping):
+    """
+    Order the queryset of File or Folder objects. Of no ordering is specified, defaults to ordering the queryset by the
+    name column.
+    """
     order_by = [mapping.get(num) for num in order_by]
+    # flatten list
+    order_by = [item for sublist in order_by for item in sublist]
     # remove empty values
     order_by = [field for field in order_by if field]
     if not order_by:
-        return queryset
+        # default to the name column
+        order_by = mapping.get("1")
     return queryset.order_by(*order_by).distinct()
 
 
@@ -155,11 +162,9 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
             file_qs = folder.files.all()
         show_result_count = False
 
-    folder_qs = folder_qs.order_by('name')
     order_by = validate_order_by(request.GET.get('o', ""))
-    if order_by:
-        file_qs = order_qs(file_qs, order_by, FILE_MAPPING)
-        folder_qs = order_qs(folder_qs, order_by, FOLDER_MAPPING)
+    file_qs = order_qs(file_qs, order_by, FILE_MAPPING)
+    folder_qs = order_qs(folder_qs, order_by, FOLDER_MAPPING)
 
     folder_children = []
     folder_files = []
@@ -190,9 +195,6 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         }
     except:   # noqa
         permissions = {}
-
-    if order_by is None or len(order_by) == 0:
-        folder_files.sort()
 
     items = folder_children + folder_files
     paginator = Paginator(items, filer.settings.FILER_PAGINATE_BY)
