@@ -1,11 +1,17 @@
 from unittest.mock import MagicMock
 
-from cms.test_utils.testcases import CMSTestCase
 from django.db.models import QuerySet
 from django.db.models.functions import Lower
-from filer.models import Folder, File
 
-from djangocms_versioning_filer.monkeypatch.admin.folderadmin import order_qs, ordering_mapping, validate_order_by
+from cms.test_utils.testcases import CMSTestCase
+
+from filer.models import File, Folder
+
+from djangocms_versioning_filer.monkeypatch.admin.folderadmin import (
+    order_qs,
+    ordering_mapping,
+    validate_order_by,
+)
 
 
 class TestFolderAdminOrderingMapping(CMSTestCase):

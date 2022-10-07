@@ -1,5 +1,4 @@
 from django.contrib.admin import helpers
-from django.contrib.admin.templatetags.admin_list import result_headers
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import models
@@ -28,7 +27,7 @@ from filer.models import (
 )
 from filer.utils.loader import load_model
 
-from ...admin import SortableHeadersChangeList
+from ..helpers import SortableHeaderHelper
 from ...helpers import (
     create_file_version,
     get_published_file_path,
@@ -261,9 +260,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         paginated_items = paginator.page(paginator.num_pages)
 
     # build sortable headers
-    cl = SortableHeadersChangeList(request)
-    sortable_headers = [header for header in result_headers(cl) if header["sortable"]]
-    num_sorted_fields = len([header for header in sortable_headers if header["sorted"]])
+    sortable_header_helper = SortableHeaderHelper(request=request)
 
     context = self.admin_site.each_context(request)
     context.update({
@@ -300,8 +297,8 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         'can_make_folder': request.user.is_superuser or (
             folder.is_root and filer.settings.FILER_ALLOW_REGULAR_USERS_TO_ADD_ROOT_FOLDERS
         ) or permissions.get("has_add_children_permission"),
-        'sortable_headers': sortable_headers,
-        'num_sorted_fields': num_sorted_fields,
+        'sortable_headers': sortable_header_helper.sortable_headers,
+        'num_sorted_fields': sortable_header_helper.num_headers_sorted,
         'order_by': order_by_str,
     })
     return render(request, self.directory_listing_template, context)
