@@ -7,6 +7,11 @@ from filer.models import Folder
 
 
 class SortableHeaderHelper:
+    """
+    Object used to build the sortable headers in the monkey patched directory_listing view. Implements the minimum
+    required attributes and methods to allow us to use the django provided result_headers templatetag function, rather
+    than using a full ChangeList class which this method expects.
+    """
 
     # attrs required for by result_headers
     model = Folder
