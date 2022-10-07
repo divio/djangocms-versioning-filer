@@ -4,7 +4,8 @@ Changelog
 
 Unreleased
 ==========
-• feat: Replace CircleCi with GitHub Actions for linting and tests
+* feat: Enable sorting by headers on the monkey patched directory_listing admin view
+* feat: Replace CircleCi with GitHub Actions for linting and tests
 * fix: File download burger menu link does not open in a new tab as per previous behavior
 * feat: Customisable folder list admin file action buttons
 
