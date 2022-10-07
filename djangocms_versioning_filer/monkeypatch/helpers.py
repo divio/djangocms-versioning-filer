@@ -1,7 +1,11 @@
 from collections import OrderedDict
 
-from django.contrib.admin.templatetags.admin_list import result_headers, ORDER_VAR
+from django.contrib.admin.templatetags.admin_list import (
+    ORDER_VAR,
+    result_headers,
+)
 from django.utils.http import urlencode
+
 from filer.admin import FolderAdmin
 from filer.models import Folder
 

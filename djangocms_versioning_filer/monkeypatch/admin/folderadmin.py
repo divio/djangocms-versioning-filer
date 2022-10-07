@@ -27,7 +27,6 @@ from filer.models import (
 )
 from filer.utils.loader import load_model
 
-from ..helpers import SortableHeaderHelper
 from ...helpers import (
     create_file_version,
     get_published_file_path,
@@ -35,6 +34,7 @@ from ...helpers import (
     move_file,
 )
 from ...models import FileGrouper, get_files_distinct_grouper_queryset
+from ..helpers import SortableHeaderHelper
 
 
 try:
