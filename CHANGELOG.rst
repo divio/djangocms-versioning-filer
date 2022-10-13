@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+• feat: Replace CircleCi with GitHub Actions for linting and tests
 * fix: File download burger menu link does not open in a new tab as per previous behavior
 * feat: Customisable folder list admin file action buttons
 
