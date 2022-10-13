@@ -69,7 +69,7 @@ def ordering_mapping(model):
 
 def validate_order_by(order_by_str, mapping):
     """
-    Splits a string of ordering heys, and returns a list of keys of those that are in the given mapping dictionary
+    Splits a string of ordering keys, and returns a list of keys of those that are in the given mapping dictionary
     """
     return [key for key in order_by_str.split(".") if key in mapping]
 
