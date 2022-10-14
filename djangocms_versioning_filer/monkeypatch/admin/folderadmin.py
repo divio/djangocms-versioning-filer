@@ -1,9 +1,8 @@
-import re
-
 from django.contrib.admin import helpers
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import models
+from django.db.models.functions import Lower
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.http import urlquote, urlunquote
@@ -35,6 +34,7 @@ from ...helpers import (
     move_file,
 )
 from ...models import FileGrouper, get_files_distinct_grouper_queryset
+from ..helpers import SortableHeaderHelper
 
 
 try:
@@ -45,6 +45,56 @@ except ImportError:
 
 
 Image = load_model(filer.settings.FILER_IMAGE_MODEL)
+
+
+def ordering_mapping(model):
+    """
+    Return a mapping dictionary for the given model. The keys represent the column numbers from the admin
+    directory_listing view, and the values map to the fields that the queryset should be ordered against.
+    """
+    mapping = {
+        "1": [Lower("name"), Lower("original_filename")],
+        "2": ["owner__username"],
+        "3": ["modified_at"],
+        "-1": [Lower("name").desc(), Lower("original_filename").desc()],
+        "-2": ["-owner__username"],
+        "-3": ["-modified_at"],
+    }
+    if model is Folder:
+        mapping["1"].pop()
+        mapping["-1"].pop()
+
+    return mapping
+
+
+def validate_order_by(order_by_str, mapping):
+    """
+    Splits a string of ordering keys, and returns a list of keys of those that are in the given mapping dictionary
+    """
+    return [key for key in order_by_str.split(".") if key in mapping]
+
+
+def order_qs(queryset, order_by_str):
+    """
+    Order the queryset of File or Folder objects. If no ordering is specified, defaults to ordering the queryset by the
+    name column mapping value.
+
+    param queryset: A QuerySet of File or Folder objects
+    order_by: A strings representing the column numbers to order the queryset by
+    """
+    mapping = ordering_mapping(queryset.model)
+    # only use valid column numbers
+    order_by = validate_order_by(order_by_str, mapping)
+    # get the field name for the column numbers
+    order_by = [mapping.get(num) for num in order_by]
+    # flatten the list
+    order_by = [item for sublist in order_by for item in sublist]
+    # remove any empty values - might not be needed?
+    order_by = [field for field in order_by if field]
+    if not order_by:
+        # default to the name column
+        order_by = mapping.get("1")
+    return queryset.order_by(*order_by).distinct()
 
 
 def directory_listing(self, request, folder_id=None, viewtype=None):
@@ -117,14 +167,9 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
             file_qs = folder.files.all()
         show_result_count = False
 
-    folder_qs = folder_qs.order_by('name')
-    order_by = request.GET.get('order_by', None)
-    if order_by is not None:
-        order_by = order_by.split(',')
-        order_by = [field for field in order_by
-                    if re.sub(r'^-', '', field) in self.order_by_file_fields]
-        if len(order_by) > 0:
-            file_qs = file_qs.order_by(*order_by)
+    order_by_str = request.GET.get('o', "")
+    file_qs = order_qs(file_qs, order_by_str)
+    folder_qs = order_qs(folder_qs, order_by_str)
 
     folder_children = []
     folder_files = []
@@ -155,9 +200,6 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         }
     except:   # noqa
         permissions = {}
-
-    if order_by is None or len(order_by) == 0:
-        folder_files.sort()
 
     items = folder_children + folder_files
     paginator = Paginator(items, filer.settings.FILER_PAGINATE_BY)
@@ -217,6 +259,9 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
     except EmptyPage:
         paginated_items = paginator.page(paginator.num_pages)
 
+    # build sortable headers
+    sortable_header_helper = SortableHeaderHelper(request=request)
+
     context = self.admin_site.each_context(request)
     context.update({
         'folder': folder,
@@ -252,6 +297,9 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         'can_make_folder': request.user.is_superuser or (
             folder.is_root and filer.settings.FILER_ALLOW_REGULAR_USERS_TO_ADD_ROOT_FOLDERS
         ) or permissions.get("has_add_children_permission"),
+        'sortable_headers': sortable_header_helper.sortable_headers,
+        'num_sorted_fields': sortable_header_helper.num_headers_sorted,
+        'order_by': order_by_str,
     })
     return render(request, self.directory_listing_template, context)
 
