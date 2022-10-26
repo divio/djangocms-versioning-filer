@@ -5,6 +5,7 @@ from django.urls import reverse
 from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.helpers import proxy_model
 
+
 register = template.Library()
 
 
