@@ -3,7 +3,7 @@ from django.apps import apps
 from django.urls import reverse
 
 from djangocms_versioning.constants import DRAFT, PUBLISHED
-from djangocsm_versioning.helpers import proxy_model
+from djangocms_versioning.helpers import proxy_model
 
 register = template.Library()
 
