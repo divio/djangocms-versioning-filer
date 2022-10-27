@@ -1,7 +1,7 @@
 {% load static djangocms_versioning_filer_tags %}
 
 {% block extrahead %}
-    <link rel="stylesheet" href="{% static 'djangocms_versioning/css/actions.css %}">
+    <link rel="stylesheet" href="{% static 'djangocms_versioning/css/actions.css' %}">
     <script src="{% static 'djangocms_versioning/js/actions.js' %}"></script>
 {% endblock %}
 
@@ -9,7 +9,7 @@
 
 {% spaceless %}
 <a
-    title="{block title %}{% endblock %}"
+    title="{% block title %}{% endblock %}"
     class="btn
 {% if disabled %}
     inactive
