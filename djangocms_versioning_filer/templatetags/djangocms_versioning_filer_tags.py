@@ -64,5 +64,5 @@ def get_versioning_filer_edit_disabled(file, request):
     if not version:
         return True
     if version.check_edit_redirect.as_bool(request.user):
-        return True
-    return False
+        return False
+    return True
