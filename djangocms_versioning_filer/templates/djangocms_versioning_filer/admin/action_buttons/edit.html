@@ -1,0 +1,27 @@
+{% load static djangocms_versioning_filer_tags %}
+
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static 'djangocms_versioning/css/actions.css' %}">
+    <script src="{% static 'djangocms_versioning/js/actions.js' %}"></script>
+{% endblock %}
+
+{% get_versioning_filer_edit_disabled file request as disabled %}
+
+{% spaceless %}
+<a
+    title="{% block title %}{% endblock %}"
+    class="btn
+{% if disabled %}
+    inactive
+{% endif %}
+    cms-versioning-action-btn
+    cms-versioning-action-edit
+    js-versioning-action-btn
+    js-versioning-action
+    {% if keepsideframe|default_if_none:True %} js-versioning-keep-sideframe {% else %}js-versioning-close-sideframe {% endif %}
+{% if not disabled %}
+    href="{% get_versioning_filer_edit_url file %}"
+{% endif %}
+>
+    <img src="{% static 'djangocms_versioning/svg/edit.svg' %}">
+{% endspaceless %}

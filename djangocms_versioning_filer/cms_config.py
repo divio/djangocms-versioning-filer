@@ -92,7 +92,8 @@ class FilerVersioningCMSConfig(CMSAppConfig):
     # Versioning filer (self) config
     djangocms_versioning_filer_enabled = True
     djangocms_versioning_filer_file_changelist_actions = [
-        "djangocms_versioning_filer/admin/action_buttons/manage_versions.html"
+        "djangocms_versioning_filer/admin/action_buttons/manage_versions.html",
+        "djangocms_versioning_filer/admin/action_buttons/edit.html",
     ]
 
     # Internalsearch configuration
