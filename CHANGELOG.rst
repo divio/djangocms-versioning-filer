@@ -5,6 +5,10 @@ Changelog
 Unreleased
 ==========
 
+1.2.0 (2022-11-01)
+==================
+* feat: Added edit icon to file changelist
+
 1.1.0 (2022-10-14)
 ==========
 * feat: Enable sorting by headers on the monkey patched directory_listing admin view
