@@ -20,7 +20,7 @@ class VersioningFilerAdminTestCase(BaseFilerVersioningTestCase):
 
     def test_admin_edit_button_enabled(self):
         """
-        With a file that is edtiable, render the edit button as active
+        With a file that is editable, render the edit button as active
         """
         # Delete the image without a version
         File.objects.last().delete()
