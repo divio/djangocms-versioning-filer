@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* fix: Add missing closing quotation in template
 
 1.1.0 (2022-10-14)
 ==========
