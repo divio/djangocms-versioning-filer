@@ -19,6 +19,7 @@
     js-versioning-action-btn
     js-versioning-action
     {% if keepsideframe|default_if_none:True %} js-versioning-keep-sideframe {% else %}js-versioning-close-sideframe {% endif %}
+    "
 {% if not disabled %}
     href="{% get_versioning_filer_edit_url file %}"
 {% endif %}
