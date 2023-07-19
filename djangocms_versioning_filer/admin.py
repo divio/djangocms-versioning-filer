@@ -6,6 +6,9 @@ from djangocms_versioning.models import Version
 
 class VersioningFilerAdminMixin(VersioningAdminMixin):
 
+    # Path for filer change form
+    change_form_template = 'admin/filer/change_form.html'
+    
     def get_fieldsets(self, request, obj=None):
         version = Version.objects.get_for_content(obj)
         fieldsets = super().get_fieldsets(request, obj)
