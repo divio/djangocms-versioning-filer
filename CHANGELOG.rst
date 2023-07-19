@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* fix: Filer admin to point correct change form template
 
 1.2.1 (2022-11-14)
 ==================
