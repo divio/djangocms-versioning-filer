@@ -183,7 +183,7 @@ def ajax_upload(request, folder_id=None):
                 'grouper_id': file_grouper.pk,
             }
             # prepare preview thumbnail
-            if type(file_obj) == Image:
+            if isinstance(file_obj, Image):
                 thumbnail_180_options = {
                     'size': (180, 180),
                     'crop': True,
