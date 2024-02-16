@@ -1,4 +1,7 @@
 from functools import lru_cache
+import os
+
+from easy_thumbnails import models as thumbnail_models
 
 from django.apps import apps
 from django.conf import settings
@@ -6,6 +9,7 @@ from django.conf import settings
 from cms.app_base import CMSAppConfig, CMSAppExtension
 
 import filer.settings
+from filer.models import Image
 from djangocms_versioning.datastructures import (
     PolymorphicVersionableItem,
     VersionableItemAlias,
@@ -23,11 +27,25 @@ except (ImportError, LookupError):
     FilerContentConfig = None
 
 
+def delete_published_thumbnail(file_obj):
+    #delete published thumbnail image
+    path, source_filename = os.path.split(file_obj.name)
+    subdir = file_obj.thumbnail_subdir
+    thumbnail_prefix = os.path.join(path, subdir, source_filename)
+    thumbnail_source = thumbnail_models.Source.objects.filter(name__icontains=thumbnail_prefix).first()
+    if thumbnail_source:
+        for thumbnail_cache in thumbnail_source.thumbnails.all():
+            thumbnail_cache.delete()
+
+
 def on_file_publish(version):
     file_content = version.content
     file_content._file_data_changed_hint = False
     file_content.file = move_file(file_content, get_published_file_path(file_content))
     file_content.save()
+    
+    if type(file_content) == Image:
+        delete_published_thumbnail(file_content.file)
 
 
 def on_file_unpublish(version):
@@ -39,6 +57,9 @@ def on_file_unpublish(version):
     )
     file_content.file = move_file(file_content, path)
     file_content.save()
+    
+    if type(file_content) == Image:
+        delete_published_thumbnail(file_content.file)
 
 
 def versioning_filer_models_config():
