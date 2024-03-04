@@ -27,17 +27,6 @@ except (ImportError, LookupError):
     FilerContentConfig = None
 
 
-def delete_published_thumbnail(file_obj):
-    #delete published thumbnail image
-    path, source_filename = os.path.split(file_obj.name)
-    subdir = file_obj.thumbnail_subdir
-    thumbnail_prefix = os.path.join(path, subdir, source_filename)
-    thumbnail_source = thumbnail_models.Source.objects.filter(name__icontains=thumbnail_prefix).first()
-    if thumbnail_source:
-        for thumbnail_cache in thumbnail_source.thumbnails.all():
-            thumbnail_cache.delete()
-
-
 def on_file_publish(version):
     file_content = version.content
     file_content._file_data_changed_hint = False
@@ -45,7 +34,9 @@ def on_file_publish(version):
     file_content.save()
     
     if type(file_content) == Image:
-        delete_published_thumbnail(file_content.file)
+        file_content.is_public = not file_content.is_public
+        file_content.file.delete_thumbnails()
+        file_content.is_public = not file_content.is_public
 
 
 def on_file_unpublish(version):
@@ -59,7 +50,9 @@ def on_file_unpublish(version):
     file_content.save()
     
     if type(file_content) == Image:
-        delete_published_thumbnail(file_content.file)
+        file_content.is_public = not file_content.is_public
+        file_content.file.delete_thumbnails()
+        file_content.is_public = not file_content.is_public
 
 
 def versioning_filer_models_config():
