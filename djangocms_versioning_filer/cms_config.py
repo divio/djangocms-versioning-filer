@@ -1,4 +1,7 @@
 from functools import lru_cache
+import os
+
+from easy_thumbnails import models as thumbnail_models
 
 from django.apps import apps
 from django.conf import settings
@@ -6,6 +9,7 @@ from django.conf import settings
 from cms.app_base import CMSAppConfig, CMSAppExtension
 
 import filer.settings
+from filer.models import Image
 from djangocms_versioning.datastructures import (
     PolymorphicVersionableItem,
     VersionableItemAlias,
@@ -28,6 +32,11 @@ def on_file_publish(version):
     file_content._file_data_changed_hint = False
     file_content.file = move_file(file_content, get_published_file_path(file_content))
     file_content.save()
+    
+    if type(file_content) == Image:
+        file_content.is_public = not file_content.is_public
+        file_content.file.delete_thumbnails()
+        file_content.is_public = not file_content.is_public
 
 
 def on_file_unpublish(version):
@@ -39,6 +48,11 @@ def on_file_unpublish(version):
     )
     file_content.file = move_file(file_content, path)
     file_content.save()
+    
+    if type(file_content) == Image:
+        file_content.is_public = not file_content.is_public
+        file_content.file.delete_thumbnails()
+        file_content.is_public = not file_content.is_public
 
 
 def versioning_filer_models_config():
