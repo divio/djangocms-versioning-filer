@@ -2,10 +2,10 @@
 Changelog
 =========
 
-Unreleased
+1.2.3 (2024-03-05)
 ==========
 * fix: delete published thumbnail image when publishing/unpublishing images.
-
+  
 1.2.2 (2023-08-09)
 ==========
 * fix: Filer admin to point correct change form template
