@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* Django 4.2 support added
+* Django 2.2 support removed
+* Python 3.10 support added
+* Python 3.7 support removed
+
 1.2.3 (2024-03-05)
 ==========
 * fix: delete published thumbnail image when publishing/unpublishing images.
