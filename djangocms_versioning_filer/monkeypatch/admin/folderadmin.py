@@ -1,3 +1,5 @@
+from urllib.parse import quote, unquote
+
 from django.contrib.admin import helpers
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -5,7 +7,6 @@ from django.db import models
 from django.db.models.functions import Lower
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from django.utils.http import urlquote, urlunquote
 from django.utils.translation import gettext as _, ngettext
 
 import filer
@@ -39,7 +40,7 @@ from ..helpers import SortableHeaderHelper
 
 try:
     # urlresolvers was moved to url in django 2.0
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 except ImportError:
     from django.urls import reverse
 
@@ -134,7 +135,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
     # search
     q = request.GET.get('q', None)
     if q:
-        search_terms = urlunquote(q).split(" ")
+        search_terms = unquote(q).split(" ")
         search_mode = True
     else:
         search_terms = []
@@ -277,7 +278,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         'current_url': request.path,
         'title': _('Directory listing for %(folder_name)s') % {'folder_name': folder.name},
         'search_string': ' '.join(search_terms),
-        'q': urlquote(q),
+        'q': quote(q),
         'show_result_count': show_result_count,
         'folder_children': folder_children,
         'folder_files': folder_files,

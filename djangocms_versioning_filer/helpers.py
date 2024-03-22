@@ -55,7 +55,7 @@ def is_moderation_enabled():
 
 
 def check_file_label_exists_in_folder(label, folder, exclude_file_pks=None):
-    if not isinstance(exclude_file_pks, collections.Iterable):
+    if not isinstance(exclude_file_pks, collections.abc.Iterable):
         exclude_file_pks = []
     files_in_folder = get_files_distinct_grouper_queryset().filter(
         folder=folder,

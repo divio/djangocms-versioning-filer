@@ -1,8 +1,8 @@
 from django.conf import settings
-from django.conf.urls import include, url
 from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.urls import include, path, re_path
 from django.views.static import serve
 
 
@@ -16,24 +16,23 @@ except ImportError:
 admin.autodiscover()
 
 urlpatterns = [
-    url(r'^media/(?P<path>.*)$', serve,  # NOQA
-        {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
-    url(r'^jsi18n/(?P<packages>\S+?)/$', javascript_catalog),  # NOQA
-    url(r'^', include('filer.server.urls')),
-    url(r'^filer/', include('filer.urls')),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
+    re_path(r'^jsi18n/(?P<packages>\S+?)/$', javascript_catalog),  # NOQA
+    path('', include('filer.server.urls')),
+    path('filer/', include('filer.urls')),
 ]
 try:
     i18n_urls = [
-        url(r'^admin/', admin.site.urls),
+        re_path(r'^admin/', admin.site.urls),
     ]
 except Exception:
     i18n_urls = [
-        url(r'^admin/', include(admin.site.urls)),
+        path('admin/', include(admin.site.urls)),
     ]
 
 if settings.USE_CMS:
     i18n_urls.append(
-        url(r'^', include('cms.urls'))  # NOQA
+        path('', include('cms.urls'))  # NOQA
     )
 
 urlpatterns += i18n_patterns(*i18n_urls)

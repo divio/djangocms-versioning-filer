@@ -1,7 +1,11 @@
 coverage
 django-app-helper
+django-classy-tags
 django-filer==2.2.3
+django-sekizai
 djangocms-audio
+djangocms-file
+djangocms-picture
 djangocms-video
 factory-boy
 flake8
@@ -12,4 +16,4 @@ mock
 # Unreleased django-cms 4.0 compatible packages
 https://github.com/django-cms/django-cms/tarball/release/4.0.1.x#egg=django-cms
 https://github.com/django-cms/djangocms-versioning/tarball/support/django-cms-4.0.x#egg=djangocms-versioning
-https://github.com/Aiky30/djangocms-moderation/tarball/master#egg=djangocms-moderation
+https://github.com/django-cms/djangocms-moderation/tarball/master#egg=djangocms-moderation
