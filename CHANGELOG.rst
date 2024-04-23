@@ -2,6 +2,8 @@
 Changelog
 =========
 
+1.3.0 (Unreleased)
+==========
 * Django 4.2 support added
 * Django 2.2 support removed
 * Python 3.10 support added
