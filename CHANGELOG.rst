@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Unreleased
+==========
+* list per page added to folderadmin to read from request parameters
+
 1.3.0 (2024-05-16)
 ==========
 * Django 4.2 support added

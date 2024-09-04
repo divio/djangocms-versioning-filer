@@ -203,7 +203,9 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         permissions = {}
 
     items = folder_children + folder_files
-    paginator = Paginator(items, filer.settings.FILER_PAGINATE_BY)
+    list_per_page = request.GET.get('list_per_page')
+    paginator_count = list_per_page or filer.settings.FILER_PAGINATE_BY
+    paginator = Paginator(items, paginator_count)
 
     # Are we moving to clipboard?
     if request.method == 'POST' and '_save' not in request.POST:
