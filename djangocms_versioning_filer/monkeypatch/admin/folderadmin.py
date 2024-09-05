@@ -204,7 +204,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
 
     items = folder_children + folder_files
     list_per_page = request.GET.get('list_per_page')
-    paginator_count = list_per_page or filer.settings.FILER_PAGINATE_BY
+    paginator_count = int(list_per_page) if list_per_page else filer.settings.FILER_PAGINATE_BY
     paginator = Paginator(items, paginator_count)
 
     # Are we moving to clipboard?
