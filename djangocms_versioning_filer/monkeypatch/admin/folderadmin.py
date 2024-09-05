@@ -203,6 +203,7 @@ def directory_listing(self, request, folder_id=None, viewtype=None):
         permissions = {}
 
     items = folder_children + folder_files
+    # Get list_per_page from request params else use default value
     list_per_page = request.GET.get('list_per_page')
     paginator_count = int(list_per_page) if list_per_page else filer.settings.FILER_PAGINATE_BY
     paginator = Paginator(items, paginator_count)
