@@ -1,7 +1,14 @@
+from cms.test_utils.testcases import CMSTestCase
+
 from django.shortcuts import reverse
+from django.test import TestCase, RequestFactory
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 
 from djangocms_versioning.helpers import proxy_model
-from filer.models import File
+
+from filer.models import File, Folder
+from filer.admin.folderadmin import FolderAdmin
 
 from tests.base import BaseFilerVersioningTestCase
 
@@ -55,3 +62,26 @@ class VersioningFilerAdminTestCase(BaseFilerVersioningTestCase):
         self.assertContains(response, "js-versioning-action-btn")
         self.assertContains(response, "js-versioning-action")
         self.assertContains(response, "inactive")
+
+
+class FolderAdminTestCase(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = User.objects.create(username='testuser', password='12345')
+        self.folder = Folder.objects.create(name='Test Folder', owner=self.user)
+        self.file1 = File.objects.create(name='Test File 1', folder=self.folder, owner=self.user)
+        self.file2 = File.objects.create(name='Test File 2', folder=self.folder, owner=self.user)
+
+    def test_list_per_page_from_request(self):
+        # Simulate a Get request with list_per_page parameter
+        request = self.factory.get('/', {'list_per_page': '1'})
+        request.user = self.user
+
+        request.GET = {'list_per_page': '1'}
+        folder_qs = Folder.objects.filter(id=self.folder.id)
+        file_qs = File.objects.filter(folder=self.folder)
+        items = list(folder_qs) + list(file_qs)
+        paginator_count = int(request.GET.get('list_per_page', 10))
+        paginator = Paginator(items, paginator_count)
+
+        self.assertEqual(paginator.per_page, 1)
