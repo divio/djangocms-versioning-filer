@@ -4,7 +4,6 @@ from django.shortcuts import reverse
 from django.test import RequestFactory, TestCase
 
 from djangocms_versioning.helpers import proxy_model
-
 from filer.models import File, Folder
 
 from tests.base import BaseFilerVersioningTestCase
