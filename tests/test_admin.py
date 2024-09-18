@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.shortcuts import reverse
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
 
 from djangocms_versioning.helpers import proxy_model
 
