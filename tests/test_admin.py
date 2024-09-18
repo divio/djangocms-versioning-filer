@@ -1,5 +1,3 @@
-from cms.test_utils.testcases import CMSTestCase
-
 from django.shortcuts import reverse
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User
@@ -8,7 +6,6 @@ from django.core.paginator import Paginator
 from djangocms_versioning.helpers import proxy_model
 
 from filer.models import File, Folder
-from filer.admin.folderadmin import FolderAdmin
 
 from tests.base import BaseFilerVersioningTestCase
 
