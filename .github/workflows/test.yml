@@ -16,13 +16,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ 3.8, 3.9, '3.10' '3.11', '3.12']
+        python-version: [ 3.8, 3.9, '3.10', '3.11', '3.12']
         requirements-file: [
             dj32_cms40.txt,
             dj42_cms40.txt,
             dj42_cms41.txt,
         ]
-
+        exclude:
+          # CMS 4.0 does not support python 3.11+
+          - requirements-file: "dj32_cms40.txt"
+            python-version: ["3.11", "3.12"]
+          - requirements-file: "dj42_cms40.txt"
+            python-version: ["3.11", "3.12"]
+          # 3.8 is not required by django-cms 4.1+
+          - requirements-file: "dj42_cms41.txt"
+            python-version: ["3.8"]
 
     steps:
       - uses: actions/checkout@v3
