@@ -4,6 +4,10 @@ Changelog
 
 Unreleased
 ==========
+* 
+  
+1.3.1 (2024-09-19)
+==========
 * list per page added to folderadmin to read from request parameters
 
 1.3.0 (2024-05-16)
