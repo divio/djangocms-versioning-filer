@@ -15,7 +15,6 @@ HELPER_SETTINGS = {
     'TIME_ZONE': 'Europe/Zurich',
     'INSTALLED_APPS': [
         'easy_thumbnails',
-        'mptt',
         'djangocms_versioning_filer',
         'filer',
         'djangocms_versioning',
