@@ -24,19 +24,43 @@ import logging
 
 from django.contrib.admin.widgets import ForeignKeyRawIdWidget
 from django.db.models import ForeignKey
+from django.db.models.sql.where import WhereNode
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 
 import filer
-from djangocms_versioning.helpers import remove_published_where
+from djangocms_versioning.constants import PUBLISHED
 from filer import settings as filer_settings
 from filer.fields.file import AdminFileFormField
 from filer.models.filemodels import File
 
 
 logger = logging.getLogger(__name__)
+
+
+def remove_published_where(queryset):
+    """
+    By default, the versioned queryset filters out so that only versions
+    that are published are returned. If you need to return the full queryset
+    this method can be used.
+
+    It will modify the sql to remove `where state = 'published'`
+    """
+    where_children = queryset.query.where.children
+    all_except_published = [
+        lookup for lookup in where_children
+        if not (
+            lookup.lookup_name == "exact" and
+            lookup.rhs == PUBLISHED and
+            lookup.lhs.field.name == "state"
+        )
+    ]
+
+    queryset.query.where = WhereNode()
+    queryset.query.where.children = all_except_published
+    return queryset
 
 
 def render(self, name, value, attrs=None, renderer=None):
