@@ -9,14 +9,14 @@
     function createBurgerMenu(row) {
 
       let actions = $(row).children('.column-action');
-      if (!actions.length || !$(actions[0]).children('.action-button').length) {
+      if (!actions.length || !$(actions[0]).children('.action-button:not(.top-level)').length) {
         /* skip any rows without actions to avoid errors */
         return;
       }
 
       /* create burger menu anchor icon */
       let icon = document.createElement('span');
-      icon.setAttribute('class', "fa fa-bars");
+      icon.setAttribute('class', "cms-icon cms-icon-settings");
 
       let anchor = document.createElement('a');
       anchor.setAttribute('class', 'action-button cms-filer-action-btn closed');
@@ -35,7 +35,7 @@
       ul.setAttribute('class', 'cms-actions-dropdown-menu-inner');
 
       /* get the existing actions and move them into the options container */
-      $(actions[0]).children('.action-button').each(function (index, item) {
+      $(actions[0]).children('.action-button:not(.top-level)').each(function (index, item) {
 
         let li = document.createElement('li');
         /* create an anchor from the item */

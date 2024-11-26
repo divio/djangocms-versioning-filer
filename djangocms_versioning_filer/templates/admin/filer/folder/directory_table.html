@@ -79,7 +79,7 @@
                             </td>
                             <td class="column-action">
                                 {% if subfolder.file_type == "Folder" %}
-                                    <a href="{% url 'admin:filer_folder_change' subfolder.id %}{% filer_admin_context_url_params %}" title="{% trans 'Change folder details' %}" class="action-button"><span class="fa fa-pencil"></span></a>
+                                    <a href="{% url 'admin:filer_folder_change' subfolder.id %}{% filer_admin_context_url_params %}" title="{% trans 'Change folder details' %}" class="action-button"><span class="cms-icon cms-icon-settings"></span></a>
                                 {% endif %}
                             </td>
                         </tr>

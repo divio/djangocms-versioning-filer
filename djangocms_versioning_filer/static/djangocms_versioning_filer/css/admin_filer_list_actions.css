@@ -71,6 +71,10 @@ extending the pagetree classes provided by CMS
 
 
 /* style for each option row */
+td.column-action a.action-button {
+  margin-right: 4px !important;
+}
+
 ul.cms-actions-dropdown-menu-inner {
     margin: 0;
     padding: 0 !important;
@@ -115,10 +119,17 @@ a.cms-actions-dropdown-menu-item-anchor:link:active {
 }
 
 /* align the option text with it's icon */
+a.cms-actions-dropdown-menu-item-anchor {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 a.cms-actions-dropdown-menu-item-anchor span {
-    line-height: 1rem;
-    vertical-align: 20%;
-    margin-left: 10px;
+    line-height: 1rem !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
 }
 /* disable any inactive option */
 a.cms-actions-dropdown-menu-item-anchor.inactive {

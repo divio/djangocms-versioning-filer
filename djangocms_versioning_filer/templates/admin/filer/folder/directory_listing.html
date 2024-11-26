@@ -161,7 +161,7 @@
                     </div>
                     <form class="filter-files-container js-filter-files-container" action="." method="get" class="js-filer-search-form">
                         <div class="filter-filers-container-inner">
-                            <button class="navigator-button filter-files-button" title="{% trans 'Click here to run search for entered phrase' %}"><span class="icon fa fa-search"></span></button>
+                            <button class="navigator-button filter-files-button" title="{% trans 'Click here to run search for entered phrase' %}"><span class="icon fa fa-search cms-icon cms-icon-search"></span></button>
                             <div class="filter-search-wrapper">
                                 {% filer_admin_context_hidden_formfields %}
                                 <input type="text" placeholder="{% trans 'Search' %}" class="filter-files-field js-filter-files" value="{{ search_string }}" size="40" name="q">
@@ -252,7 +252,7 @@
     <div id="content-main">
         {% include "admin/filer/tools/search_form.html" %}
         <div class="js-navigator navigator{% if not actions_on_top and not actions_on_bottom %}navigator-no-actions{% endif %}">
-            <form class="js-navigator-form" method="post">
+            <form id="changelist-form" class="js-navigator-form" method="post">
                 {% csrf_token %}
                 {% filer_admin_context_hidden_formfields %}
                 {% if action_form and actions_on_top and paginator.count and not is_popup %}
