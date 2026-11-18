@@ -1,7 +1,7 @@
 coverage
 django-app-helper
 django-classy-tags
-django-filer==2.2.3
+django-filer==3.5.0
 django-sekizai
 djangocms-audio
 djangocms-file
